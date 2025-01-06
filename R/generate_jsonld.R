@@ -95,6 +95,6 @@ generate_jsonld <- function() {
   # Print the JSON-LD document
   cat(json_ld_json)
 
-  # Optionally, save the JSON-LD document to a file
-  write(json_ld_json, "data/metadata/dataset_metadata.json")
+  # Save the JSON-LD document to a file
+  write(json_ld_json, "inst/extdata/metadata.json")
 }
