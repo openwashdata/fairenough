@@ -56,19 +56,23 @@ update_citation <- function(doi){
   usethis::ui_todo("Proofread your citation file at {usethis::ui_value(path_cit)}")
 }
 
-add_citation_badge<- function(doi){
+add_citation_badge <- function(doi) {
   badge_icon <- paste0("https://zenodo.org/badge/DOI/", doi, ".svg")
   zenodo_link <- paste0("https://zenodo.org/doi/", doi)
-  badge_str <- sprintf("[![DOI](%s)](%s)", badge_icon, zenodo_link)
+  badge_str <- sprintf("[![DOI](%s)](%s)", badge_icon, zenodo_link) # Badge string
   readme_rmd_path <- file.path("README.Rmd")
   readme_rmd <- readLines(readme_rmd_path)
 
+  # Find the position of the <!-- badges: end --> marker
   i <- 1
   line <- readme_rmd[1]
   while (!startsWith(line, prefix = "<!-- badges: end -->")) {
-    i <- i+1
+    i <- i + 1
     line <- readme_rmd[i]
   }
-  new_readme_rmd <- c(readme_rmd[1:i-1], badge_str, readme_rmd[i:length(readme_rmd)])
+
+  # Add the badge before the marker and a newline
+  new_readme_rmd <- c(readme_rmd[1:(i - 1)], badge_str, "", readme_rmd[i:length(readme_rmd)])
   writeLines(new_readme_rmd, readme_rmd_path)
 }
+
