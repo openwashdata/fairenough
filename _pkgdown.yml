@@ -22,6 +22,15 @@ reference:
   contents:
   - update_citation
   - update_description
+  - add_creator
+  - add_metadata
+  - generate_jsonld
+  - update_gsheet_metadata
+  - update_metadata
+  - update_biblio
+  - update_access
+  - update_attributes
+
 
 - subtitle: "Publishing your data"
   desc: "Helper functions to communicate your data"
