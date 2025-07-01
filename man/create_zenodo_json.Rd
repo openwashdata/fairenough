@@ -2,7 +2,10 @@
 % Please edit documentation in R/create_zenodo_json.R
 \name{create_zenodo_json}
 \alias{create_zenodo_json}
-\title{Create Zenodo JSON metadata file}
+\title{Create Zenodo JSON metadata file
+Creates a .zenodo.json file with metadata for Zenodo repository integration.
+This file enables automatic DOI assignment and proper citation when archiving
+your data package on Zenodo.}
 \usage{
 create_zenodo_json(
   creators = NULL,
@@ -36,6 +39,7 @@ create_zenodo_json(
 NULL (invisibly). Creates a JSON file as a side effect.
 }
 \description{
+Create Zenodo JSON metadata file
 Creates a .zenodo.json file with metadata for Zenodo repository integration.
 This file enables automatic DOI assignment and proper citation when archiving
 your data package on Zenodo.

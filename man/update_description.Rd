@@ -2,7 +2,9 @@
 % Please edit documentation in R/update_description.R
 \name{update_description}
 \alias{update_description}
-\title{Update the DESCRIPTION file to conform with standards}
+\title{Update the DESCRIPTION file to conform with standards
+Updates key fields in the DESCRIPTION file including title, description,
+and other metadata to conform with R package standards.}
 \usage{
 update_description(
   organisation,
@@ -30,6 +32,7 @@ update_description(
 NULL (invisibly). Updates DESCRIPTION file as a side effect.
 }
 \description{
+Update the DESCRIPTION file to conform with standards
 Updates key fields in the DESCRIPTION file including title, description,
 and other metadata to conform with R package standards.
 }

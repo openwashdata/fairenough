@@ -2,7 +2,9 @@
 % Please edit documentation in R/publish_package.R
 \name{publish_package}
 \alias{publish_package}
-\title{Publish and archive the data package}
+\title{Publish and archive the data package
+Stage 4 of the fairenough pipeline. Handles package publication including
+Zenodo metadata creation, git operations, and preparation for distribution.}
 \usage{
 publish_package(
   package_name,
@@ -42,6 +44,7 @@ publish_package(
 List containing publishing results and metadata.
 }
 \description{
+Publish and archive the data package
 Stage 4 of the fairenough pipeline. Handles package publication including
 Zenodo metadata creation, git operations, and preparation for distribution.
 }

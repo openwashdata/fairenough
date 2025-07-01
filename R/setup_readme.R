@@ -1,14 +1,9 @@
 #' Generate the README RMarkdown file
-#'
 #' @description
 #' `setup_readme()` uses the openwashdata README template to generate README files based on datasets
 #' retrieved from the `data/` directory. It helps in creating consistent and informative README documentation
 #' for your data packages.
-#'
 #' @returns NULL. This function creates a README.Rmd under the package directory.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' # Generate the README file after setting up the dictionary

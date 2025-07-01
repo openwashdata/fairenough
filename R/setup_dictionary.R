@@ -1,16 +1,11 @@
 #' Create a dictionary file for tidy data sets
-#'
 #' @description
 #' `setup_dictionary()` generates a dictionary CSV file in the
 #' `data/` directory. The dictionary file
 #' contains information on the tidy data sets such as directory, file names, variable names,
 #' variable types, and descriptions. If tidy data exists, the dictionary is populated with
 #' relevant information; otherwise, it creates an empty dictionary CSV file.
-#'
-#' @export
-#'
 #' @returns NULL. Error if raw data is not found or not in a package directory.
-#'
 #' @examples
 #' \dontshow{
 #' temppkg <- tempdir()
@@ -25,7 +20,6 @@
 #' \dontshow{
 #' setwd(.old_wd)
 #' }
-#'
 setup_dictionary <- function() {
   # Check working directory
   correct_wd <- is_pkg()
@@ -49,14 +43,9 @@ setup_dictionary <- function() {
 }
 
 #' Fill in the dictionary file based on the tidy data information
-#'
 #' @param dict_path Path to the dictionary csvfile.
 #' @param data_dir Path to the directory of the tidy R data objects. Defaults to data/
-#'
 #' @returns A tibble data frame of dataset dictionary with an empty description column to be written.
-#'
-#' @export
-#'
 #' @examples
 #' \dontshow{
 #' .old_wd <- setwd(tempdir())
@@ -67,7 +56,6 @@ setup_dictionary <- function() {
 #' \dontshow{
 #' setwd(.old_wd)
 #' }
-#'
 fill_dictionary <- function(dict_path, data_dir){
   # Collect tidy data information
   if(dir.exists(data_dir)){

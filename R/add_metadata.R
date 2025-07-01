@@ -1,16 +1,10 @@
 #' Adds metadata files and creates the metadata folder
-#'
 #' @description
 #' Creates the data/metadata directory with the acess, attributes, biblio and
 #' creators metadata files. If the directory already exists, the user is prompted
 #' to overwrite the existing files.
-#'
-#'
 #' @returns NULL. Error message if the metadata folder already exists and user declines to
 #' create new metadata files.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' add_metadata()

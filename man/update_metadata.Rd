@@ -17,5 +17,4 @@ functions. Ideally, this function is used rather than individual helpers.
 \dontrun{
 update_metadata()
 }
-
 }

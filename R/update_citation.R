@@ -1,15 +1,10 @@
 #' Update the citation file for the dataset.
-#'
 #' @description
 #' Create a citation *.cff file for the released dataset from a given DOI(Digital
 #' Object Identifier). It adds the DOI badge to the README RMarkdown file and
 #' re-build the README.md and pkgdown website if exists.
-#'
 #' @param doi DOI(Digital Object Identifier), e.g., 10.5281/zenodo.11185699
-#'
 #' @returns NULL. A citation .cff file is written under the root directory.
-#' @export
-#'
 #' @examples
 #' \dontshow{
 #' .old_wd <- setwd(tempdir())
@@ -20,7 +15,6 @@
 #' \dontshow{
 #' setwd(.old_wd)
 #' }
-#'
 update_citation <- function(doi){
   # Creates CFF with all author roles
   mod_cff <- cffr::cff_create("DESCRIPTION",

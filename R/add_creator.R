@@ -1,12 +1,8 @@
 #' Add contributors to the creators metadata file
-#'
 #' @param name Name of the contributor
 #' @param email Email ID of the contributor
 #' @param affiliation Affiliation (Institute/organisation of the contributor)
-#'
 #' @returns NULL, Errors handled within the function
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' add_creator("Jane Doe", 'janedoeatuniversity.org', affiliation = "University")

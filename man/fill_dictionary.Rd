@@ -27,5 +27,4 @@ update_dictionary(dict_path = "data-raw/my-dictionary.csv", data = "data/")
 \dontshow{
 setwd(.old_wd)
 }
-
 }

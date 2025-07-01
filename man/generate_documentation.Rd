@@ -2,7 +2,9 @@
 % Please edit documentation in R/generate_documentation.R
 \name{generate_documentation}
 \alias{generate_documentation}
-\title{Generate comprehensive package documentation}
+\title{Generate comprehensive package documentation
+Stage 2 of the fairenough pipeline. Creates data dictionaries, README files,
+and package website using AI-powered documentation generation where available.}
 \usage{
 generate_documentation(
   package_name,
@@ -39,6 +41,7 @@ generate_documentation(
 List containing documentation generation results.
 }
 \description{
+Generate comprehensive package documentation
 Stage 2 of the fairenough pipeline. Creates data dictionaries, README files,
 and package website using AI-powered documentation generation where available.
 }

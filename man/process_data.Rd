@@ -2,7 +2,9 @@
 % Please edit documentation in R/process_data.R
 \name{process_data}
 \alias{process_data}
-\title{Process raw data files for package creation}
+\title{Process raw data files for package creation
+Stage 1 of the fairenough pipeline. Processes all CSV files in the raw data
+directory, cleans them, and prepares them for package inclusion.}
 \usage{
 process_data(
   raw_data_path,
@@ -24,6 +26,7 @@ process_data(
 List containing processing results and file paths.
 }
 \description{
+Process raw data files for package creation
 Stage 1 of the fairenough pipeline. Processes all CSV files in the raw data
 directory, cleans them, and prepares them for package inclusion.
 }

@@ -1,8 +1,6 @@
 #' Publish and archive the data package
-#'
 #' Stage 4 of the fairenough pipeline. Handles package publication including
 #' Zenodo metadata creation, git operations, and preparation for distribution.
-#'
 #' @param package_name Character string. Name of the package.
 #' @param author_name Character string. Primary author name.
 #' @param author_email Character string. Primary author email.
@@ -13,11 +11,7 @@
 #' @param push_to_remote Logical. Whether to push to remote repository. Default FALSE.
 #' @param doi Character string. DOI for citation updates (optional).
 #' @param verbose Logical. Show progress messages. Default TRUE.
-#'
 #' @return List containing publishing results and metadata.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' result <- publish_package(

@@ -18,5 +18,4 @@ The template assumes that the dataset name is the same as the data package name.
 \dontrun{
   setup_rawdata()
 }
-
 }

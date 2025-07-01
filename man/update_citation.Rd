@@ -27,5 +27,4 @@ re-build the README.md and pkgdown website if exists.
 \dontshow{
 setwd(.old_wd)
 }
-
 }

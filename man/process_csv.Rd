@@ -2,7 +2,9 @@
 % Please edit documentation in R/process_csv.R
 \name{process_csv}
 \alias{process_csv}
-\title{Process CSV files for data package creation}
+\title{Process CSV files for data package creation
+Reads a CSV file, cleans column names, handles NA values, converts numeric
+columns to integers, and exports the data in both .rda and .csv formats.}
 \usage{
 process_csv(file_path, overwrite_rda = TRUE, overwrite_csv = TRUE)
 }
@@ -17,6 +19,7 @@ process_csv(file_path, overwrite_rda = TRUE, overwrite_csv = TRUE)
 The processed data frame (invisibly).
 }
 \description{
+Process CSV files for data package creation
 Reads a CSV file, cleans column names, handles NA values, converts numeric
 columns to integers, and exports the data in both .rda and .csv formats.
 }

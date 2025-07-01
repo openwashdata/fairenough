@@ -1,17 +1,11 @@
 #' Set up a pkgdown website for the data package
-#'
 #' @description
 #' `setup_website()` uses the openwashdata pkgdown template to create a website for the data package
 #' based on its README.md file. The website provides a structured and visually appealing presentation
 #' of the package's documentation.
-#'
 #' @param has_example Logical. Should the pkgdown website include a vignette page
 #' for writing an example? Defaults to FALSE.
-#'
 #' @returns NULL. Error if no README file is found.
-#'
-#' @export
-#'
 #' @examples
 #' \dontshow{
 #' .old_wd <- setwd(tempdir())

@@ -1,16 +1,10 @@
 #' Process CSV files for data package creation
-#'
 #' Reads a CSV file, cleans column names, handles NA values, converts numeric
 #' columns to integers, and exports the data in both .rda and .csv formats.
-#'
 #' @param file_path Character string. Path to the CSV file to process.
 #' @param overwrite_rda Logical. Whether to overwrite existing .rda file. Default is TRUE.
 #' @param overwrite_csv Logical. Whether to overwrite existing .csv file. Default is TRUE.
-#'
 #' @return The processed data frame (invisibly).
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' process_csv("data-raw/mydata.csv")
@@ -49,7 +43,7 @@ process_csv <- function(file_path, overwrite_rda = TRUE, overwrite_csv = TRUE) {
   assign(data_object_name, final_data, envir = .GlobalEnv) # Ensure available globally
 
   # Ensure the 'data' directory exists for saving R data
-  data_dir <- here::here("data")
+  data_dir <- file.path(getwd(), "data")
   if (!fs::dir_exists(data_dir)) {
     fs::dir_create(data_dir)
     message(paste("Created directory:", data_dir))
@@ -69,8 +63,9 @@ process_csv <- function(file_path, overwrite_rda = TRUE, overwrite_csv = TRUE) {
   }
 
   # Export as CSV to inst/extdata
-  fs::dir_create(here::here("inst", "extdata"), recurse = TRUE)
-  csv_export_path <- here::here("inst", "extdata", paste0(file_name, ".csv"))
+  extdata_dir <- file.path(getwd(), "inst", "extdata")
+  fs::dir_create(extdata_dir, recurse = TRUE)
+  csv_export_path <- file.path(extdata_dir, paste0(file_name, ".csv"))
   readr::write_csv(final_data, csv_export_path, append = !overwrite_csv)
   message(paste("Exported CSV:", csv_export_path))
 

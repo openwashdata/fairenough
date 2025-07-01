@@ -2,7 +2,9 @@
 % Please edit documentation in R/build_package.R
 \name{build_package}
 \alias{build_package}
-\title{Build and validate the data package}
+\title{Build and validate the data package
+Stage 3 of the fairenough pipeline. Compiles documentation, runs package
+checks, and builds the final package ready for distribution.}
 \usage{
 build_package(
   run_tests = TRUE,
@@ -27,6 +29,7 @@ build_package(
 List containing build results and package information.
 }
 \description{
+Build and validate the data package
 Stage 3 of the fairenough pipeline. Compiles documentation, runs package
 checks, and builds the final package ready for distribution.
 }

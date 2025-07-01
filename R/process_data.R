@@ -1,17 +1,11 @@
 #' Process raw data files for package creation
-#'
 #' Stage 1 of the fairenough pipeline. Processes all CSV files in the raw data
 #' directory, cleans them, and prepares them for package inclusion.
-#'
 #' @param raw_data_path Character string. Path to directory containing raw CSV files.
 #' @param overwrite_rda Logical. Whether to overwrite existing .rda files. Default TRUE.
 #' @param overwrite_csv Logical. Whether to overwrite existing .csv files. Default TRUE.
 #' @param verbose Logical. Show progress messages. Default TRUE.
-#'
 #' @return List containing processing results and file paths.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' result <- process_data("data-raw/")

@@ -1,18 +1,12 @@
 #' Build and validate the data package
-#'
 #' Stage 3 of the fairenough pipeline. Compiles documentation, runs package
 #' checks, and builds the final package ready for distribution.
-#'
 #' @param run_tests Logical. Whether to run package tests. Default TRUE.
 #' @param run_check Logical. Whether to run R CMD check. Default TRUE.
 #' @param build_vignettes Logical. Whether to build vignettes. Default TRUE.
 #' @param check_cran Logical. Whether to use CRAN-like checks. Default FALSE.
 #' @param verbose Logical. Show progress messages. Default TRUE.
-#'
 #' @return List containing build results and package information.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' result <- build_package()

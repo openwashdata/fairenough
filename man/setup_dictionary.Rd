@@ -30,5 +30,4 @@ setup_dictionary()
 \dontshow{
 setwd(.old_wd)
 }
-
 }

@@ -1,8 +1,6 @@
 #' Generate comprehensive package documentation
-#'
 #' Stage 2 of the fairenough pipeline. Creates data dictionaries, README files,
 #' and package website using AI-powered documentation generation where available.
-#'
 #' @param package_name Character string. Name of the package.
 #' @param title Character string. Package title.
 #' @param description Character string. Package description.
@@ -12,11 +10,7 @@
 #' @param organization Character string. Organization name.
 #' @param api_key Character string. API key for AI documentation generation (optional).
 #' @param verbose Logical. Show progress messages. Default TRUE.
-#'
 #' @return List containing documentation generation results.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' result <- generate_documentation(

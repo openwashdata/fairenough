@@ -1,9 +1,7 @@
 #' Create Zenodo JSON metadata file
-#'
 #' Creates a .zenodo.json file with metadata for Zenodo repository integration.
 #' This file enables automatic DOI assignment and proper citation when archiving
 #' your data package on Zenodo.
-#'
 #' @param creators List of lists. Each creator should have name, affiliation, and orcid fields.
 #' @param license Character string. License identifier (e.g., "CC-BY-4.0").
 #' @param title Character string. Title of the dataset.
@@ -12,11 +10,7 @@
 #' @param communities List of lists. Zenodo communities to submit to.
 #' @param grants List of lists. Grant information for funding acknowledgment.
 #' @param filename Character string. Output filename. Default is ".zenodo.json".
-#'
 #' @return NULL (invisibly). Creates a JSON file as a side effect.
-#'
-#' @export
-#'
 #' @examples
 #' \dontrun{
 #' create_zenodo_json(

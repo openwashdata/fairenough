@@ -2,7 +2,9 @@
 % Please edit documentation in R/create_metadata_structure.R
 \name{create_metadata_structure}
 \alias{create_metadata_structure}
-\title{Create metadata directory structure}
+\title{Create metadata directory structure
+Creates the data/metadata directory with basic metadata CSV files.
+This is a lightweight alternative to dataspice::create_spice().}
 \usage{
 create_metadata_structure()
 }
@@ -10,6 +12,7 @@ create_metadata_structure()
 NULL (invisibly). Creates metadata files as a side effect.
 }
 \description{
+Create metadata directory structure
 Creates the data/metadata directory with basic metadata CSV files.
 This is a lightweight alternative to dataspice::create_spice().
 }

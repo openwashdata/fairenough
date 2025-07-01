@@ -1,10 +1,7 @@
 #' Create metadata directory structure
-#'
 #' Creates the data/metadata directory with basic metadata CSV files.
 #' This is a lightweight alternative to dataspice::create_spice().
-#'
 #' @return NULL (invisibly). Creates metadata files as a side effect.
-#'
 #' @examples
 #' \dontrun{
 #' create_metadata_structure()

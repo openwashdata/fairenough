@@ -1,9 +1,7 @@
 #' Utility functions for fairenough
 
 #' Load object from file
-#' 
 #' @importFrom utils head
-#' 
 #' @param file Path to the R data file
 #' @return The loaded object
 load_object <- function(file) {
@@ -13,7 +11,6 @@ load_object <- function(file) {
 }
 
 #' Check if current directory is a package directory
-#' 
 #' @return Logical indicating if current directory contains DESCRIPTION and NAMESPACE files
 is_pkg <- function(){
   return(file.exists(file.path(getwd(), "DESCRIPTION")) &&
