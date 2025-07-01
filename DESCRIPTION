@@ -25,6 +25,7 @@ URL: https://github.com/openwashdata/fairenough
 BugReports: https://github.com/openwashdata/fairenough/issues
 Imports:
     cffr (>= 1.0.1),
+    cli,
     dataspice,
     desc (>= 1.4.3),
     devtools (>= 2.4.5),
