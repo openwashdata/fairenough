@@ -32,7 +32,7 @@ setup_readme <- function(){
                         data = list(packagename = pkgname,
                                     dataname = dataname),
                         open = rlang::is_interactive(),
-                        package = "washr")
+                        package = "fairenough")
   usethis::ui_todo("Finish the writing of README and run devtools::build_readme() in console.")
 }
 

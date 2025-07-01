@@ -57,7 +57,7 @@ add_metadata <- function(){
   } else {
     # Notify the user to check for the missing file
     cat("\n")
-    cat(".Rbuildignore file does not exist. Please follow all previous steps in the washR workflow and re-run this script.")
+    cat(".Rbuildignore file does not exist. Please follow all previous steps in the fairenough workflow and re-run this script.")
   }
 
 }

@@ -20,7 +20,7 @@ test_that("setup_dictionary throws error when tidy data does not exist", {
   # Mocking the current working directory with DESCRIPTION file but without data-raw directory
   create_local_package()
   rlang::local_interactive(FALSE)
-  washr::setup_rawdata()
+  fairenough::setup_rawdata()
   expect_error(setup_dictionary())
 })
 
@@ -28,7 +28,7 @@ test_that("setup_dictionary throws no error", {
   # Mocking the current working directory with DESCRIPTION file but without data-raw directory
   create_local_package()
   rlang::local_interactive(FALSE)
-  washr::setup_rawdata()
+  fairenough::setup_rawdata()
   mockdata <- data.frame(id = 1:3, name = c("A", "B", "C"))
   usethis::use_data(mockdata)
   expect_no_error(setup_dictionary())
@@ -37,13 +37,13 @@ test_that("setup_dictionary throws no error", {
 test_that("setup_dictionary sets up a dictionary with correct values", {
   create_local_package()
   rlang::local_interactive(FALSE)
-  washr::setup_rawdata()
+  fairenough::setup_rawdata()
   mockdata <- data.frame(id = 1:3, name = c("A", "B", "C"),
                          category = factor("dog", "cat", "dog"),
                          measure = c(3.123, 39.1, 5.3),
                          here = c(TRUE, FALSE, FALSE))
   usethis::use_data(mockdata)
-  washr::setup_dictionary()
+  fairenough::setup_dictionary()
   expect_true(file.exists(file.path("data-raw", "dictionary.csv")))
   dict <- read.csv(file.path("data-raw", "dictionary.csv"))
 

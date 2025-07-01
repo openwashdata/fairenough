@@ -1,5 +1,20 @@
-# R script to process uploaded raw data into a tidy, analysis-ready data frame
-
+#' Process CSV files for data package creation
+#'
+#' Reads a CSV file, cleans column names, handles NA values, converts numeric
+#' columns to integers, and exports the data in both .rda and .csv formats.
+#'
+#' @param file_path Character string. Path to the CSV file to process.
+#' @param overwrite_rda Logical. Whether to overwrite existing .rda file. Default is TRUE.
+#' @param overwrite_csv Logical. Whether to overwrite existing .csv file. Default is TRUE.
+#'
+#' @return The processed data frame (invisibly).
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' process_csv("data-raw/mydata.csv")
+#' }
 process_csv <- function(file_path, overwrite_rda = TRUE, overwrite_csv = TRUE) {
   if (!fs::file_exists(file_path)) {
     message(paste("Error: File not found at", file_path))

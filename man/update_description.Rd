@@ -2,36 +2,43 @@
 % Please edit documentation in R/update_description.R
 \name{update_description}
 \alias{update_description}
-\title{Update the DESCRIPTION file to conform with openwashdata standards}
+\title{Update the DESCRIPTION file to conform with standards}
 \usage{
 update_description(
+  organisation,
+  title,
+  description,
   file = ".",
-  github_user = "https://github.com/openwashdata/"
+  language = "en-GB",
+  lazydata = "true"
 )
 }
 \arguments{
-\item{file}{Character. The file path to the DESCRIPTION file of the R package. Defaults to the current working directory.}
+\item{organisation}{Character string. Organization name.}
 
-\item{github_user}{Character. The URL path to the GitHub user or organization that hosts the current package. Defaults to "https://github.com/openwashdata".}
+\item{title}{Character string. Package title.}
+
+\item{description}{Character string. Package description.}
+
+\item{file}{Character string. Path to package directory. Default is ".".}
+
+\item{language}{Character string. Language code. Default is "en-GB".}
+
+\item{lazydata}{Character string. Whether to use lazy data loading. Default is "true".}
 }
 \value{
-NULL. Update fields directly in DESCRIPTION file.
+NULL (invisibly). Updates DESCRIPTION file as a side effect.
 }
 \description{
-This function updates the DESCRIPTION file of an R package to comply with openwashdata standards.
-It ensures that fields such as \code{License}, \code{Language}, \code{Date}, \code{URL}, and others are correctly specified.
+Updates key fields in the DESCRIPTION file including title, description,
+and other metadata to conform with R package standards.
 }
 \examples{
 \dontrun{
- # Update DESCRIPTION file in the current package
-update_description()
-
- # Update DESCRIPTION file in a specific package
-update_description(file = "path/to/your/package/DESCRIPTION")
-
- # Update DESCRIPTION file with a specific GitHub user
-update_description(github_user = "https://github.com/yourusername")
+update_description(
+  organisation = "My Organization",
+  title = "My Package Title",
+  description = "This package does amazing things."
+)
 }
-
-
 }

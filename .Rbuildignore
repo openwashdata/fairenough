@@ -1,6 +1,8 @@
 ^renv$
 ^renv\.lock$
-^washr\.Rproj$
+^fairenough\.Rproj$
+^CLAUDE\.md$
+^pipeline\.qmd$
 ^\.Rproj\.user$
 ^data-raw$
 ^LICENSE\.md$

@@ -1,8 +1,27 @@
-{
-  r
-}
 #' Update the DESCRIPTION file to conform with standards
-
+#'
+#' Updates key fields in the DESCRIPTION file including title, description,
+#' and other metadata to conform with R package standards.
+#'
+#' @param organisation Character string. Organization name.
+#' @param title Character string. Package title.
+#' @param description Character string. Package description.
+#' @param file Character string. Path to package directory. Default is ".".
+#' @param language Character string. Language code. Default is "en-GB".
+#' @param lazydata Character string. Whether to use lazy data loading. Default is "true".
+#'
+#' @return NULL (invisibly). Updates DESCRIPTION file as a side effect.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' update_description(
+#'   organisation = "My Organization",
+#'   title = "My Package Title",
+#'   description = "This package does amazing things."
+#' )
+#' }
 update_description <- function(
   organisation,
   title,

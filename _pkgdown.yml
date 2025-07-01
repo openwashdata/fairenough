@@ -1,9 +1,9 @@
-url: https://openwashdata-dev.github.io/washr/
+url: https://openwashdata-dev.github.io/fairenough/
 template:
   bootstrap: 5
 
 reference:
-- title: "Using washr"
+- title: "Using fairenough"
 
 - subtitle: "Setting up your data repository"
   contents:

@@ -4,7 +4,7 @@ test_that("File and directory are created", {
 
   rlang::local_interactive(FALSE)
   print(getwd())
-  washr::setup_rawdata()
+  fairenough::setup_rawdata()
   expect_true(file.exists("data-raw/data_processing.R"))
 })
 unlink("data-raw", recursive = TRUE)

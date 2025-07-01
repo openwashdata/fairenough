@@ -26,7 +26,7 @@
 setup_website <- function(has_example=FALSE){
   # Check on README file
   if (is_readme_available()) {
-    # Add configuration file from washr templates
+    # Add configuration file from fairenough templates
     name <- desc::desc_get("Package")[[1]]
     configpath <- "_pkgdown.yml"
     if (file.exists(configpath) && dir.exists("docs/")) {
@@ -39,7 +39,7 @@ setup_website <- function(has_example=FALSE){
                             data = list(name = name),
                             ignore = FALSE,
                             open = FALSE,
-                            package = "washr")
+                            package = "fairenough")
     }
 
     # Create example vignettes
@@ -54,7 +54,7 @@ setup_website <- function(has_example=FALSE){
     writeLines(setdiff(gitignore, "docs"),
                gitignorepath)
   } else {
-    usethis::ui_stop("No README.md exists. Consider to set up and write README first. You may use washr::setup_readme()")
+    usethis::ui_stop("No README.md exists. Consider to set up and write README first. You may use fairenough::setup_readme()")
   }
 }
 

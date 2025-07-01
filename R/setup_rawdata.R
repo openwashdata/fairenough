@@ -26,7 +26,7 @@ setup_rawdata <- function(){
       data = list(name = name),
       ignore = FALSE,
       open = rlang::is_interactive(),
-      package = "washr"
+      package = "fairenough"
     )
   }else{
     usethis::ui_stop("You are not in the correct working directory for developing the data package.

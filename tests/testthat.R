@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(washr)
+library(fairenough)
 
-test_check("washr")
+test_check("fairenough")
