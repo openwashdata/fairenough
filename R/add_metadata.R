@@ -20,7 +20,7 @@ add_metadata <- function(){
   # If metadata folder doesn't exist
   if(!dir.exists("data/metadata")){
     cat("No metadata folder detected")
-    dataspice::create_spice()
+    create_metadata_structure()
     cat("\n")
     cat("Metadata files created in data/metadata")
   }
@@ -28,7 +28,7 @@ add_metadata <- function(){
     cat("Metadata folder already exsits. Overwrite?")
     response <- readline(prompt = "Enter y/n: ")
     if (response == "y"){
-      dataspice::create_spice()
+      create_metadata_structure()
       cat("Metadata files created in data/metadata")
     }
     else {

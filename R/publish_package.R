@@ -96,20 +96,20 @@ publish_package <- function(
       # Check if we're in a git repository
       if (!dir.exists(".git")) {
         if (verbose) cli::cli_alert_info("Initializing git repository...")
-        system("git init")
+        processx::run("git", "init", echo = verbose)
       }
       
       # Add all files
-      system("git add .")
+      processx::run("git", "add", ".", echo = verbose)
       
       # Create commit message
       commit_msg <- sprintf("chore: automated package build for %s", package_name)
       
       # Commit changes
-      commit_result <- system(sprintf('git commit -m "%s"', commit_msg), 
-                             ignore.stdout = !verbose)
+      commit_result <- processx::run("git", c("commit", "-m", commit_msg), 
+                                    echo = verbose, error_on_status = FALSE)
       
-      results$git_committed <- (commit_result == 0)
+      results$git_committed <- (commit_result$status == 0)
       
       if (results$git_committed) {
         if (verbose) cli::cli_alert_success("Changes committed to git")
@@ -136,11 +136,10 @@ publish_package <- function(
       tag_name <- paste0("v", pkg_version)
       
       # Create git tag
-      tag_result <- system(sprintf('git tag -a %s -m "Release %s"', 
-                                  tag_name, pkg_version), 
-                          ignore.stdout = !verbose)
+      tag_result <- processx::run("git", c("tag", "-a", tag_name, "-m", paste("Release", pkg_version)), 
+                                 echo = verbose, error_on_status = FALSE)
       
-      results$release_tagged <- (tag_result == 0)
+      results$release_tagged <- (tag_result$status == 0)
       results$release_tag <- tag_name
       
       if (results$release_tagged) {
@@ -164,14 +163,14 @@ publish_package <- function(
     if (verbose) cli::cli_alert("Pushing to remote repository...")
     tryCatch({
       # Push commits
-      push_result <- system("git push", ignore.stdout = !verbose)
+      push_result <- processx::run("git", "push", echo = verbose, error_on_status = FALSE)
       
       # Push tags if they exist
       if (results$release_tagged == TRUE) {
-        system("git push --tags", ignore.stdout = !verbose)
+        processx::run("git", c("push", "--tags"), echo = verbose, error_on_status = FALSE)
       }
       
-      results$pushed_to_remote <- (push_result == 0)
+      results$pushed_to_remote <- (push_result$status == 0)
       
       if (results$pushed_to_remote) {
         if (verbose) cli::cli_alert_success("Pushed to remote repository")
