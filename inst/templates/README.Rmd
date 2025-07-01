@@ -1,13 +1,11 @@
 ---
 output: github_document
 always_allow_html: true
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: 72
   chunk_output_type: console
 ---
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -20,113 +18,147 @@ knitr::opts_chunk$set(
   fig.retina = 2,
   fig.align = 'center'
 )
+
+library(desc)
+library(dplyr)
+library(readr)
+library(gt)
+library(kableExtra)
+library(fontawesome)
+library(stringr)
+
+# --- Define a list of package names ---
+package_names <- list.files("inst/extdata", pattern = "\\.csv$", full.names = FALSE)
+package_names <- basename(package_names) # Get just the base names
+package_names <- package_names[!package_names %in% "dictionary.csv"]
+package_names <- stringr::str_remove(package_names, "\\.csv$") # Remove .csv extension
+
+
+organisation <- desc::desc_get_field("Organisation") # Assuming you have an 'Organisation' field in DESCRIPTION
+browser_favicon_colour <- "lightblue"
 ```
 
-# {{{packagename}}}
+# `r desc::desc_get_field("Package")`
+
+***`r desc::desc_get_field("Title")`***
 
 <!-- badges: start -->
 
 [![License: CC BY
 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15554776.svg)](https://zenodo.org/doi/10.5281/zenodo.15554776)
+
 <!-- badges: end -->
 
-The goal of {{{packagename}}} is to ...
+-----
 
 ## Installation
 
-You can install the development version of {{{packagename}}} from
-[GitHub](https://github.com/) with:
+You can install the development version of `r desc::desc_get_field("Package")` from GitHub `r fontawesome::fa("github")` with:
 
-``` r
-# install.packages("devtools")
-devtools::install_github("openwashdata/{{{packagename}}}")
+```r
+devtools::install_github("`r organisation`/`r desc::desc_get_field("Package")`", dependencies = TRUE)
 ```
 
-```{r}
-## Run the following code in console if you don't have the packages
-## install.packages(c("dplyr", "knitr", "readr", "stringr", "gt", "kableExtra"))
-library(dplyr)
-library(knitr)
-library(readr)
-library(stringr)
-library(gt)
-library(kableExtra)
-```
+-----
 
-Alternatively, you can download the individual datasets as a CSV or XLSX
-file from the table below.
+### Download as CSV Files
 
-1.  Click Download CSV. A window opens that displays the CSV in
-    your browser.
-2.  Right-click anywhere inside the window and select "Save Page As...".
-3.  Save the file in a folder of your choice.
+If you prefer to work with the data outside of R, you can download individual datasets as CSV files.
+
+1.  **Right-click** on the "Download CSV" link for the dataset you want.
+2.  Select **"Save Link As"** [`r fontawesome::fa("chrome", fill = browser_favicon_colour)`](https://www.google.com/chrome/) [`r fontawesome::fa("edge", fill = browser_favicon_colour)`](https://www.microsoft.com/edge/) [`r fontawesome::fa("firefox", fill = browser_favicon_colour)`](https://www.mozilla.org/firefox/) or **"Download Linked File"** [`r fontawesome::fa("safari", fill = browser_favicon_colour)`](https://www.apple.com/safari/).
+3.  Choose where you'd like to save the file on your computer.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+extdata_path <- paste0(desc::desc_get_field("URL"), "/raw/main/inst/extdata/")
 
-extdata_path <- "https://github.com/openwashdata/{{{packagename}}}/raw/main/inst/extdata/"
-
-read_csv("data-raw/dictionary.csv") |> 
-  distinct(file_name) |> 
-  dplyr::mutate(file_name = str_remove(file_name, ".rda")) |> 
-  dplyr::rename(dataset = file_name) |> 
-  mutate(
-    CSV = paste0("[Download CSV](", extdata_path, dataset, ".csv)"),
-    XLSX = paste0("[Download XLSX](", extdata_path, dataset, ".xlsx)")
-  ) |> 
+readr::read_csv("data-raw/dictionary.csv") |>
+  dplyr::distinct(file_name) |>
+  dplyr::mutate(file_name = stringr::str_remove(file_name, "\\.rda$")) |> # Ensure .rda is removed
+  dplyr::rename(dataset = file_name) |>
+  dplyr::mutate(
+    CSV = paste0("[Download CSV](", extdata_path, dataset, ".csv)")
+  ) |>
   knitr::kable()
 
 ```
 
 ## Data
 
-The package provides access to ...
-
-```{r}
-library({{{packagename}}})
+```r
+library(`r desc::desc_get_field("Package")`)
 ```
 
-### {{{dataname}}}
+```{r, echo=FALSE, results='asis', message=FALSE, warning=FALSE}
+# Iterate through each package name and generate content
+for (pkg_name in package_names) {
+  cat("\n---\n\n") # Separator for each dataset
 
-The dataset `{{{dataname}}}` contains data about ... It has
-`r nrow({{{dataname}}})` observations and `r ncol({{{dataname}}})`
-variables
+  # Conditionally load data if it's not already in the environment
+  # Assuming 'pkg_name' is also the name of the dataset object once loaded
+  if (!exists(pkg_name)) {
+    data(list = pkg_name, package = desc::desc_get_field("Package"))
+  }
 
-```{r}
-{{{dataname}}} |> 
-  head(3) |> 
-  gt::gt() |>
-  gt::as_raw_html()
-```
+  current_data <- get(pkg_name)
 
-For an overview of the variable names, see the following table.
+  cat(paste0("### ", pkg_name, "\n\n"))
+  cat(paste0("The dataset `", pkg_name, "` has `", nrow(current_data), "` observations and `", ncol(current_data), "` variables\n\n"))
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-readr::read_csv("data-raw/dictionary.csv") |>
-  dplyr::filter(file_name == "{{{dataname}}}.rda") |>
-  dplyr::select(variable_name:description) |> 
-  knitr::kable() |> 
-  kableExtra::kable_styling("striped") |> 
-  kableExtra::scroll_box(height = "200px")
-```
+  # Display head of the dataframe using gt
+  cat("```r\n")
+  cat(paste0("get(\"", pkg_name, "\") |> \n"))
+  cat("  head(3) |> \n")
+  cat("  gt::gt() |> \n")
+  cat("  gt::as_raw_html()\n")
+  cat("```\n\n")
 
-## Example
+  # Render the gt table in the Rmd output
+  print(
+    current_data |>
+      head(3) |>
+      dplyr::mutate(
+        across(where(is.character), ~ stringr::str_trunc(., width = 50, ellipsis = "..."))
+      ) |> 
+      gt::gt() |>
+      gt::as_raw_html()
+  )
 
-```{r}
-library({{{packagename}}})
+  cat("\n\n") # Newlines for spacing
 
-# Provide some example code here
+  # Overview of variable names
+  cat("For an overview of the variable names, see the following table.\n\n")
+  
+  # Filter dictionary for the current dataset
+  dictionary_table <- readr::read_csv("data-raw/dictionary.csv") |>
+    dplyr::filter(file_name == paste0(pkg_name, ".rda")) |> # Ensure matching .rda
+    dplyr::select(variable_name:description)
+
+  if (nrow(dictionary_table) > 0) {
+    print(
+      dictionary_table |>
+        knitr::kable(booktabs = TRUE) |>
+        kableExtra::kable_styling(
+          full_width = FALSE,
+          bootstrap_options = c("striped"),
+          position = "center"
+        )
+    )
+  } else {
+    cat("No dictionary entry found for this dataset.\n\n")
+  }
+}
 ```
 
 ## License
 
 Data are available as
-[CC-BY](https://github.com/openwashdata/%7B%7B%7Bpackagename%7D%7D%7D/blob/main/LICENSE.md).
+[CC-BY](https://github.com/`r desc::desc_get_field("Organisation")`/`r desc::desc_get_field("Package")`/blob/main/LICENSE.md).
 
 ## Citation
 
-Please cite this package using:
-
-```{r}
-citation("{{{packagename}}}")
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+citation(desc::desc_get_field("Package"))
 ```
