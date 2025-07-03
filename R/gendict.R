@@ -1,4 +1,4 @@
-gendict <- function(data, chat, context = NULL) {
+gendict <- function(data, chat, context = NULL, sample_size = 5) {
   # Validate inputs
   if (!is.data.frame(data)) {
     cli::cli_abort("data must be a data frame")
@@ -11,9 +11,6 @@ gendict <- function(data, chat, context = NULL) {
   cli::cli_alert_info("Generating dictionary for {ncol(data)} variable{?s}...")
 
   # Prepare data sample for analysis
-  # Define the desired sample size per unique value per column
-  sample_size_per_level <- 3 # You can adjust this value as needed
-
   data_sample_list <- list()
 
   # Iterate through each column to get a comprehensive sample of unique values
@@ -23,14 +20,14 @@ gendict <- function(data, chat, context = NULL) {
     # Get unique values for the current column
     unique_values <- unique(column_data)
 
-    # If the number of unique values is less than or equal to sample_size_per_level,
+    # If the number of unique values is less than or equal to sample_size,
     # just take all unique values.
-    # Otherwise, sample 'sample_size_per_level' unique values.
-    if (length(unique_values) <= sample_size_per_level) {
+    # Otherwise, sample 'sample_size' unique values.
+    if (length(unique_values) <= sample_size) {
       sampled_values <- unique_values
     } else {
-      # Sample 'sample_size_per_level' unique values
-      sampled_values <- sample(unique_values, sample_size_per_level, replace = FALSE)
+      # Sample 'sample_size' unique values
+      sampled_values <- sample(unique_values, sample_size, replace = FALSE)
       # Add "..." to indicate that there are more unique values not shown
       sampled_values <- c(sampled_values, "...")
     }
