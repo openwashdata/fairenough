@@ -76,10 +76,33 @@ gendict <- function(data, chat, context = NULL, sample_size = 5) {
     "5. **Write a concise description:** Combine your inferences into a brief description (1-2 sentences) that explains what the column *represents* in the real world and its inferred data type. Use clear and accessible language, avoiding overly technical jargon unless essential."
   )
 
-  context_part <- if (!is.null(context)) {
-    paste0("Dataset context: ", context, "\n\n")
-  } else {
-    ""
+  context_from_desc <- ""
+  # The 'desc' package is assumed to be a dependency.
+  tryCatch({
+    # Create a desc object for the current project's DESCRIPTION file
+    desc_obj <- desc::desc()
+
+    title_val <- desc::desc_get_field("Title", desc = desc_obj)
+    description_val <- desc::desc_get_field("Description", desc = desc_obj)
+
+    if (!is.null(title_val) && nzchar(title_val)) {
+      context_from_desc <- paste0(context_from_desc, "Package Title: ", title_val, "\n")
+    }
+    if (!is.null(description_val) && nzchar(description_val)) {
+      context_from_desc <- paste0(context_from_desc, "Package Description: ", description_val, "\n")
+    }
+  }, error = function(e) {
+    cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
+  })
+
+  # Prioritize user-provided context if both exist, or combine them
+  context_part <- ""
+  if (!is.null(context) && nzchar(context_from_desc)) {
+    context_part <- paste0("Dataset context: ", context, "\n\n", "Additional package context:\n", context_from_desc, "\n")
+  } else if (!is.null(context)) {
+    context_part <- paste0("Dataset context: ", context, "\n\n")
+  } else if (nzchar(context_from_desc)) {
+    context_part <- paste0("Dataset context:\n", context_from_desc, "\n")
   }
 
   user_message <- glue::glue(
