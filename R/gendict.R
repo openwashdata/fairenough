@@ -1,4 +1,14 @@
-gendict <- function(data, chat, context = NULL, sample_size = 5) {
+# User setup:
+# 
+# library(ellmer)
+# Sys.setenv(OPENAI_API_KEY = "YOUR_BLABLADOR_TOKEN") # or setup .Renviron
+# # cat("OPENAI_API_KEY=YOUR_BLABLADOR_TOKEN\n", file = file.path(Sys.getenv("HOME"), ".Renviron"), append = TRUE)
+# chat <- chat_openai(
+#   base_url = "https://api.helmholtz-blablador.fz-juelich.de/v1",
+#   model = "alias-fast" # Or other Blablador aliases like "alias-code", "alias-large", etc.
+# )
+
+gendict <- function(data, chat, context = NULL, sample_size = 5, echo="none") {
   # Validate inputs
   if (!is.data.frame(data)) {
     cli::cli_abort("data must be a data frame")
@@ -97,24 +107,24 @@ system_message <- paste0(
   "5. **Write a concise description:** Combine your inferences into a brief description (1-2 sentences) that explains what the column *represents* in the real world and its inferred data type. Use clear and accessible language, avoiding overly technical jargon unless essential."
 )
 
-  context_from_desc <- ""
-  # The 'desc' package is assumed to be a dependency.
-  tryCatch({
-    # Create a desc object for the current project's DESCRIPTION file
-    desc_obj <- desc::desc()
+# Corrected gendict function snippet
+context_from_desc <- ""
+# The 'desc' package is assumed to be a dependency.
+tryCatch({
+  # Create a desc object for the current project's DESCRIPTION file
+  desc_obj <- desc::desc()
+  title_val <- desc_obj$get_field("Title")
+  description_val <- desc_obj$get_field("Description")
 
-    title_val <- desc::desc_get_field("Title", desc = desc_obj)
-    description_val <- desc::desc_get_field("Description", desc = desc_obj)
-
-    if (!is.null(title_val) && nzchar(title_val)) {
-      context_from_desc <- paste0(context_from_desc, "Package Title: ", title_val, "\n")
-    }
-    if (!is.null(description_val) && nzchar(description_val)) {
-      context_from_desc <- paste0(context_from_desc, "Package Description: ", description_val, "\n")
-    }
-  }, error = function(e) {
-    cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
-  })
+  if (!is.null(title_val) && nzchar(title_val)) {
+    context_from_desc <- paste0(context_from_desc, "Package Title: ", title_val, "\n")
+  }
+  if (!is.null(description_val) && nzchar(description_val)) {
+    context_from_desc <- paste0(context_from_desc, "Package Description: ", description_val, "\n")
+  }
+}, error = function(e) {
+  cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
+})
 
   # Prioritize user-provided context if both exist, or combine them
   context_part <- ""
@@ -152,7 +162,8 @@ Focus on being descriptive and helpful for someone who will use this data.
       result <- chat$chat_structured(
         # Use the provided chat object
         messages = messages,
-        type = output_type_spec
+        type = output_type_spec,
+        echo = echo
       )
 
       cli::cli_alert_success("Dictionary generated successfully!")
