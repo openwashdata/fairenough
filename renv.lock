@@ -2414,6 +2414,40 @@
       "Maintainer": "Lionel Henry <lionel@rstudio.com>",
       "Repository": "CRAN"
     },
+    "mall": {
+      "Package": "mall",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Title": "Run Multiple Large Language Model Predictions Against a Table, or Vectors",
+      "Authors@R": "c( person(\"Edgar\", \"Ruiz\", , \"edgar@posit.co\", role = c(\"aut\", \"cre\")), person(given = \"Posit Software, PBC\", role = c(\"cph\", \"fnd\")) )",
+      "Description": "Run multiple 'Large Language Model' predictions against a table. The predictions run row-wise over a specified column. It works using a  one-shot prompt, along with the current row's content. The prompt that is used will depend of the type of analysis needed.",
+      "License": "MIT + file LICENSE",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2",
+      "Imports": [
+        "cli",
+        "dplyr",
+        "fs",
+        "glue",
+        "jsonlite",
+        "ollamar",
+        "rlang"
+      ],
+      "Suggests": [
+        "dbplyr",
+        "testthat (>= 3.0.0)"
+      ],
+      "Config/testthat/edition": "3",
+      "URL": "https://mlverse.github.io/mall/",
+      "Depends": [
+        "R (>= 2.10)"
+      ],
+      "LazyData": "true",
+      "NeedsCompilation": "no",
+      "Author": "Edgar Ruiz [aut, cre], Posit Software, PBC [cph, fnd]",
+      "Maintainer": "Edgar Ruiz <edgar@posit.co>",
+      "Repository": "CRAN"
+    },
     "markdown": {
       "Package": "markdown",
       "Version": "2.0",
@@ -2520,6 +2554,38 @@
       "Maintainer": "Joe Cheng <joe@posit.co>",
       "Repository": "CRAN"
     },
+    "ollamar": {
+      "Package": "ollamar",
+      "Version": "1.2.2",
+      "Source": "Repository",
+      "Title": "'Ollama' Language Models",
+      "Authors@R": "c(  person(\"Hause\", \"Lin\", , \"hauselin@gmail.com\", role = c(\"aut\", \"cre\", \"cph\"), comment = c(ORCID = \"0000-0003-4590-7039\")), person(\"Tawab\", \"Safi\", , \"asaficontact@gmail.com\", role = c(\"aut\", \"ctb\"), comment = c(ORCID = \"0009-0000-5659-9890\")) )",
+      "Description": "An interface to easily run local language models with 'Ollama' <https://ollama.com> server and API endpoints (see <https://github.com/ollama/ollama/blob/main/docs/api.md> for details). It lets  you run open-source large language models locally on your machine.",
+      "License": "MIT + file LICENSE",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2",
+      "Suggests": [
+        "knitr",
+        "rmarkdown",
+        "testthat (>= 3.0.0)"
+      ],
+      "Config/testthat/edition": "3",
+      "Imports": [
+        "base64enc",
+        "crayon",
+        "glue",
+        "httr2",
+        "jsonlite",
+        "tibble"
+      ],
+      "BugReports": "https://github.com/hauselin/ollama-r/issues",
+      "URL": "https://hauselin.github.io/ollama-r/, https://github.com/hauselin/ollama-r",
+      "VignetteBuilder": "knitr",
+      "NeedsCompilation": "no",
+      "Author": "Hause Lin [aut, cre, cph] (<https://orcid.org/0000-0003-4590-7039>), Tawab Safi [aut, ctb] (<https://orcid.org/0009-0000-5659-9890>)",
+      "Maintainer": "Hause Lin <hauselin@gmail.com>",
+      "Repository": "CRAN"
+    },
     "openssl": {
       "Package": "openssl",
       "Version": "2.3.3",
@@ -2551,6 +2617,37 @@
       "NeedsCompilation": "yes",
       "Author": "Jeroen Ooms [aut, cre] (ORCID: <https://orcid.org/0000-0002-4035-0289>), Oliver Keyes [ctb]",
       "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
+      "Repository": "CRAN"
+    },
+    "palmerpenguins": {
+      "Package": "palmerpenguins",
+      "Version": "0.1.1",
+      "Source": "Repository",
+      "Title": "Palmer Archipelago (Antarctica) Penguin Data",
+      "Date": "2022-08-12",
+      "Authors@R": "c( person(given = \"Allison\", family = \"Horst\", role = c(\"aut\", \"cre\"), email = \"ahorst@ucsb.edu\", comment = c(ORCID = \"0000-0002-6047-5564\")), person(given = \"Alison\", family = \"Hill\", role = c(\"aut\"), email = \"apresstats@gmail.com\", comment = c(ORCID = \"0000-0002-8082-1890\")), person(given = \"Kristen\", family = \"Gorman\", role = c(\"aut\"), email = \"kbgorman@alaska.edu\", comment = c(ORCID = \"0000-0002-0258-9264\")) )",
+      "Description": "Size measurements, clutch observations, and blood isotope ratios for adult foraging Adélie, Chinstrap, and Gentoo penguins observed on islands in the Palmer Archipelago near Palmer Station, Antarctica. Data were collected and made available by Dr. Kristen Gorman and the Palmer Station Long Term Ecological Research (LTER) Program.",
+      "License": "CC0",
+      "Encoding": "UTF-8",
+      "LazyData": "true",
+      "RoxygenNote": "7.2.1.9000",
+      "Depends": [
+        "R (>= 2.10)"
+      ],
+      "Suggests": [
+        "knitr",
+        "rmarkdown",
+        "tibble",
+        "ggplot2",
+        "dplyr",
+        "tidyr",
+        "recipes"
+      ],
+      "URL": "https://allisonhorst.github.io/palmerpenguins/, https://github.com/allisonhorst/palmerpenguins",
+      "BugReports": "https://github.com/allisonhorst/palmerpenguins/issues",
+      "NeedsCompilation": "no",
+      "Author": "Allison Horst [aut, cre] (<https://orcid.org/0000-0002-6047-5564>), Alison Hill [aut] (<https://orcid.org/0000-0002-8082-1890>), Kristen Gorman [aut] (<https://orcid.org/0000-0002-0258-9264>)",
+      "Maintainer": "Allison Horst <ahorst@ucsb.edu>",
       "Repository": "CRAN"
     },
     "pillar": {

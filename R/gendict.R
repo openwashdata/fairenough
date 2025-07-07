@@ -1,14 +1,13 @@
-# User setup:
-# 
-# library(ellmer)
+# User setup
+# library(mall)
 # Sys.setenv(OPENAI_API_KEY = "YOUR_BLABLADOR_TOKEN") # or setup .Renviron
-# # cat("OPENAI_API_KEY=YOUR_BLABLADOR_TOKEN\n", file = file.path(Sys.getenv("HOME"), ".Renviron"), append = TRUE)
 # chat <- chat_openai(
 #   base_url = "https://api.helmholtz-blablador.fz-juelich.de/v1",
 #   model = "alias-fast" # Or other Blablador aliases like "alias-code", "alias-large", etc.
 # )
+# llm_use(chat)
 
-gendict <- function(data, chat, context = NULL, sample_size = 5) {
+gendict <- function(data, context = NULL, sample_size = 5) {
   # Validate inputs
   if (!is.data.frame(data)) {
     cli::cli_abort("data must be a data frame")
@@ -50,81 +49,52 @@ gendict <- function(data, chat, context = NULL, sample_size = 5) {
   # This avoids creating an intermediate data frame with potentially unequal column lengths.
   data_json <- jsonlite::toJSON(data_sample_list, auto_unbox = TRUE, pretty = TRUE)
 
-# Define the allowed data types as a separate variable
-allowed_data_types <- c(
-  "logical",
-  "integer",
-  "numeric",
-  "text",
-  "datetime",
-  "categorical",
-  "identifier",
-  "spatial",
-  "binary",
-  "json",
-  "array"
-)
-
-# Define the expected output structure with comprehensive data types
-output_type_spec <- ellmer::type_array(
-  items = ellmer::type_object(
-    variable = ellmer::type_string("The variable/column name"),
-    type = ellmer::type_enum(
-      "The data type of the variable.
-      - logical: binary outcome (e.g., 'yes/no', 'true/false', 'success/failure').
-      - integer: whole numbers without fractional components (e.g., counts, numeric IDs).
-      - numeric: numbers that can have fractional components (e.g., temperature, price, income, includes floats, reals, and decimals).
-      - text: sequences of characters, including short strings, long text, and general identifiers like UUIDs.
-      - datetime: date and/or time information, duration (e.g., 2023-01-15 14:30:00 UTC).
-      - categorical: data that falls into one of a limited set of distinct named or placed categories (e.g., 'Rome', 'Amsterdam', blood type, political party).
-      - identifier: unique labels used to identify records/entities (e.g., Customer ID, Product SKU).
-      - spatial: geographic locations or shapes (e.g., latitude/longitude, points, polygons).
-      - binary: raw binary data (e.g., images, audio, video files).
-      - json: semi-structured data, often represented as JSON or XML (e.g., user preferences, nested attributes).
-      - array: an ordered collection of items (e.g., list of tags, multiple phone numbers).",
-      values = allowed_data_types
-    ),
-    description = ellmer::type_string(
-      "A clear, concise description of what this variable represents"
-    ),
-    unit = ellmer::type_string(
-      "The unit of measurement (if applicable, otherwise empty string)"
-    )
+  # Define the allowed data types as a separate variable
+  allowed_data_types <- c(
+    "logical",
+    "integer",
+    "numeric",
+    "text",
+    "datetime",
+    "categorical",
+    "identifier",
+    "spatial",
+    "binary",
+    "json",
+    "array"
   )
-)
 
-# Create the prompt
-system_message <- paste0(
-  "You are a data science expert specializing in creating clear, comprehensive data dictionaries. ",
-  "Your task is to analyze a dataset sample and generate descriptive metadata for each variable/column. ",
-  "Follow these steps for each variable:\n\n",
-  "1. **Analyze the column name:** What does the name itself suggest about the data it might contain?\n",
-  "2. **Examine the provided example values:** Look for patterns, units, categories, or ranges that can help you understand the nature of the data. Pay attention to the presence of 'null' or 'None' values, indicating missing data.\n",
-  "3. **Infer the likely meaning and context:** Based on the column name and example values, what real-world concept or measurement does this column likely represent? Try to infer the broader domain or field of study this data might belong to (e.g., environmental science, social surveys, medical records).\n",
-  "4. **Determine the data type:** Clearly identify the likely data type of the column. Use precise terms like '",
-  paste(allowed_data_types, collapse = "', '"),
-  "' as per the schema.\n",
-  "5. **Write a concise description:** Combine your inferences into a brief description (1-2 sentences) that explains what the column *represents* in the real world and its inferred data type. Use clear and accessible language, avoiding overly technical jargon unless essential."
-)
+  # Define the system message
+  system_message <- paste0(
+    "You are a data science expert specializing in creating clear, comprehensive data dictionaries. ",
+    "Your task is to analyze a dataset sample and generate descriptive metadata for each variable/column. ",
+    "Follow these steps for each variable:\n\n",
+    "1. **Analyze the column name:** What does the name itself suggest about the data it might contain?\n",
+    "2. **Examine the provided example values:** Look for patterns, units, categories, or ranges that can help you understand the nature of the data. Pay attention to the presence of 'null' or 'None' values, indicating missing data.\n",
+    "3. **Infer the likely meaning and context:** Based on the column name and example values, what real-world concept or measurement does this column likely represent? Try to infer the broader domain or field of study this data might belong to (e.g., environmental science, social surveys, medical records).\n",
+    "4. **Determine the data type:** Clearly identify the likely data type of the column. Use precise terms like '",
+    paste(allowed_data_types, collapse = "', '"),
+    "' as per the schema.\n",
+    "5. **Write a concise description:** Combine your inferences into a brief description (1-2 sentences) that explains what the column *represents* in the real world and its inferred data type. Use clear and accessible language, avoiding overly technical jargon unless essential.\n\n",
+  )
 
-# Corrected gendict function snippet
-context_from_desc <- ""
-# The 'desc' package is assumed to be a dependency.
-tryCatch({
-  # Create a desc object for the current project's DESCRIPTION file
-  desc_obj <- desc::desc()
-  title_val <- desc_obj$get_field("Title")
-  description_val <- desc_obj$get_field("Description")
+  context_from_desc <- ""
+  # The 'desc' package is assumed to be a dependency.
+  tryCatch({
+    # Create a desc object for the current project's DESCRIPTION file
+    desc_obj <- desc::desc()
+    title_val <- desc_obj$get_field("Title")
+    description_val <- desc_obj$get_field("Description")
 
-  if (!is.null(title_val) && nzchar(title_val)) {
-    context_from_desc <- paste0(context_from_desc, "Package Title: ", title_val, "\n")
-  }
-  if (!is.null(description_val) && nzchar(description_val)) {
-    context_from_desc <- paste0(context_from_desc, "Package Description: ", description_val, "\n")
-  }
-}, error = function(e) {
-  cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
-})
+    if (!is.null(title_val) && nzchar(title_val)) {
+      context_from_desc <- paste0(context_from_desc, "Package Title: ", title_val, "\n")
+    }
+    if (!is.null(description_val) && nzchar(description_val)) {
+      context_from_desc <- paste0(context_from_desc, "Package Description: ", description_val, "\n")
+    }
+  }, error = function(e) {
+    cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
+  })
 
   # Prioritize user-provided context if both exist, or combine them
   context_part <- ""
@@ -143,27 +113,48 @@ tryCatch({
 {data_json}
 
 For each variable/column, provide:
-1. A clear, descriptive explanation of what the variable represents
-2. The appropriate data type
-3. Units of measurement (if applicable)
+1. [description] A clear, descriptive explanation of what the variable represents
+2. [data type] The appropriate data type
+3. [unit] Units of measurement (if applicable)
 
-Focus on being descriptive and helpful for someone who will use this data.
+Focus on being descriptive and helpful for someone who will use this data and format it as:
+
+[data type], [description], [unit].
 "
   )
 
-  # Combine system and user messages into a single prompt
+  # Combine system and user messages into a single prompt for mall::llm_custom
+  # mall::llm_custom takes a single prompt, so we embed the system message within it.
   full_prompt <- paste0(system_message, "\n\n", user_message)
 
-  # Use the pre-existing chat object
   tryCatch(
     {
-      result <- chat$chat_structured(
-        full_prompt,
-        type = output_type_spec
+      # mall::llm_custom expects a dataframe and a column to apply the prompt to.
+      # Since we're generating a dictionary for the entire dataframe, we can
+      # create a dummy dataframe with one row and apply the prompt to a dummy column.
+      # The actual data sample is embedded in the prompt.
+      dummy_data <- data.frame(dummy_col = "trigger_llm", stringsAsFactors = FALSE)
+
+      # Use llm_custom and specify that the output should be JSON.
+      # We instruct the LLM within the prompt to produce JSON.
+      # mall will return the raw text output, which we then need to parse.
+      result_raw <- mall::llm_custom(
+        .data = dummy_data,
+        col = dummy_col,
+        prompt = full_prompt
       )
 
+      # Extract the prediction and parse it as JSON
+      # The result will be in the '.pred' column by default.
+      json_string <- result_raw$.pred[1]
+      result_parsed <- jsonlite::fromJSON(json_string, simplifyVector = TRUE)
+
+      # Convert the list of lists/vectors (from JSON parsing) into a tibble
+      # Ensure column order and types match the original intent
+      final_result <- tibble::as_tibble(result_parsed)
+
       cli::cli_alert_success("Dictionary generated successfully!")
-      return(result)
+      return(final_result)
     },
     error = function(e) {
       cli::cli_alert_danger("Failed to generate dictionary: {e$message}")
