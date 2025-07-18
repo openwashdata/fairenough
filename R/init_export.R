@@ -13,17 +13,17 @@ init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
   # Read data based on file extension
   if (tolower(file_extension) == "csv") {
     raw_data <- readr::read_csv(file, show_col_types = FALSE)
-  } else if (tolower(file_extension) == "xlsx") {
+  } else if (tolower(file_extension) %in% c("xlsx", "xls")) { # Added "xls" here
     # Ensure readxl is installed and loaded or use readxl::read_excel
     if (!requireNamespace("readxl", quietly = TRUE)) {
-      message("Error: 'readxl' package is required for .xlsx files but not installed.")
+      message("Error: 'readxl' package is required for .xlsx and .xls files but not installed.")
       message("Please install it with: install.packages('readxl')")
       return(invisible(NULL))
     }
     raw_data <- readxl::read_excel(file)
   } else {
     message(paste("Error: Unsupported file type for processing:", file_extension))
-    message("Only .csv and .xlsx files are currently supported.")
+    message("Only .csv, .xls, and .xlsx files are currently supported.") # Updated message
     return(invisible(NULL))
   }
 
