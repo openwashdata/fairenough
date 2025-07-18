@@ -91,5 +91,4 @@ init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
   message(paste("Exported CSV:", csv_export_path))
 
   message(paste("Processing of", file_name, "complete."))
-  return(invisible(final_data))
 }
