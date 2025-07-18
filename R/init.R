@@ -1,7 +1,7 @@
 init <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TRUE, auto_clean = TRUE) {
 
   # Initialise raw data directory
-  init_data_raw()
+  init_data_raw(data_raw_dir)
 
   # Check if the data_raw directory exists
   if (!fs::dir_exists(data_raw_dir)) {

@@ -1,6 +1,4 @@
-init_data_raw <- function(gitignore=TRUE) {
-  data_raw_dir <- "data_raw"
-
+init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE) {
   if (dir.create(data_raw_dir, showWarnings = FALSE)) {
     message(paste0("Directory '", data_raw_dir, "' created successfully."))
   } else {
@@ -13,8 +11,7 @@ init_data_raw <- function(gitignore=TRUE) {
 
   all_files <- list.files(path = ".", full.names = TRUE)
 
-  target_extensions <- c(".csv", ".xlsx")
-
+  target_extensions <- c(".csv", ".xls", ".xlsx")
   files_moved_count <- 0
 
   for (ext in target_extensions) {
@@ -40,7 +37,7 @@ init_data_raw <- function(gitignore=TRUE) {
   }
 
   if (files_moved_count == 0) {
-    message("No .csv or .xlsx files were moved.")
+    message("No ", target_extensions, " files were moved.")
   } else {
     message(paste0("Operation complete. Total files moved: ", files_moved_count, "."))
   }
