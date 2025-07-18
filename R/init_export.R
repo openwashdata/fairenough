@@ -1,4 +1,4 @@
-init_process <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
+init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
   if (!fs::file_exists(file)) {
     message(paste("Error: File not found at", file))
     return(invisible(NULL))
