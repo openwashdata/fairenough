@@ -1,15 +1,32 @@
-init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE) {
-  if (dir.create(data_raw_dir, showWarnings = FALSE)) {
-    message(paste0("Directory '", data_raw_dir, "' created successfully."))
+init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE, base_path = NULL) {
+  # Smart default: try here::here(), fall back to current directory
+  if (is.null(base_path)) {
+    base_path <- tryCatch(
+      here::here(),
+      error = function(e) {
+        message("No project root found, using current directory")
+        "."
+      }
+    )
+  }
+  
+  # Normalize the base path
+  base_path <- normalizePath(base_path, mustWork = TRUE)
+  
+  # Create full path for data_raw directory
+  data_raw_path <- file.path(base_path, data_raw_dir)
+  
+  if (dir.create(data_raw_path, showWarnings = FALSE)) {
+    message(paste0("Directory '", data_raw_path, "' created successfully."))
   } else {
-    message(paste0("Directory '", data_raw_dir, "' already exists."))
+    message(paste0("Directory '", data_raw_path, "' already exists."))
   }
 
   if (gitignore == TRUE) {
-    gitignore_dir(data_raw_dir)
+    gitignore_dir(data_raw_dir, base_path)
   }
 
-  all_files <- list.files(path = ".", full.names = TRUE)
+  all_files <- list.files(path = base_path, full.names = TRUE)
 
   target_extensions <- c(".csv", ".xls", ".xlsx")
   files_moved_count <- 0
@@ -22,13 +39,13 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE) {
       for (file_path in files_to_move) {
         file_name <- basename(file_path)
 
-        new_file_path <- file.path(data_raw_dir, file_name)
+        new_file_path <- file.path(data_raw_path, file_name)
 
         if (file.rename(file_path, new_file_path)) {
-          message(paste0("Moved '", file_name, "' to '", data_raw_dir, "'"))
+          message(paste0("Moved '", file_name, "' to '", data_raw_path, "'"))
           files_moved_count <- files_moved_count + 1
         } else {
-          warning(paste0("Failed to move '", file_name, "'. It might already exist in '", data_raw_dir, "' or there was a permission issue."))
+          warning(paste0("Failed to move '", file_name, "'. It might already exist in '", data_raw_path, "' or there was a permission issue."))
         }
       }
     } else {
@@ -45,8 +62,18 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE) {
   invisible(NULL)
 }
 
-gitignore_dir <- function(dir_to_ignore) {
-  gitignore_path <- ".gitignore"
+gitignore_dir <- function(dir_to_ignore, base_path = NULL) {
+  # Smart default: try here::here(), fall back to current directory
+  if (is.null(base_path)) {
+    base_path <- tryCatch(
+      here::here(),
+      error = function(e) {
+        "."
+      }
+    )
+  }
+  
+  gitignore_path <- file.path(base_path, ".gitignore")
   gitignore_entry <- paste0(dir_to_ignore, "/")
 
   if (file.exists(gitignore_path)) {

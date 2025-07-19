@@ -1,4 +1,18 @@
-init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
+init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
+  # Smart default: try here::here(), fall back to current directory
+  if (is.null(base_path)) {
+    base_path <- tryCatch(
+      here::here(),
+      error = function(e) {
+        message("No project root found, using current directory")
+        "."
+      }
+    )
+  }
+  
+  # Normalize the base path
+  base_path <- normalizePath(base_path, mustWork = TRUE)
+  
   if (!fs::file_exists(file)) {
     message(paste("Error: File not found at", file))
     return(invisible(NULL))
@@ -64,7 +78,7 @@ init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
   assign(data_object_name, final_data, envir = .GlobalEnv)
 
   # Ensure the 'data' directory exists for saving R data
-  data_dir <- file.path(getwd(), "data")
+  data_dir <- file.path(base_path, "data")
   if (!fs::dir_exists(data_dir)) {
     fs::dir_create(data_dir)
     message(paste("Created directory:", data_dir))
@@ -84,7 +98,7 @@ init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE) {
   }
 
   # Export as CSV to inst/extdata
-  extdata_dir <- file.path(getwd(), "inst", "extdata")
+  extdata_dir <- file.path(base_path, "inst", "extdata")
   fs::dir_create(extdata_dir, recurse = TRUE)
   csv_export_path <- file.path(extdata_dir, paste0(file_name, ".csv"))
   readr::write_csv(final_data, csv_export_path)
