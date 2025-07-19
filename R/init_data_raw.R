@@ -5,7 +5,7 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE) {
     message(paste0("Directory '", data_raw_dir, "' already exists."))
   }
 
-  if (gitignore = TRUE) {
+  if (gitignore == TRUE) {
     gitignore_dir(data_raw_dir)
   }
 
@@ -45,9 +45,9 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE) {
   invisible(NULL)
 }
 
-gitignore_dir <- function(_dir) {
+gitignore_dir <- function(dir_to_ignore) {
   gitignore_path <- ".gitignore"
-  gitignore_entry <- paste0(_dir, "/")
+  gitignore_entry <- paste0(dir_to_ignore, "/")
 
   if (file.exists(gitignore_path)) {
     gitignore_content <- readLines(gitignore_path)
