@@ -35,7 +35,7 @@ init <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TR
     # Filter files by target extensions
     for (ext in target_extensions) {
       files_to_process <- c(files_to_process,
-                            all_files_in_data_raw[grepl(paste0("\\.", ext, "$"), all_files_in_data_raw, ignore.case = TRUE)])
+                            all_files_in_data_raw[grepl(paste0("\\", ext, "$"), all_files_in_data_raw, ignore.case = TRUE)])
     }
 
     if (length(files_to_process) == 0) {
