@@ -6,3 +6,4 @@
 .quarto
 inst/doc
 CLAUDE.md
+tests/penguins
