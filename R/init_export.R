@@ -52,13 +52,13 @@ init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE, base_path
       janitor::clean_names()
 
     final_data <- cleaned_data |>
-      dplyr::mutate(across(
-        where(is.character),
+      dplyr::mutate(dplyr::across(
+        dplyr::where(is.character),
         ~ ifelse(trimws(.) %in% c("null", "NA", ""), NA, .)
       ))
 
     final_data <- final_data |>
-      dplyr::mutate(across(where(is.numeric), ~ {
+      dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ {
         if (all(is.na(.) | . == as.integer(.), na.rm = TRUE)) {
           as.integer(.)
         } else {
