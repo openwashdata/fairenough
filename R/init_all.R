@@ -1,4 +1,4 @@
-init <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
+init_all <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
   # Smart default: try here::here(), fall back to current directory
   if (is.null(base_path)) {
     base_path <- tryCatch(
@@ -58,6 +58,10 @@ init <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TR
       }
 
       message("All raw data files have been processed.")
+      
+      # Create dictionary for the processed data
+      message("\nGenerating data dictionary...")
+      init_dictionary(base_path = base_path, overwrite = TRUE)
     }
   }
 }
