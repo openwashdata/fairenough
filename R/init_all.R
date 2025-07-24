@@ -1,3 +1,12 @@
+#' Initialize all data processing steps
+#' 
+#' @param data_raw_dir Directory name for raw data files
+#' @param gitignore Whether to add data_raw to .gitignore
+#' @param overwrite_rda Whether to overwrite existing .rda files
+#' @param auto_clean Whether to auto-clean data during export
+#' @param base_path Base path for the project (defaults to here::here())
+#' @return Invisibly returns the base_path
+#' @export
 init_all <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)

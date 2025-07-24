@@ -160,6 +160,16 @@
   return(response_lines)
 } 
 
+#' Generate data dictionary using LLM
+#' 
+#' @param data Data frame or path to CSV/Excel file
+#' @param chat Chat object from ellmer package
+#' @param context Optional context for generation
+#' @param sample_size Number of sample values to show
+#' @param method Processing method (sequential, sequential_wait, parallel, batch)
+#' @param test_llm_connection Whether to test LLM connection first
+#' @return Tibble with variable names and descriptions
+#' @export
 gendict <- function(data, chat, context = NULL, sample_size = 5, method = "sequential_wait", test_llm_connection = FALSE) {
   # Validate method parameter
   method <- match.arg(method, c("sequential", "sequential_wait", "parallel", "batch"))

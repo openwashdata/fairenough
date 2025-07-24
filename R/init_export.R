@@ -1,3 +1,10 @@
+#' Export data file to package data
+#' 
+#' @param file Path to the data file
+#' @param overwrite_rda Whether to overwrite existing .rda files
+#' @param auto_clean Whether to auto-clean data
+#' @param base_path Base path for the project
+#' @export
 init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)

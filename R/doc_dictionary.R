@@ -1,3 +1,11 @@
+#' Document data dictionary
+#' 
+#' @param base_path Base path for the project
+#' @param overwrite Whether to overwrite existing dictionary
+#' @param chat Optional chat object for LLM-based description generation
+#' @param context Optional context for LLM generation
+#' @param ... Additional arguments passed to gendict
+#' @export
 doc_dictionary <- function(base_path = NULL, overwrite = FALSE, chat = NULL, context = NULL, ...) {
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)

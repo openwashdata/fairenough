@@ -1,3 +1,9 @@
+#' Initialize data_raw directory
+#' 
+#' @param data_raw_dir Name of the raw data directory
+#' @param gitignore Whether to add directory to .gitignore
+#' @param base_path Base path for the project
+#' @export
 init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE, base_path = NULL) {
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)
