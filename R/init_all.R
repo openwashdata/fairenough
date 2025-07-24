@@ -1,17 +1,6 @@
 init_all <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
-  # Smart default: try here::here(), fall back to current directory
-  if (is.null(base_path)) {
-    base_path <- tryCatch(
-      here::here(),
-      error = function(e) {
-        message("No project root found, using current directory")
-        "."
-      }
-    )
-  }
-  
-  # Normalize the base path
-  base_path <- normalizePath(base_path, mustWork = TRUE)
+  # Use the utility function for consistent base_path handling
+  base_path <- get_base_path(base_path)
 
   # Initialise raw data directory
   init_data_raw(data_raw_dir, gitignore, base_path)
@@ -58,10 +47,11 @@ init_all <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda 
       }
 
       message("All raw data files have been processed.")
-      
-      # Create dictionary for the processed data
-      message("\nGenerating data dictionary...")
-      init_dictionary(base_path = base_path, overwrite = TRUE)
+      message("\nTo create a data dictionary, use doc_dictionary() after init_all.")
+      message("For automatic description generation, pass an ellmer::Chat object to doc_dictionary().")
     }
   }
+  
+  # Return the base_path so users can reuse it
+  invisible(base_path)
 }

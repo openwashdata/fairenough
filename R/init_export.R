@@ -1,17 +1,6 @@
 init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
-  # Smart default: try here::here(), fall back to current directory
-  if (is.null(base_path)) {
-    base_path <- tryCatch(
-      here::here(),
-      error = function(e) {
-        message("No project root found, using current directory")
-        "."
-      }
-    )
-  }
-  
-  # Normalize the base path
-  base_path <- normalizePath(base_path, mustWork = TRUE)
+  # Use the utility function for consistent base_path handling
+  base_path <- get_base_path(base_path)
   
   if (!fs::file_exists(file)) {
     message(paste("Error: File not found at", file))

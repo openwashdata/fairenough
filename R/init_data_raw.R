@@ -1,17 +1,6 @@
 init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE, base_path = NULL) {
-  # Smart default: try here::here(), fall back to current directory
-  if (is.null(base_path)) {
-    base_path <- tryCatch(
-      here::here(),
-      error = function(e) {
-        message("No project root found, using current directory")
-        "."
-      }
-    )
-  }
-  
-  # Normalize the base path
-  base_path <- normalizePath(base_path, mustWork = TRUE)
+  # Use the utility function for consistent base_path handling
+  base_path <- get_base_path(base_path)
   
   # Create full path for data_raw directory
   data_raw_path <- file.path(base_path, data_raw_dir)
@@ -63,15 +52,8 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE, base_path =
 }
 
 gitignore_dir <- function(dir_to_ignore, base_path = NULL) {
-  # Smart default: try here::here(), fall back to current directory
-  if (is.null(base_path)) {
-    base_path <- tryCatch(
-      here::here(),
-      error = function(e) {
-        "."
-      }
-    )
-  }
+  # Use the utility function for consistent base_path handling
+  base_path <- get_base_path(base_path)
   
   gitignore_path <- file.path(base_path, ".gitignore")
   gitignore_entry <- paste0(dir_to_ignore, "/")
