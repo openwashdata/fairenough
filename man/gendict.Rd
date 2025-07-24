@@ -2,36 +2,33 @@
 % Please edit documentation in R/gendict.R
 \name{gendict}
 \alias{gendict}
-\title{Generate data dictionary using AI}
+\title{Generate data dictionary using LLM}
 \usage{
-gendict(data, api_key = NULL, model = "gpt-4o-mini", context = NULL)
+gendict(
+  data,
+  chat,
+  context = NULL,
+  sample_size = 5,
+  method = "sequential_wait",
+  test_llm_connection = FALSE
+)
 }
 \arguments{
-\item{data}{Data frame. The dataset to generate dictionary for.}
+\item{data}{Data frame or path to CSV/Excel file}
 
-\item{api_key}{Character string. OpenAI API key. If NULL, will look for OPENAI_API_KEY env var.}
+\item{chat}{Chat object from ellmer package}
 
-\item{model}{Character string. AI model to use. Default is "gpt-4o-mini".}
+\item{context}{Optional context for generation}
 
-\item{context}{Character string. Additional context about the dataset.}
+\item{sample_size}{Number of sample values to show}
+
+\item{method}{Processing method (sequential, sequential_wait, parallel, batch)}
+
+\item{test_llm_connection}{Whether to test LLM connection first}
 }
 \value{
-Data frame with columns: variable, description, type, example
+Tibble with variable names and descriptions
 }
 \description{
-Uses AI (via ellmer package) to automatically generate comprehensive
-data dictionaries for datasets. This function analyzes column names
-and sample data to create meaningful descriptions.
-}
-\examples{
-\dontrun{
-# Simple example
-df <- data.frame(
-  age = c(25, 30, 35),
-  income = c(50000, 60000, 70000),
-  city = c("New York", "Boston", "Chicago")
-)
-
-dictionary <- gendict(df, api_key = "your-api-key")
-}
+Generate data dictionary using LLM
 }
