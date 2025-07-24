@@ -173,34 +173,9 @@
 gendict <- function(data, chat, context = NULL, sample_size = 5, method = "sequential_wait", test_llm_connection = FALSE) {
   # Validate method parameter
   method <- match.arg(method, c("sequential", "sequential_wait", "parallel", "batch"))
-  # Handle file path input
-  if (is.character(data) && length(data) == 1) {
-    if (!file.exists(data)) {
-      cli::cli_abort("File not found: {data}")
-    }
-    
-    # Determine file type and read accordingly
-    file_ext <- tolower(tools::file_ext(data))
-    
-    if (file_ext == "csv") {
-      cli::cli_alert_info("Reading CSV file: {data}")
-      data <- readr::read_csv(data, show_col_types = FALSE)
-    } else if (file_ext %in% c("xlsx", "xls")) {
-      cli::cli_alert_info("Reading Excel file: {data}")
-      data <- readxl::read_excel(data)
-    } else {
-      cli::cli_abort("Unsupported file type: {file_ext}. Supported types: csv, xlsx, xls")
-    }
-  }
   
-  # Validate inputs
-  if (!is.data.frame(data)) {
-    cli::cli_abort("data must be a data frame or a path to a CSV/Excel file")
-  }
-
-  if (nrow(data) == 0) {
-    cli::cli_abort("data must have at least one row")
-  }
+  # Use utility function to read and validate data
+  data <- read_data(data)
 
   cli::cli_alert_info("Generating dictionary for {ncol(data)} variable{?s}...")
   

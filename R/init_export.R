@@ -1,44 +1,35 @@
 #' Export data file to package data
 #' 
-#' @param file Path to the data file
+#' @param data_file Path to a CSV/Excel file
 #' @param overwrite_rda Whether to overwrite existing .rda files
 #' @param auto_clean Whether to auto-clean data
 #' @param base_path Base path for the project
 #' @export
-init_export <- function(file, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
+init_export <- function(data_file, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL) {
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)
   
-  if (!fs::file_exists(file)) {
-    message(paste("Error: File not found at", file))
-    return(invisible(NULL))
+  # Validate input is a file path
+  if (is.data.frame(data_file)) {
+    cli::cli_abort("init_export requires a file path, not a data frame. Use a CSV or Excel file path.")
   }
-
-  file_name <- tools::file_path_sans_ext(basename(file))
-  file_extension <- tools::file_ext(file)
-  message(paste("Reading and processing:", file_name, " (.", file_extension, ")"))
-
-  raw_data <- NULL
-
-  # Read data based on file extension
-  if (tolower(file_extension) == "csv") {
-    raw_data <- readr::read_csv(file, show_col_types = FALSE)
-  } else if (tolower(file_extension) %in% c("xlsx", "xls")) { # Added "xls" here
-    # Ensure readxl is installed and loaded or use readxl::read_excel
-    if (!requireNamespace("readxl", quietly = TRUE)) {
-      message("Error: 'readxl' package is required for .xlsx and .xls files but not installed.")
-      message("Please install it with: install.packages('readxl')")
-      return(invisible(NULL))
-    }
-    raw_data <- readxl::read_excel(file)
-  } else {
-    message(paste("Error: Unsupported file type for processing:", file_extension))
-    message("Only .csv, .xls, and .xlsx files are currently supported.") # Updated message
-    return(invisible(NULL))
+  
+  if (!is.character(data_file) || length(data_file) != 1) {
+    cli::cli_abort("data_file must be a single file path")
   }
-
+  
+  file_name <- tools::file_path_sans_ext(basename(data_file))
+  message(paste("Processing:", basename(data_file)))
+  
+  # Read data using the utility function
+  raw_data <- tryCatch({
+    read_data(data_file, show_messages = TRUE)
+  }, error = function(e) {
+    message(paste("Error:", e$message))
+    return(NULL)
+  })
+  
   if (is.null(raw_data)) {
-    message(paste("Error: Could not read data from", file))
     return(invisible(NULL))
   }
 

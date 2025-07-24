@@ -48,7 +48,7 @@ init_all <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda 
       for (file_path in files_to_process) {
         # Call init_export for each file
         init_export(
-          file = file_path,
+          data_file = file_path,
           overwrite_rda = overwrite_rda,
           auto_clean = auto_clean,
           base_path = base_path
