@@ -160,25 +160,37 @@
   return(response_lines)
 } 
 
-# Helper function: Generate sample values string for a column
-.generate_sample_string <- function(column_data, sample_size = 5) {
-  unique_values <- unique(column_data)
-  
-  # Sample values
-  if (length(unique_values) <= sample_size) {
-    sampled_values <- unique_values
+# Helper function: Generate sample values or range for a column
+.generate_samples <- function(column_data, sample_size = 5) {
+  # Check if continuous
+  if (.is_continuous(column_data)) {
+    # For continuous variables, return min and max as a list
+    non_na_data <- na.omit(column_data)
+    if (length(non_na_data) == 0) {
+      return(list(type = "continuous", min = NA, max = NA))
+    }
+    return(list(
+      type = "continuous",
+      min = min(non_na_data),
+      max = max(non_na_data)
+    ))
   } else {
-    sampled_values <- sample(unique_values, sample_size, replace = FALSE)
-    sampled_values <- c(sampled_values, "...")
+    # For categorical/discrete variables, return sampled values
+    unique_values <- unique(column_data)
+    
+    # Sample values
+    if (length(unique_values) <= sample_size) {
+      sampled_values <- unique_values
+    } else {
+      sampled_values <- sample(unique_values, sample_size, replace = FALSE)
+    }
+    
+    return(list(
+      type = "categorical",
+      values = sampled_values,
+      has_more = length(unique_values) > sample_size
+    ))
   }
-  
-  # Convert to string handling NA values
-  sample_str <- paste(sapply(sampled_values, function(x) {
-    if (is.na(x)) return("NA")
-    as.character(x)
-  }), collapse = ", ")
-  
-  return(sample_str)
 }
 
 # Helper function: Check if a variable is continuous
@@ -196,6 +208,34 @@
   is_continuous <- n_unique > max_levels || any(x_no_na != floor(x_no_na))
   
   return(is_continuous)
+}
+
+# Helper function: Add examples or ranges to descriptions
+.add_examples_to_descriptions <- function(descriptions, sample_data, col_names) {
+  sapply(seq_along(col_names), function(i) {
+    samples <- sample_data[[i]]
+    
+    if (samples$type == "continuous") {
+      # For continuous variables, add the range
+      if (is.na(samples$min) && is.na(samples$max)) {
+        paste0(descriptions[i], " (All NA)")
+      } else {
+        paste0(descriptions[i], " (Range: ", samples$min, " to ", samples$max, ")")
+      }
+    } else {
+      # For categorical/discrete variables, get first 3 examples
+      example_values <- head(samples$values, 3)
+      # Handle NA values
+      example_strings <- sapply(example_values, function(x) {
+        if (is.na(x)) return("NA")
+        as.character(x)
+      })
+      examples_str <- paste(example_strings, collapse = ", ")
+      
+      # Combine description with examples
+      paste0(descriptions[i], " (Examples: ", examples_str, ")")
+    }
+  })
 }
 
 #' Generate data dictionary using LLM
@@ -259,17 +299,43 @@ gendict <- function(data, chat, context = NULL, sample_size = 5, method = "seque
 
   # Prepare a list of prompts, one for each column, including the sampled data
   column_prompts <- list()
-  sample_strings <- list()  # Store sample strings for later use
+  sample_data <- list()  # Store sample data for later use
+  sample_strings <- list()  # Store formatted sample strings
+  continuity_flags <- list()  # Store whether each column is continuous
   col_names <- names(data)
 
   for (i in seq_along(col_names)) {
     col_name <- col_names[i]
     column_data <- data[[col_name]]
     
-    # Generate sample string using helper function
-    sample_str <- .generate_sample_string(column_data, sample_size)
+    # Generate samples using helper function
+    samples <- .generate_samples(column_data, sample_size)
+    sample_data[[i]] <- samples
     
-    # Store the sample string for later use
+    # Check if continuous and store flag
+    is_cont <- samples$type == "continuous"
+    continuity_flags[[i]] <- is_cont
+    
+    # Convert samples to string for prompt
+    if (is_cont) {
+      if (is.na(samples$min) && is.na(samples$max)) {
+        sample_str <- "All NA"
+      } else {
+        sample_str <- paste0(samples$min, " to ", samples$max)
+      }
+    } else {
+      # Handle NA values in categorical samples
+      sample_values <- sapply(samples$values, function(x) {
+        if (is.na(x)) return("NA")
+        as.character(x)
+      })
+      sample_str <- paste(sample_values, collapse = ", ")
+      if (samples$has_more) {
+        sample_str <- paste0(sample_str, ", ...")
+      }
+    }
+    
+    # Store the formatted string for later use
     sample_strings[[i]] <- sample_str
 
     # Construct a comprehensive prompt for better descriptions
@@ -294,20 +360,25 @@ gendict <- function(data, chat, context = NULL, sample_size = 5, method = "seque
       })
     }
     
+    # Adjust instructions based on whether variable is continuous
+    variable_type <- if (is_cont) "continuous numeric" else "categorical/discrete"
+    
     column_prompts[[i]] <- glue::glue(
-      "You are a data dictionary expert. Write a precise, single-sentence description for this variable: {col_name}.
+      "You are a data dictionary expert. Write a precise, single-sentence description for this {variable_type} variable: {col_name}.
 
 CONTEXT:
 {prompt_context}
 Variable: {col_name}
-Sample values: {sample_str}
+Variable Type: {variable_type}
+{if (is_cont) 'Value range' else 'Sample values'}: {sample_str}
 Other columns: {paste(col_names[col_names != col_name], collapse=\", \")}
 
 INSTRUCTIONS:
-1. Analyze the variable name and sample values to understand what is being measured
+1. Analyze the variable name and {if (is_cont) 'value range' else 'sample values'} to understand what is being measured
 2. Include units of measurement if apparent from the name or values
 3. Be specific about what entity is being described and what attribute is measured
 4. Write ONLY the description sentence - no variable name, no 'The variable X represents', no examples, no additional text
+{if (is_cont) '5. For continuous variables, focus on what is being measured rather than specific values' else ''}
 
 REQUIRED FORMAT: [Entity] [attribute/measurement] [units if applicable].
 
@@ -342,16 +413,12 @@ DESCRIPTION:")
         batch = .gendict_batch_chat(chat, column_prompts, col_names)
       )
 
-      # Create the final dictionary with variable names, descriptions, and examples
-      descriptions_with_examples <- sapply(seq_along(col_names), function(i) {
-        # Get first 3 examples from the stored sample strings
-        sample_values <- strsplit(sample_strings[[i]], ", ")[[1]]
-        first_three <- head(sample_values, 3)
-        examples_str <- paste(first_three, collapse = ", ")
-        
-        # Combine description with examples
-        paste0(llm_responses[i], " (Examples: ", examples_str, ")")
-      })
+      # Create the final dictionary with variable names, descriptions, and examples/ranges
+      descriptions_with_examples <- .add_examples_to_descriptions(
+        llm_responses, 
+        sample_data, 
+        col_names
+      )
       
       final_dict <- tibble::tibble(
         variable = col_names,
