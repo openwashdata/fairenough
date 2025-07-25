@@ -10,15 +10,12 @@ doc_dictionary <- function(base_path = NULL, overwrite = FALSE, chat = NULL, con
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)
   
-  # Check data_raw directory existence
-  data_raw_path <- file.path(base_path, "data_raw")
-  if(!dir.exists(data_raw_path)){
-    message("Error: 'data_raw' directory not found. Please run init_data_raw() first.")
-    return(invisible(NULL))
+  # Check dictionary csvfile existence - save in inst/extdata
+  extdata_path <- file.path(base_path, "inst", "extdata")
+  if (!dir.exists(extdata_path)) {
+    dir.create(extdata_path, recursive = TRUE)
   }
-  
-  # Check dictionary csvfile existence
-  dict_path <- file.path(data_raw_path, "dictionary.csv")
+  dict_path <- file.path(extdata_path, "dictionary.csv")
   
   if(file.exists(dict_path) && !overwrite){
     message(paste("The dictionary CSV file", dict_path, "already exists! Use overwrite = TRUE to replace it."))

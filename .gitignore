@@ -6,4 +6,5 @@
 .quarto
 inst/doc
 CLAUDE.md
-tests/penguins
+tests/
+!tests/testthat

@@ -160,6 +160,27 @@
   return(response_lines)
 } 
 
+# Helper function: Generate sample values string for a column
+.generate_sample_string <- function(column_data, sample_size = 5) {
+  unique_values <- unique(column_data)
+  
+  # Sample values
+  if (length(unique_values) <= sample_size) {
+    sampled_values <- unique_values
+  } else {
+    sampled_values <- sample(unique_values, sample_size, replace = FALSE)
+    sampled_values <- c(sampled_values, "...")
+  }
+  
+  # Convert to string handling NA values
+  sample_str <- paste(sapply(sampled_values, function(x) {
+    if (is.na(x)) return("NA")
+    as.character(x)
+  }), collapse = ", ")
+  
+  return(sample_str)
+}
+
 #' Generate data dictionary using LLM
 #' 
 #' @param data Data frame or path to CSV/Excel file
@@ -227,22 +248,9 @@ gendict <- function(data, chat, context = NULL, sample_size = 5, method = "seque
   for (i in seq_along(col_names)) {
     col_name <- col_names[i]
     column_data <- data[[col_name]]
-    unique_values <- unique(column_data)
-
-    # Re-introducing the sampling logic for each column
-    if (length(unique_values) <= sample_size) {
-      sampled_values <- unique_values
-    } else {
-      sampled_values <- sample(unique_values, sample_size, replace = FALSE)
-      sampled_values <- c(sampled_values, "...")
-    }
-
-    # Convert sampled values to a string for the prompt
-    # Handle NA values and special characters
-    sample_str <- paste(sapply(sampled_values, function(x) {
-      if (is.na(x)) return("NA")
-      as.character(x)
-    }), collapse = ", ")
+    
+    # Generate sample string using helper function
+    sample_str <- .generate_sample_string(column_data, sample_size)
     
     # Store the sample string for later use
     sample_strings[[i]] <- sample_str
@@ -259,38 +267,43 @@ gendict <- function(data, chat, context = NULL, sample_size = 5, method = "seque
         description_val <- desc_obj$get_field("Description")
 
         if (!is.null(title_val) && nzchar(title_val)) {
-          prompt_context <- paste0(prompt_context, "Package Title: ", title_val, ".")
+          prompt_context <- paste0(prompt_context, "Dataset Title: ", title_val, ".")
         }
         if (!is.null(description_val) && nzchar(description_val)) {
-          prompt_context <- paste0(prompt_context, "Package Description: ", description_val, ".")
+          prompt_context <- paste0(prompt_context, "Dataset Description: ", description_val, ".")
         }
       }, error = function(e) {
         cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
       })
     }
     
-    # Add dataset overview for context
-    columns_context <- paste0("This dataset contains columns: ", paste(col_names, collapse=", "), ".")
-    
     column_prompts[[i]] <- glue::glue(
-      "You are a highly skilled data science expert specializing in data understanding.
-      Your task is to analyze the provided information and generate only the requested details in the specified
-      format: Description (Example values).
-      Do not include any conversational filler, explanations, or additional text.
-      Provide only ONE response in the specified format.
-    
-      {prompt_context}
-      {columns_context}
-      Variable: {col_name}.
-      Example values from {col_name}: {paste0(sample_str, collapse = \", \")}.
-      Think very hard and based on the variable name, example values, and dataset context.
-      Provide a clear, concise description of 1 sentence of what this variable represents.
-    
-      For example:
-      Body mass of the penguin in grams.
-    
-      Response:
-      ")
+      "You are a data dictionary expert. Write a precise, single-sentence description for this variable: {col_name}.
+
+CONTEXT:
+{prompt_context}
+Variable: {col_name}
+Sample values: {sample_str}
+Other columns: {paste(col_names[col_names != col_name], collapse=\", \")}
+
+INSTRUCTIONS:
+1. Analyze the variable name and sample values to understand what is being measured
+2. Include units of measurement if apparent from the name or values
+3. Be specific about what entity is being described and what attribute is measured
+4. Write ONLY the description sentence - no variable name, no 'The variable X represents', no examples, no additional text
+
+REQUIRED FORMAT: [Entity] [attribute/measurement] [units if applicable].
+
+EXAMPLES (follow this exact format for style and length):
+- Body mass of the penguin measured in grams.
+- Species classification of the penguin.
+- Length of the penguin's flipper measured in millimeters.
+- Year when the observation was recorded.
+- Biological sex of the penguin.
+
+CRITICAL: Output only the single description sentence. Do not include the variable name, do not add examples, do not add any prefacing words.
+
+DESCRIPTION:")
   }
 
   tryCatch(
