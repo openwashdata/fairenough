@@ -4,10 +4,15 @@
 \alias{init_export}
 \title{Export data file to package data}
 \usage{
-init_export(file, overwrite_rda = TRUE, auto_clean = TRUE, base_path = NULL)
+init_export(
+  data_file,
+  overwrite_rda = TRUE,
+  auto_clean = TRUE,
+  base_path = NULL
+)
 }
 \arguments{
-\item{file}{Path to the data file}
+\item{data_file}{Path to a CSV/Excel file}
 
 \item{overwrite_rda}{Whether to overwrite existing .rda files}
 

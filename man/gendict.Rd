@@ -9,7 +9,7 @@ gendict(
   chat,
   context = NULL,
   sample_size = 5,
-  method = "sequential_wait",
+  method = "sequential",
   test_llm_connection = FALSE
 )
 }
@@ -22,7 +22,7 @@ gendict(
 
 \item{sample_size}{Number of sample values to show}
 
-\item{method}{Processing method (sequential, sequential_wait, parallel, batch)}
+\item{method}{Processing method (sequential, sequential_fresh, parallel)}
 
 \item{test_llm_connection}{Whether to test LLM connection first}
 }
