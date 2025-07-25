@@ -8,15 +8,33 @@
 # model = "alias-fast" # Or other Blablador aliases like "alias-code", "alias-large", etc.
 # )
 
+# Helper function: Display progress and results in a clean format
+.gendict_display_progress <- function(col_names, responses, current_index = NULL) {
+  if (!is.null(current_index)) {
+    # Display single result
+    cli::cli_alert_success("{col_names[current_index]}: {responses[current_index]}")
+    
+    # Show progress every 5 items or at the end
+    if (current_index %% 5 == 0 || current_index == length(col_names)) {
+      pct <- round(current_index / length(col_names) * 100)
+      cli::cli_alert_info("Progress: {current_index}/{length(col_names)} ({pct}%)")
+    }
+  } else {
+    # Display all results
+    for (i in seq_along(col_names)) {
+      cli::cli_alert_success("{col_names[i]}: {responses[i]}")
+    }
+    cli::cli_alert_info("Completed: {length(col_names)}/{length(col_names)} (100%)")
+  }
+}
+
 # Helper function: Sequential chat (one at a time)
-.gendict_sequential_chat <- function(chat, prompts, col_names, delay = 0.5) {
+.gendict_sequential_chat <- function(chat, prompts, col_names, delay = 0) {
   llm_responses <- vector("character", length(prompts))
   
-  cli::cli_progress_bar("Processing columns sequentially", total = length(prompts))
+  cli::cli_alert_info("Processing {length(prompts)} columns sequentially...")
   
   for (i in seq_along(prompts)) {
-    cli::cli_progress_update()
-    
     # Add a small delay between requests to avoid rate limiting
     if (i > 1 && delay > 0) {
       Sys.sleep(delay)
@@ -30,14 +48,18 @@
     })
     
     llm_responses[i] <- response
+    
+    # Display progress
+    .gendict_display_progress(col_names, llm_responses, i)
   }
   
-  cli::cli_progress_done()
   return(llm_responses)
 }
 
 # Helper function: Parallel chat using ellmer::parallel_chat
 .gendict_parallel_chat <- function(chat, prompts, col_names) {
+  cli::cli_alert_info("Processing {length(prompts)} columns in parallel...")
+  
   llm_responses <- tryCatch({
     ellmer::parallel_chat(
       chat = chat,
@@ -73,18 +95,19 @@
     })
   }
   
+  # Display all results at once for parallel processing
+  .gendict_display_progress(col_names, llm_responses)
+  
   return(llm_responses)
 }
 
 # Helper function: Sequential with fresh connection for each request
-.gendict_sequential_wait <- function(chat_config, prompts, col_names) {
+.gendict_sequential_fresh <- function(chat_config, prompts, col_names) {
   llm_responses <- vector("character", length(prompts))
   
-  cli::cli_progress_bar("Processing columns (fresh connection each time)", total = length(prompts))
+  cli::cli_alert_info("Processing {length(prompts)} columns (fresh connection each time)...")
   
   for (i in seq_along(prompts)) {
-    cli::cli_progress_update()
-    
     response <- tryCatch({
       # Create a fresh chat connection for each request
       fresh_chat <- ellmer::chat_openai(
@@ -109,56 +132,17 @@
     
     llm_responses[i] <- response
     
+    # Display progress
+    .gendict_display_progress(col_names, llm_responses, i)
+    
     # Small delay between requests
     if (i < length(prompts)) {
       Sys.sleep(0.5)
     }
   }
   
-  cli::cli_progress_done()
   return(llm_responses)
 }
-
-# Helper function: Batch processing (all prompts in one request)
-.gendict_batch_chat <- function(chat, prompts, col_names) {
-  # Combine all prompts into one with clear separators
-  combined_prompt <- paste0(
-    "Please provide descriptions for the following variables. ",
-    "Respond with one line per variable in the exact order given:",
-    paste(sapply(seq_along(prompts), function(i) {
-      paste0("VARIABLE ", i, ":\n", prompts[[i]], "\n")
-    }), collapse = "\n"),
-    "\nProvide exactly ", length(prompts), " responses, one per line."
-  )
-  
-  response <- tryCatch({
-    chat$chat(combined_prompt)
-  }, error = function(e) {
-    cli::cli_alert_warning("Batch processing failed: {e$message}")
-    return(NULL)
-  })
-  
-  if (is.null(response)) {
-    # Fall back to sequential
-    return(.gendict_sequential_chat(chat, prompts, col_names))
-  }
-  
-  # Split response by lines and match to variables
-  response_lines <- trimws(strsplit(response, "\n")[[1]])
-  response_lines <- response_lines[nchar(response_lines) > 0]
-  
-  if (length(response_lines) != length(prompts)) {
-    cli::cli_alert_warning("Batch response count mismatch. Expected {length(prompts)}, got {length(response_lines)}")
-    # Pad or truncate as needed
-    if (length(response_lines) < length(prompts)) {
-      response_lines <- c(response_lines, rep("(missing) Description unavailable", length(prompts) - length(response_lines)))
-    } else {
-      response_lines <- response_lines[1:length(prompts)]
-    }
-  }
-  
-  return(response_lines)
-} 
 
 # Helper function: Generate sample values or range for a column
 .generate_samples <- function(column_data, sample_size = 5) {
@@ -244,13 +228,13 @@
 #' @param chat Chat object from ellmer package
 #' @param context Optional context for generation
 #' @param sample_size Number of sample values to show
-#' @param method Processing method (sequential, sequential_wait, parallel, batch)
+#' @param method Processing method (sequential, sequential_fresh, parallel)
 #' @param test_llm_connection Whether to test LLM connection first
 #' @return Tibble with variable names and descriptions
 #' @export
-gendict <- function(data, chat, context = NULL, sample_size = 5, method = "sequential_wait", test_llm_connection = FALSE) {
+gendict <- function(data, chat, context = NULL, sample_size = 5, method = "sequential", test_llm_connection = FALSE) {
   # Validate method parameter
-  method <- match.arg(method, c("sequential", "sequential_wait", "parallel", "batch"))
+  method <- match.arg(method, c("sequential", "sequential_fresh", "parallel"))
   
   # Use utility function to read and validate data
   data <- read_data(data)
@@ -408,9 +392,8 @@ DESCRIPTION:")
       # Use the appropriate helper function based on method
       llm_responses <- switch(method,
         sequential = .gendict_sequential_chat(chat, column_prompts, col_names),
-        sequential_wait = .gendict_sequential_wait(chat_config, column_prompts, col_names),
+        sequential_fresh = .gendict_sequential_fresh(chat_config, column_prompts, col_names),
         parallel = .gendict_parallel_chat(chat, column_prompts, col_names),
-        batch = .gendict_batch_chat(chat, column_prompts, col_names)
       )
 
       # Create the final dictionary with variable names, descriptions, and examples/ranges
