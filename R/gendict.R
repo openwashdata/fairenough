@@ -181,6 +181,23 @@
   return(sample_str)
 }
 
+# Helper function: Check if a variable is continuous
+.is_continuous <- function(x, max_levels = 10) {
+  # Check if numeric
+  if (!is.numeric(x)) return(FALSE)
+  
+  # Remove NA values for unique count
+  x_no_na <- na.omit(x)
+  n_unique <- length(unique(x_no_na))
+  
+  # Consider continuous if:
+  # 1. More unique values than max_levels threshold
+  # 2. Or if it contains decimal values (not just integers)
+  is_continuous <- n_unique > max_levels || any(x_no_na != floor(x_no_na))
+  
+  return(is_continuous)
+}
+
 #' Generate data dictionary using LLM
 #' 
 #' @param data Data frame or path to CSV/Excel file
