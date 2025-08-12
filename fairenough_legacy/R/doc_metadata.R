@@ -8,6 +8,7 @@
 #' @param description Character string. Package description (one paragraph).
 #' @param version Character string. Package version. Default is "0.0.1".
 #' @param language Character string. Language code. Default is "en-GB".
+#' @param github_user Character string. GitHub username or organization. Default is "openwashdata".
 #' @param authors List of lists. Author information including given, family, email, 
 #'   orcid, affiliation, and roles.
 #' @param license Character string. License identifier (e.g., "CC-BY-4.0", "MIT", "GPL-3").
@@ -56,6 +57,7 @@ doc_metadata <- function(
   description = NULL,
   version = "0.0.1",
   language = "en-GB",
+  github_user = NULL,
   authors = NULL,
   license = NULL,
   keywords = NULL,
