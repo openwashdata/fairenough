@@ -11,11 +11,8 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE, base_path =
   # Create full path for data_raw directory
   data_raw_path <- file.path(base_path, data_raw_dir)
   
-  if (dir.create(data_raw_path, showWarnings = FALSE)) {
-    message(paste0("Directory '", data_raw_path, "' created successfully."))
-  } else {
-    message(paste0("Directory '", data_raw_path, "' already exists."))
-  }
+  # Use utility function to ensure directory exists
+  ensure_directory(data_raw_path, description = "Data raw directory")
 
   if (gitignore == TRUE) {
     gitignore_dir(data_raw_dir, base_path)
@@ -23,33 +20,28 @@ init_data_raw <- function(data_raw_dir = "data_raw", gitignore=TRUE, base_path =
 
   all_files <- list.files(path = base_path, full.names = TRUE)
 
-  target_extensions <- c(".csv", ".xls", ".xlsx")
+  # Use utility function to filter supported files
+  files_to_move <- filter_supported_files(all_files)
   files_moved_count <- 0
 
-  for (ext in target_extensions) {
-    files_to_move <- all_files[grepl(paste0("\\", ext, "$"), all_files, ignore.case = TRUE)]
+  if (length(files_to_move) > 0) {
+    message(paste0("Found ", length(files_to_move), " data file(s) to move."))
+    for (file_path in files_to_move) {
+      file_name <- basename(file_path)
+      new_file_path <- file.path(data_raw_path, file_name)
 
-    if (length(files_to_move) > 0) {
-      message(paste0("Found ", length(files_to_move), " '", ext, "' files to move."))
-      for (file_path in files_to_move) {
-        file_name <- basename(file_path)
-
-        new_file_path <- file.path(data_raw_path, file_name)
-
-        if (file.rename(file_path, new_file_path)) {
-          message(paste0("Moved '", file_name, "' to '", data_raw_path, "'"))
-          files_moved_count <- files_moved_count + 1
-        } else {
-          warning(paste0("Failed to move '", file_name, "'. It might already exist in '", data_raw_path, "' or there was a permission issue."))
-        }
+      if (file.rename(file_path, new_file_path)) {
+        message(paste0("Moved '", file_name, "' to '", data_raw_path, "'"))
+        files_moved_count <- files_moved_count + 1
+      } else {
+        warning(paste0("Failed to move '", file_name, "'. It might already exist in '", data_raw_path, "' or there was a permission issue."))
       }
-    } else {
-      message(paste0("No '", ext, "' files found in the root directory to move."))
     }
   }
 
   if (files_moved_count == 0) {
-    message("No ", target_extensions, " files were moved.")
+    supported_exts <- paste(get_supported_extensions(), collapse = ", ")
+    message(paste("No", supported_exts, "files were moved."))
   } else {
     message(paste0("Operation complete. Total files moved: ", files_moved_count, "."))
   }

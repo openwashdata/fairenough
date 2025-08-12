@@ -9,13 +9,9 @@ init_export <- function(data_file, overwrite_rda = TRUE, auto_clean = TRUE, base
   # Use the utility function for consistent base_path handling
   base_path <- get_base_path(base_path)
   
-  # Validate input is a file path
+  # Validate input is a file path (not a data frame)
   if (is.data.frame(data_file)) {
     cli::cli_abort("init_export requires a file path, not a data frame. Use a CSV or Excel file path.")
-  }
-  
-  if (!is.character(data_file) || length(data_file) != 1) {
-    cli::cli_abort("data_file must be a single file path")
   }
   
   file_name <- tools::file_path_sans_ext(basename(data_file))
@@ -66,10 +62,7 @@ init_export <- function(data_file, overwrite_rda = TRUE, auto_clean = TRUE, base
 
   # Ensure the 'data' directory exists for saving R data
   data_dir <- file.path(base_path, "data")
-  if (!fs::dir_exists(data_dir)) {
-    fs::dir_create(data_dir)
-    message(paste("Created directory:", data_dir))
-  }
+  ensure_directory(data_dir, description = "Data directory")
 
   # Save the data object using base R's save() for reliability
   rda_path <- file.path(data_dir, paste0(data_object_name, ".rda"))
@@ -86,7 +79,7 @@ init_export <- function(data_file, overwrite_rda = TRUE, auto_clean = TRUE, base
 
   # Export as CSV to inst/extdata
   extdata_dir <- file.path(base_path, "inst", "extdata")
-  fs::dir_create(extdata_dir, recurse = TRUE)
+  ensure_directory(extdata_dir, description = "Export directory")
   csv_export_path <- file.path(extdata_dir, paste0(file_name, ".csv"))
   readr::write_csv(final_data, csv_export_path)
   message(paste("Exported CSV:", csv_export_path))

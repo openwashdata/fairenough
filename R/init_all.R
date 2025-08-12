@@ -26,18 +26,12 @@ init_all <- function(data_raw_dir = "data_raw", gitignore = TRUE, overwrite_rda 
       recursive = FALSE
     )
 
-    # Define target extensions
-    target_extensions <- c(".csv", ".xls", ".xlsx")
-    files_to_process <- character(0)
-
-    # Filter files by target extensions
-    for (ext in target_extensions) {
-      files_to_process <- c(files_to_process,
-                            all_files_in_data_raw[grepl(paste0("\\", ext, "$"), all_files_in_data_raw, ignore.case = TRUE)])
-    }
+    # Filter files by supported extensions using utility function
+    files_to_process <- filter_supported_files(all_files_in_data_raw)
 
     if (length(files_to_process) == 0) {
-      message(paste("No ", target_extensions, " files found in '", data_raw_path, "' to process."))
+      supported_exts <- paste(get_supported_extensions(), collapse = ", ")
+      message(paste("No", supported_exts, "files found in '", data_raw_path, "' to process."))
     } else {
       message(paste0("Found ", length(files_to_process), " files to process in '", data_raw_path, "':"))
       print(basename(files_to_process))
