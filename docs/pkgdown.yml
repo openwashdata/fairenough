@@ -1,9 +1,0 @@
-pandoc: '3.2'
-pkgdown: 2.1.1
-pkgdown_sha: ~
-articles:
-  washr: washr.html
-last_built: 2024-11-01T11:05Z
-urls:
-  reference: https://openwashdata-dev.github.io/washr/reference
-  article: https://openwashdata-dev.github.io/washr/articles
