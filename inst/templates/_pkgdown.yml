@@ -1,4 +1,4 @@
-url: https://{{{github_user}}}.github.io/{{{ethord}}}/
+url: https://{{{github_user}}}.github.io/{{{package_name}}}/
 template:
   bootstrap: 5
   light-switch: yes

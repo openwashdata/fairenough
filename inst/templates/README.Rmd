@@ -27,14 +27,12 @@ library(kableExtra)
 library(fontawesome)
 library(stringr)
 
-# --- Define a list of package names ---
+# Get dataset names from CSV files in inst/extdata
 package_names <- list.files("inst/extdata", pattern = "\\.csv$", full.names = FALSE)
-package_names <- basename(package_names) # Get just the base names
 package_names <- package_names[!package_names %in% "dictionary.csv"]
-package_names <- stringr::str_remove(package_names, "\\.csv$") # Remove .csv extension
+package_names <- stringr::str_remove(package_names, "\\.csv$")
 
-
-organisation <- desc::desc_get_field("Organisation") # Assuming you have an 'Organisation' field in DESCRIPTION
+github_user <- desc::desc_get_field("github_user")
 browser_favicon_colour <- "lightblue"
 ```
 
@@ -58,7 +56,7 @@ browser_favicon_colour <- "lightblue"
 You can install the development version of `r desc::desc_get_field("Package")` from GitHub `r fontawesome::fa("github")` with:
 
 ```r
-devtools::install_github("`r organisation`/`r desc::desc_get_field("Package")`", dependencies = TRUE)
+devtools::install_github("`r github_user`/`r desc::desc_get_field("Package")`", dependencies = TRUE)
 ```
 
 -----
@@ -72,17 +70,16 @@ If you prefer to work with the data outside of R, you can download individual da
 3.  Choose where you'd like to save the file on your computer.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-extdata_path <- paste0(desc::desc_get_field("URL"), "/raw/main/inst/extdata/")
+extdata_path <- file.path("https://github.com", github_user, desc::desc_get_field("Package"), "raw/main/inst/extdata/")
 
-readr::read_csv("data-raw/dictionary.csv") |>
+readr::read_csv("inst/extdata/dictionary.csv", show_col_types = FALSE) |>
   dplyr::distinct(file_name) |>
-  dplyr::mutate(file_name = stringr::str_remove(file_name, "\\.rda$")) |> # Ensure .rda is removed
+  dplyr::mutate(file_name = stringr::str_remove(file_name, "\\.rda$")) |>
   dplyr::rename(dataset = file_name) |>
   dplyr::mutate(
     CSV = paste0("[Download CSV](", extdata_path, dataset, ".csv)")
   ) |>
   knitr::kable()
-
 ```
 
 ## Data
@@ -132,8 +129,8 @@ for (pkg_name in package_names) {
   cat("For an overview of the variable names, see the following table.\n\n")
   
   # Filter dictionary for the current dataset
-  dictionary_table <- readr::read_csv("data-raw/dictionary.csv") |>
-    dplyr::filter(file_name == paste0(pkg_name, ".rda")) |> # Ensure matching .rda
+  dictionary_table <- readr::read_csv("inst/extdata/dictionary.csv", show_col_types = FALSE) |>
+    dplyr::filter(file_name == pkg_name) |>
     dplyr::select(variable_name:description)
 
   if (nrow(dictionary_table) > 0) {
@@ -155,7 +152,7 @@ for (pkg_name in package_names) {
 ## License
 
 Data are available as
-[CC-BY](https://github.com/`r desc::desc_get_field("Organisation")`/`r desc::desc_get_field("Package")`/blob/main/LICENSE.md).
+[CC-BY](https://github.com/`r desc::desc_get_field("github_user")`/`r desc::desc_get_field("Package")`/blob/main/LICENSE.md).
 
 ## Citation
 
