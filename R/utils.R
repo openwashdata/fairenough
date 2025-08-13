@@ -161,18 +161,19 @@ validate_data_frame <- function(data, min_rows = 1) {
 #' @param dir_path Path to directory
 #' @param description Optional description for messages
 #' @param recursive Whether to create parent directories (default TRUE)
+#' @param verbose Whether to show messages (default TRUE)
 #' @return The directory path
 #' @export
-ensure_directory <- function(dir_path, description = NULL, recursive = TRUE) {
+ensure_directory <- function(dir_path, description = NULL, recursive = TRUE, verbose = TRUE) {
   if (is.null(description)) {
     description <- "Directory"
   }
   
   if (fs::dir_exists(dir_path)) {
-    cli::cli_alert_info("{description} '{dir_path}' already exists")
+    if (verbose) cli::cli_alert_info("{description} '{dir_path}' already exists")
   } else {
     fs::dir_create(dir_path, recurse = recursive)
-    cli::cli_alert_success("Created {description}: {dir_path}")
+    if (verbose) cli::cli_alert_success("Created {description}: {dir_path}")
   }
   
   return(dir_path)
