@@ -4,7 +4,12 @@
 \alias{ensure_directory}
 \title{Ensure directory exists with messaging}
 \usage{
-ensure_directory(dir_path, description = NULL, recursive = TRUE)
+ensure_directory(
+  dir_path,
+  description = NULL,
+  recursive = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{dir_path}{Path to directory}
@@ -12,6 +17,8 @@ ensure_directory(dir_path, description = NULL, recursive = TRUE)
 \item{description}{Optional description for messages}
 
 \item{recursive}{Whether to create parent directories (default TRUE)}
+
+\item{verbose}{Whether to show messages (default TRUE)}
 }
 \value{
 The directory path
