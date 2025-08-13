@@ -27,9 +27,12 @@ build <- function(check = TRUE,
   
   base_path <- get_base_path(base_path)
 
-  # For development and testing, set working directory to base_path on build
-  old_wd <- setwd(base_path)
-  on.exit(setwd(old_wd))
+  # Use withr/usethis to temporarily set project path for this function
+  # This ensures use_template writes to the correct location
+  if (requireNamespace("withr", quietly = TRUE)) {
+    withr::local_options(list(usethis.quiet = TRUE))
+  }
+  usethis::local_project(base_path, setwd = FALSE)
   
   if (verbose) cli::cli_h1("Building data package")
   
@@ -315,11 +318,13 @@ setup_website <- function(base_path = NULL,
                          verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
-  
-  # Save current working directory and change to base_path
-  old_wd <- getwd()
-  setwd(base_path)
-  on.exit(setwd(old_wd))
+
+  # Use withr/usethis to temporarily set project path for this function
+  # This ensures use_template writes to the correct location
+  if (requireNamespace("withr", quietly = TRUE)) {
+    withr::local_options(list(usethis.quiet = TRUE))
+  }
+  usethis::local_project(base_path, setwd = FALSE)
   
   # Check if pkgdown is available
   if (!requireNamespace("pkgdown", quietly = TRUE)) {
@@ -369,11 +374,11 @@ setup_website <- function(base_path = NULL,
   if (verbose) cli::cli_alert_info("Building package website...")
   
   tryCatch({
-    # pkgdown::build_site() doesn't have a 'quiet' parameter
+    # pkgdown::build_site() needs to know the package path
     if (verbose) {
-      pkgdown::build_site(preview = FALSE)
+      pkgdown::build_site(pkg = base_path, preview = FALSE)
     } else {
-      suppressMessages(pkgdown::build_site(preview = FALSE))
+      suppressMessages(pkgdown::build_site(pkg = base_path, preview = FALSE))
     }
     if (verbose) cli::cli_alert_success("Website built in {.path docs/}")
   }, error = function(e) {
