@@ -40,6 +40,10 @@ build <- function(check = TRUE,
   if (verbose) cli::cli_h2("Applying Metadata")
   apply_metadata(base_path = base_path, verbose = verbose)
   
+  # Generate data documentation
+  if (verbose) cli::cli_h2("Generating Data Documentation")
+  generate_data_documentation(base_path = base_path, verbose = verbose)
+  
   # Generate README from template
   if (verbose) cli::cli_h2("Generating README")
   generate_readme(base_path = base_path, verbose = verbose)
@@ -66,6 +70,112 @@ build <- function(check = TRUE,
     check_passed = if (check) check_result else NA,
     website_setup = website
   ))
+}
+
+#' Generate roxygen documentation for datasets
+#' 
+#' Creates R documentation files for each dataset using the data dictionary.
+#' 
+#' @param base_path Base path for the project
+#' @param verbose Whether to show messages
+#' @return Logical indicating success
+#' @export
+generate_data_documentation <- function(base_path = NULL,
+                                       verbose = TRUE) {
+  
+  base_path <- get_base_path(base_path)
+  
+  # Check for dictionary
+  dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+  if (!file.exists(dict_path)) {
+    cli::cli_alert_warning("No dictionary found at {.path inst/extdata/dictionary.csv}")
+    cli::cli_alert_info("Run {.fn document} first to create dictionary")
+    return(invisible(FALSE))
+  }
+  
+  # Check for metadata
+  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+  if (!file.exists(metadata_path)) {
+    cli::cli_alert_warning("No metadata found")
+    cli::cli_alert_info("Run {.fn document} first to collect metadata")
+    return(invisible(FALSE))
+  }
+  
+  # Load dictionary and metadata
+  dictionary <- utils::read.csv(dict_path)
+  metadata <- jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
+  
+  # Get unique datasets
+  datasets <- unique(dictionary$file_name)
+  
+  # Ensure R directory exists
+  r_dir <- file.path(base_path, "R")
+  if (!dir.exists(r_dir)) {
+    dir.create(r_dir)
+  }
+  
+  # Generate documentation for each dataset
+  for (dataset_name in datasets) {
+    # Remove .rda extension if present
+    clean_name <- sub("\\.rda$", "", dataset_name)
+    
+    # Filter dictionary for this dataset
+    dataset_dict <- dictionary[dictionary$file_name == dataset_name, ]
+    
+    # Load the actual data to get dimensions
+    data_file <- file.path(base_path, "data", paste0(clean_name, ".rda"))
+    if (!file.exists(data_file)) {
+      if (verbose) cli::cli_alert_warning("Data file not found: {.path {data_file}}")
+      next
+    }
+    
+    # Load data to get dimensions
+    temp_env <- new.env()
+    load(data_file, envir = temp_env)
+    data_obj <- get(ls(temp_env)[1], envir = temp_env)
+    n_rows <- nrow(data_obj)
+    n_cols <- ncol(data_obj)
+    
+    # Create roxygen documentation
+    doc_lines <- character()
+    
+    # Title and description
+    doc_lines <- c(doc_lines, 
+                   paste0("#' ", clean_name, ": ", metadata$package$title),
+                   "#'",
+                   paste0("#' ", metadata$package$description),
+                   "#'")
+    
+    # Format line
+    doc_lines <- c(doc_lines,
+                   paste0("#' @format A data frame with ", n_rows, " rows and ", n_cols, " variables:"))
+    
+    # Describe block
+    doc_lines <- c(doc_lines, "#' \\describe{")
+    
+    for (i in seq_len(nrow(dataset_dict))) {
+      var_name <- dataset_dict$variable_name[i]
+      var_desc <- dataset_dict$description[i]
+      if (is.na(var_desc) || var_desc == "") {
+        var_desc <- paste0(dataset_dict$variable_type[i], " variable")
+      }
+      doc_lines <- c(doc_lines,
+                     paste0("#'   \\item{", var_name, "}{", var_desc, "}"))
+    }
+    
+    doc_lines <- c(doc_lines, "#' }")
+    
+    # Add the dataset name as a string at the end
+    doc_lines <- c(doc_lines, paste0('"', clean_name, '"'))
+    
+    # Write to R file
+    output_file <- file.path(r_dir, paste0(clean_name, ".R"))
+    writeLines(doc_lines, output_file)
+    
+    if (verbose) cli::cli_alert_success("Created documentation for {.file {clean_name}}")
+  }
+  
+  return(invisible(TRUE))
 }
 
 #' Apply metadata to package files
@@ -250,21 +360,10 @@ generate_readme <- function(base_path = NULL,
   
   base_path <- get_base_path(base_path)
   
-  # Get template from fairenough package
-  template_path <- system.file("templates", "README.Rmd", package = "fairenough")
-  
-  if (template_path == "") {
-    # If not installed, use local development path
-    template_path <- file.path(base_path, "inst", "templates", "README.Rmd")
-    if (!file.exists(template_path)) {
-      cli::cli_abort("README template not found. Ensure fairenough is properly installed.")
-    }
-  }
-  
   # Load metadata
   metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
   metadata <- if (file.exists(metadata_path)) {
-    jsonlite::fromJSON(metadata_path)
+    jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
   } else {
     list()
   }
@@ -277,12 +376,25 @@ generate_readme <- function(base_path = NULL,
     NULL
   }
   
-  # Render README.Rmd to README.md
+  # Prepare template data (though README.Rmd doesn't use substitution, keeping for consistency)
+  template_data <- list(
+    package_name = if (!is.null(metadata$package$name)) metadata$package$name else "package",
+    github_user = if (!is.null(metadata$package$github_user)) metadata$package$github_user else "openwashdata"
+  )
+  
+  # Create README.Rmd from template if it doesn't exist
   readme_rmd <- file.path(base_path, "README.Rmd")
   
   if (!file.exists(readme_rmd)) {
-    # Copy template to project root
-    file.copy(template_path, readme_rmd)
+    # Use our template function
+    use_template(
+      template = "README.Rmd",
+      save_as = "README.Rmd",
+      data = template_data,
+      base_path = base_path,
+      package = "fairenough",
+      verbose = FALSE  # Suppress the success message since we'll show our own
+    )
   }
   
   # Check if rmarkdown is available
@@ -318,13 +430,6 @@ setup_website <- function(base_path = NULL,
                          verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
-
-  # Use withr/usethis to temporarily set project path for this function
-  # This ensures use_template writes to the correct location
-  if (requireNamespace("withr", quietly = TRUE)) {
-    withr::local_options(list(usethis.quiet = TRUE))
-  }
-  usethis::local_project(base_path, setwd = FALSE)
   
   # Check if pkgdown is available
   if (!requireNamespace("pkgdown", quietly = TRUE)) {
@@ -337,37 +442,22 @@ setup_website <- function(base_path = NULL,
   pkgdown_yml <- file.path(base_path, "_pkgdown.yml")
   
   if (!file.exists(pkgdown_yml)) {
-    # Check if usethis is available
-    if (!requireNamespace("usethis", quietly = TRUE)) {
-      cli::cli_alert_warning("Package {.pkg usethis} not installed")
-      cli::cli_alert_info("Install it with: install.packages('usethis')")
-      return(invisible(FALSE))
-    }
-    
     # Load metadata for template data
     metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
-    template_data <- list(
-      github_user = "openwashdata",
-      package_name = "packagename"
-    )
     
     if (file.exists(metadata_path)) {
       metadata <- jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
-      template_data$package_name <- metadata$package$name
-      if (!is.null(metadata$github_user) && metadata$github_user != "") {
-        template_data$github_user <- metadata$github_user
-      }
     }
     
-    # Use usethis to create from template - it will use current working directory
-    usethis::use_template(
+    # Use our own template function that respects base_path
+    use_template(
       template = "_pkgdown.yml",
       save_as = "_pkgdown.yml",
-      data = template_data,
-      package = "fairenough"
+      data = metadata,
+      base_path = base_path,
+      package = "fairenough",
+      verbose = verbose
     )
-    
-    if (verbose) cli::cli_alert_success("Created _pkgdown.yml configuration from template")
   }
   
   # Build site
