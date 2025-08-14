@@ -8,7 +8,7 @@
 #' @param overwrite Whether to overwrite existing documentation (default: FALSE)
 #' @param base_path Base path for the project (default: uses get_base_path())
 #' @param verbose Whether to show detailed messages (default: TRUE)
-#' @param ... Additional arguments passed to generate_dictionary
+#' @param ... Additional arguments passed to generate_dictionary and collect_metadata
 #' @return Invisibly returns a list with dictionary and metadata
 #' @export
 #' @examples
@@ -42,23 +42,43 @@ document <- function(chat = NULL,
   
   if (verbose) cli::cli_h1("Documenting data package")
   
+  # Separate args for dictionary generation vs metadata collection
+  # Extract metadata-specific arguments from dots
+  dots <- list(...)
+  
+  # Arguments for generate_dictionary (method, context, etc.)
+  dict_args <- dots[names(dots) %in% c("method", "context")]
+  
+  # Arguments for collect_metadata (all the metadata fields)
+  metadata_args <- dots[names(dots) %in% c("pkg_name", "title", "description", "version", 
+                                            "language", "github_user", "authors", "license", 
+                                            "keywords", "funder", "grant_id", "temporal_start", 
+                                            "temporal_end", "spatial_description", 
+                                            "spatial_coordinates", "related_identifiers", 
+                                            "communities")]
+  
   # Generate dictionary
   if (verbose) cli::cli_h2("Data Dictionary")
-  dictionary <- generate_dictionary(
-    chat = chat,
-    overwrite = overwrite,
-    base_path = base_path,
-    verbose = verbose,
-    ...
-  )
+  dictionary <- do.call(generate_dictionary, c(
+    list(
+      chat = chat,
+      overwrite = overwrite,
+      base_path = base_path,
+      verbose = verbose
+    ),
+    dict_args
+  ))
   
   # Collect metadata
   if (verbose) cli::cli_h2("Package Metadata")
-  metadata <- collect_metadata_wrapper(
-    interactive = interactive,
-    base_path = base_path,
-    verbose = verbose
-  )
+  metadata <- do.call(collect_metadata_wrapper, c(
+    list(
+      interactive = interactive,
+      base_path = base_path,
+      verbose = verbose
+    ),
+    metadata_args
+  ))
   
   # Save metadata for later use
   save_metadata(metadata, base_path, verbose)

@@ -4,6 +4,7 @@
 #' Interactive function to collect all metadata needed for an R data package.
 #' Supports interactive prompts, partial pre-filling, or full specification.
 #' 
+#' @param pkg_name Character string. Package name.
 #' @param title Character string. Package title.
 #' @param description Character string. Package description (one paragraph).
 #' @param version Character string. Package version. Default is "0.0.1".
@@ -53,6 +54,7 @@
 #' }
 #' @export
 collect_metadata <- function(
+  pkg_name = NULL,
   title = NULL,
   description = NULL,
   version = "0.0.1",
@@ -114,7 +116,7 @@ collect_metadata <- function(
   
   # Package metadata
   cli::cli_h2("Package Information")
-  pkg_name <- prompt_field("Package name", NULL, required = TRUE)
+  pkg_name <- prompt_field("Package name", pkg_name, required = TRUE)
   title <- prompt_field("Title", title, required = TRUE)
   description <- prompt_field("Description (one paragraph)", description, required = TRUE)
   version <- prompt_field("Version", version, default = version)
@@ -196,7 +198,13 @@ collect_metadata <- function(
     "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
     "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0"
   )
-  license_url <- license_urls[[license]]
+  
+  # Use the URL if it exists, otherwise NULL
+  license_url <- if (!is.null(license) && license %in% names(license_urls)) {
+    license_urls[[license]]
+  } else {
+    NULL
+  }
   
   # Publication metadata
   cli::cli_h2("Publication Information")
