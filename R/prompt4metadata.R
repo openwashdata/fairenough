@@ -1,8 +1,9 @@
-#' Collect comprehensive metadata for R data package
+#' Prompt for comprehensive metadata interactively
 #' 
 #' @description
-#' Interactive function to collect all metadata needed for an R data package.
+#' General-purpose interactive function to collect metadata for datasets.
 #' Supports interactive prompts, partial pre-filling, or full specification.
+#' This function is independent of any specific package structure.
 #' 
 #' @param pkg_name Character string. Package name.
 #' @param title Character string. Package title.
@@ -23,6 +24,8 @@
 #' @param related_identifiers List of lists. Related publications (DOIs, URLs).
 #' @param communities Character vector. Zenodo communities (e.g., "global-health-engineering").
 #' @param interactive Logical. Whether to use interactive prompts. Default is TRUE.
+#' @param overwrite Logical. Whether to overwrite existing metadata file. Default is FALSE.
+#' @param save_path Character string. Optional path to save metadata.json. If NULL, metadata is not saved.
 #' 
 #' @return A list containing all metadata organized by category:
 #'   - package: title, description, version, language
@@ -35,10 +38,10 @@
 #' @examples
 #' \dontrun{
 #' # Interactive mode (default)
-#' metadata <- collect_metadata()
+#' metadata <- prompt4metadata()
 #' 
 #' # Partial pre-fill
-#' metadata <- collect_metadata(
+#' metadata <- prompt4metadata(
 #'   title = "My Dataset",
 #'   authors = list(
 #'     list(given = "Jane", family = "Doe", email = "jane@example.com")
@@ -46,14 +49,16 @@
 #' )
 #' 
 #' # Full specification
-#' metadata <- collect_metadata(
+#' metadata <- prompt4metadata(
+#'   pkg_name = "mydata",
 #'   title = "My Dataset",
 #'   description = "A comprehensive dataset about...",
 #'   interactive = FALSE
 #' )
+#' 
 #' }
 #' @export
-collect_metadata <- function(
+prompt4metadata <- function(
   pkg_name = NULL,
   title = NULL,
   description = NULL,
@@ -71,8 +76,34 @@ collect_metadata <- function(
   spatial_coordinates = NULL,
   related_identifiers = NULL,
   communities = NULL,
-  interactive = TRUE
+  interactive = TRUE,
+  overwrite = FALSE,
+  save_path = NULL
 ) {
+  
+  # Helper function for yes/no prompts
+  prompt_yes_no <- function(question, default = TRUE) {
+    if (!interactive) return(default)
+    
+    default_text <- if (default) "Y/n" else "y/N"
+    response <- tolower(readline(paste0(question, " [", default_text, "]: ")))
+    
+    if (response == "") return(default)
+    return(response %in% c("y", "yes"))
+  }
+  
+  # Check for existing metadata file if save_path is provided
+  if (!is.null(save_path) && file.exists(save_path) && !overwrite) {
+    if (interactive) {
+      cli::cli_alert_info("Metadata file already exists at {.path {save_path}}")
+      if (!prompt_yes_no("Do you want to overwrite it?", default = FALSE)) {
+        return(jsonlite::fromJSON(save_path, simplifyVector = FALSE))
+      }
+    } else {
+      # In non-interactive mode, return existing metadata
+      return(jsonlite::fromJSON(save_path, simplifyVector = FALSE))
+    }
+  }
   
   # Helper function for interactive prompts
   prompt_field <- function(field_name, current_value, default = NULL, required = FALSE) {
@@ -99,17 +130,6 @@ collect_metadata <- function(
     }
     
     return(response)
-  }
-  
-  # Helper function for yes/no prompts
-  prompt_yes_no <- function(question, default = TRUE) {
-    if (!interactive) return(default)
-    
-    default_text <- if (default) "Y/n" else "y/N"
-    response <- tolower(readline(paste0(question, " [", default_text, "]: ")))
-    
-    if (response == "") return(default)
-    return(response %in% c("y", "yes"))
   }
   
   cli::cli_h1("Collecting metadata for R data package")
@@ -345,6 +365,19 @@ collect_metadata <- function(
         cli::cli_text("Keywords: {paste(metadata$publication$keywords, collapse = ', ')}")
       }
     }
+  }
+  
+  # Save metadata if save_path is provided
+  if (!is.null(save_path)) {
+    # Ensure directory exists
+    save_dir <- dirname(save_path)
+    if (!dir.exists(save_dir)) {
+      dir.create(save_dir, recursive = TRUE)
+    }
+    
+    # Save as JSON
+    jsonlite::write_json(metadata, save_path, pretty = TRUE, auto_unbox = TRUE)
+    cli::cli_alert_success("Metadata saved to {.path {save_path}}")
   }
   
   return(metadata)

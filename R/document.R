@@ -1,103 +1,9 @@
-#' Document data package
-#' 
-#' High-level function to generate documentation for your data package.
-#' Creates data dictionaries and collects metadata interactively.
-#' 
-#' @param chat Optional chat object for LLM-based dictionary generation
-#' @param interactive Whether to use interactive prompts for metadata (default: TRUE)
-#' @param overwrite Whether to overwrite existing documentation (default: FALSE)
-#' @param base_path Base path for the project (default: uses get_base_path())
-#' @param verbose Whether to show detailed messages (default: TRUE)
-#' @param ... Additional arguments passed to generate_dictionary and collect_metadata
-#' @return Invisibly returns a list with dictionary and metadata
-#' @export
-#' @examples
-#' \dontrun{
-#' # Interactive documentation (no LLM)
-#' document()
-#' 
-#' # With LLM for dictionary generation
-#' library(ellmer)
-#' chat <- chat_openai(model = "gpt-4")
-#' document(chat = chat)
-#' 
-#' # Non-interactive with pre-filled metadata
-#' metadata <- list(
-#'   title = "My Dataset",
-#'   description = "A comprehensive dataset...",
-#'   authors = list(
-#'     list(given = "Jane", family = "Doe", email = "jane@example.com")
-#'   )
-#' )
-#' document(interactive = FALSE, metadata = metadata)
-#' }
-document <- function(chat = NULL,
-                    interactive = TRUE,
-                    overwrite = FALSE,
-                    base_path = NULL,
-                    verbose = TRUE,
-                    ...) {
-  
-  base_path <- get_base_path(base_path)
-  
-  if (verbose) cli::cli_h1("Documenting data package")
-  
-  # Separate args for dictionary generation vs metadata collection
-  # Extract metadata-specific arguments from dots
-  dots <- list(...)
-  
-  # Arguments for generate_dictionary (method, context, etc.)
-  dict_args <- dots[names(dots) %in% c("method", "context")]
-  
-  # Arguments for collect_metadata (all the metadata fields)
-  metadata_args <- dots[names(dots) %in% c("pkg_name", "title", "description", "version", 
-                                            "language", "github_user", "authors", "license", 
-                                            "keywords", "funder", "grant_id", "temporal_start", 
-                                            "temporal_end", "spatial_description", 
-                                            "spatial_coordinates", "related_identifiers", 
-                                            "communities")]
-  
-  # Generate dictionary
-  if (verbose) cli::cli_h2("Data Dictionary")
-  dictionary <- do.call(generate_dictionary, c(
-    list(
-      chat = chat,
-      overwrite = overwrite,
-      base_path = base_path,
-      verbose = verbose
-    ),
-    dict_args
-  ))
-  
-  # Collect metadata
-  if (verbose) cli::cli_h2("Package Metadata")
-  metadata <- do.call(collect_metadata_wrapper, c(
-    list(
-      interactive = interactive,
-      base_path = base_path,
-      verbose = verbose
-    ),
-    metadata_args
-  ))
-  
-  # Save metadata for later use
-  save_metadata(metadata, base_path, verbose)
-  
-  if (verbose) {
-    cli::cli_alert_success("Documentation complete!")
-    cli::cli_alert_info("Next step: Run {.fn build} to create the package")
-  }
-  
-  invisible(list(
-    dictionary = dictionary,
-    metadata = metadata
-  ))
-}
 
 #' Generate data dictionary
 #' 
 #' Creates a data dictionary for all data files in the package.
-#' Can use LLM for automatic description generation.
+#' Can use LLM for automatic description generation. Works best when
+#' metadata.json exists as it uses the package description for context.
 #' 
 #' @param chat Optional chat object for LLM-based generation
 #' @param context Optional context for LLM generation
@@ -107,6 +13,16 @@ document <- function(chat = NULL,
 #' @param ... Additional arguments passed to gendict
 #' @return Data frame containing the dictionary
 #' @export
+#' @examples
+#' \dontrun{
+#' # Generate dictionary with LLM
+#' library(ellmer)
+#' chat <- chat_openai(model = "gpt-4")
+#' generate_dictionary(chat = chat, overwrite = TRUE)
+#' 
+#' # Generate empty dictionary structure (no LLM)
+#' generate_dictionary()
+#' }
 generate_dictionary <- function(chat = NULL,
                                context = NULL,
                                overwrite = FALSE,
@@ -163,6 +79,23 @@ generate_dictionary <- function(chat = NULL,
     )
     
     all_vars <- rbind(all_vars, var_info)
+  }
+  
+  # Check for metadata.json to enhance context
+  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+  if (!file.exists(metadata_path) && !is.null(chat) && verbose) {
+    cli::cli_alert_warning("No metadata.json found")
+    cli::cli_alert_info("generate_dictionary uses package description as context for better LLM generation")
+    cli::cli_alert_info("Consider running {.fn collect_metadata} first for improved results")
+  }
+  
+  # Load metadata for context if available and no context provided
+  if (file.exists(metadata_path) && is.null(context)) {
+    metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+    if (!is.null(metadata$package$description)) {
+      context <- paste("This dataset is part of a package:", metadata$package$description)
+      if (verbose) cli::cli_alert_info("Using package description as context for LLM")
+    }
   }
   
   # Add descriptions
@@ -232,64 +165,52 @@ generate_dictionary <- function(chat = NULL,
   return(invisible(dictionary))
 }
 
+
 #' Collect package metadata
 #' 
-#' Wrapper around collect_metadata for consistent naming.
+#' Package-specific wrapper around prompt4metadata that saves to 
+#' inst/extdata/metadata.json and integrates with fairenough workflow.
 #' 
-#' @param interactive Whether to use interactive prompts
-#' @param base_path Base path for the project
-#' @param verbose Whether to show messages
-#' @param ... Additional arguments passed to collect_metadata
+#' @param interactive Whether to use interactive prompts (default: TRUE)
+#' @param overwrite Whether to overwrite existing metadata (default: FALSE)
+#' @param base_path Base path for the project (default: uses get_base_path())
+#' @param verbose Whether to show detailed messages (default: TRUE)
+#' @param ... Additional arguments passed to prompt4metadata
 #' @return List containing metadata
 #' @export
-collect_metadata_wrapper <- function(interactive = TRUE,
+#' @examples
+#' \dontrun{
+#' # Interactive collection
+#' collect_metadata()
+#' 
+#' # Non-interactive with pre-filled data
+#' collect_metadata(
+#'   interactive = FALSE,
+#'   pkg_name = "mydata",
+#'   title = "My Dataset"
+#' )
+#' 
+#' # Overwrite existing
+#' collect_metadata(overwrite = TRUE)
+#' }
+collect_metadata <- function(interactive = TRUE,
+                            overwrite = FALSE,
                             base_path = NULL,
                             verbose = TRUE,
                             ...) {
   
   base_path <- get_base_path(base_path)
   
-  # Check for existing metadata
-  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+  # Construct save path
+  save_path <- file.path(base_path, "inst", "extdata", "metadata.json")
   
-  if (file.exists(metadata_path) && !interactive) {
-    if (verbose) cli::cli_alert_info("Loading existing metadata from {.path inst/extdata/metadata.json}")
-    metadata <- jsonlite::fromJSON(metadata_path)
-    return(metadata)
-  }
+  # Use prompt4metadata with save_path
+  metadata <- prompt4metadata(
+    interactive = interactive,
+    overwrite = overwrite,
+    save_path = save_path,
+    ...
+  )
   
-  # Call the existing collect_metadata function
-  metadata <- collect_metadata(interactive = interactive, ...)
-  
-  return(metadata)
-}
-
-#' Save metadata to JSON file
-#' 
-#' Saves metadata to inst/extdata/metadata.json for later use.
-#' 
-#' @param metadata List containing metadata
-#' @param base_path Base path for the project
-#' @param verbose Whether to show messages
-#' @return Path to saved file
-#' @export
-save_metadata <- function(metadata,
-                         base_path = NULL,
-                         verbose = TRUE) {
-  
-  base_path <- get_base_path(base_path)
-  
-  # Ensure directory exists
-  extdata_dir <- file.path(base_path, "inst", "extdata")
-  ensure_directory(extdata_dir, verbose = FALSE)
-  
-  # Save as JSON
-  metadata_path <- file.path(extdata_dir, "metadata.json")
-  jsonlite::write_json(metadata, metadata_path, pretty = TRUE, auto_unbox = TRUE)
-  
-  if (verbose) {
-    cli::cli_alert_success("Metadata saved to {.path inst/extdata/metadata.json}")
-  }
-  
-  return(invisible(metadata_path))
+  return(invisible(metadata))
 }
