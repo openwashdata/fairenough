@@ -446,7 +446,17 @@ setup_website <- function(base_path = NULL,
     metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
     
     if (file.exists(metadata_path)) {
-      metadata <- jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
+      # Use simplifyVector = FALSE to preserve list structure for whisker templating
+      metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+      
+      # Prepare authors data for Mustache iteration
+      # Add a flag for comma placement between authors
+      if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
+        for (i in seq_along(metadata$authors)) {
+          # Add flag for whether this is NOT the last author (for comma placement)
+          metadata$authors[[i]]$not_last <- i < length(metadata$authors)
+        }
+      }
     }
     
     # Use our own template function that respects base_path
