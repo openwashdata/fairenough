@@ -31,5 +31,17 @@ Data frame containing the dictionary
 }
 \description{
 Creates a data dictionary for all data files in the package.
-Can use LLM for automatic description generation.
+Can use LLM for automatic description generation. Works best when
+metadata.json exists as it uses the package description for context.
+}
+\examples{
+\dontrun{
+# Generate dictionary with LLM
+library(ellmer)
+chat <- chat_openai(model = "gpt-4")
+generate_dictionary(chat = chat, overwrite = TRUE)
+
+# Generate empty dictionary structure (no LLM)
+generate_dictionary()
+}
 }
