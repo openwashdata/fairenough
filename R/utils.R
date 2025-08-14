@@ -178,3 +178,85 @@ ensure_directory <- function(dir_path, description = NULL, recursive = TRUE, ver
   
   return(dir_path)
 }
+
+#' Use a template file with data substitution
+#' 
+#' Similar to usethis::use_template but respects base_path.
+#' Reads a template from the package, substitutes data, and writes to target location.
+#' 
+#' @param template Name of template file in inst/templates
+#' @param save_as Path to save file relative to base_path
+#' @param data List of data for substitution
+#' @param base_path Base path for the project
+#' @param package Package containing the template
+#' @param open Whether to open the file after creation
+#' @param verbose Whether to show messages
+#' @return Path to created file
+#' @export
+use_template <- function(template,
+                        save_as = template,
+                        data = list(),
+                        base_path = NULL,
+                        package = "fairenough",
+                        open = FALSE,
+                        verbose = TRUE) {
+  
+  base_path <- get_base_path(base_path)
+  
+  # Get template from package
+  template_path <- system.file("templates", template, package = package)
+  if (template_path == "") {
+    cli::cli_abort("Template {.file {template}} not found in package {.pkg {package}}")
+  }
+  
+  # Read template
+  template_content <- paste(readLines(template_path), collapse = "\n")
+  
+  # Use whisker for template rendering (same as usethis)
+  if (!requireNamespace("whisker", quietly = TRUE)) {
+    cli::cli_abort("Package {.pkg whisker} is required. Install it with: install.packages('whisker')")
+  }
+  
+  # Render template with whisker
+  rendered_content <- whisker::whisker.render(template_content, data)
+  
+  # Create output path
+  output_path <- file.path(base_path, save_as)
+  
+  # Ensure directory exists
+  output_dir <- dirname(output_path)
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+  
+  # Check if file exists and prompt
+  if (file.exists(output_path)) {
+    if (interactive()) {
+      if (!usethis::ui_yeah("Overwrite pre-existing file {usethis::ui_path(save_as)}?")) {
+        return(invisible(NULL))
+      }
+    }
+  }
+  
+  # Write file
+  writeLines(rendered_content, output_path)
+  
+  if (verbose) {
+    if (file.exists(output_path)) {
+      cli::cli_alert_success("Writing {.path {save_as}}")
+    } else {
+      cli::cli_alert_success("Creating {.path {save_as}}")
+    }
+  }
+  
+  # Open file if requested
+  if (open && interactive()) {
+    if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+      rstudioapi::navigateToFile(output_path)
+    } else {
+      utils::file.edit(output_path)
+    }
+  }
+  
+  return(invisible(output_path))
+}
