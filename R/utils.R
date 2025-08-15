@@ -41,6 +41,37 @@ get_base_path <- function(base_path = NULL) {
   return(normalized_path)
 }
 
+#' Get raw directory path with consistent handling across all functions
+#' 
+#' This function provides a consistent way to handle raw_dir across all fairenough functions.
+#' If raw_dir is provided, it sets the global option and returns the normalized path.
+#' If raw_dir is NULL, it checks for the global option, falling back to "data_raw"
+#' 
+#' @param raw_dir Optional base path to set
+#' @return Normalized base path
+#' @export
+get_raw_dir <- function(raw_dir = NULL) {
+  # If raw_dir is provided, set it as option and use it
+  if (!is.null(raw_dir)) {
+    normalized_path <- normalizePath(raw_dir, mustWork = TRUE)
+    options(fairenough.raw_dir = normalized_path)
+    return(normalized_path)
+  }
+  
+  # Otherwise, check for existing option
+  stored_path <- getOption("fairenough.raw_dir")
+  if (!is.null(stored_path)) {
+    return(stored_path)
+  }
+  
+  # Fall back to data_raw
+  default_path <- "data_raw"
+  
+  normalized_path <- normalizePath(default_path, mustWork = TRUE)
+  options(fairenough.raw_dir = normalized_path)
+  return(normalized_path)
+}
+
 #' Read data from various sources
 #' 
 #' This function reads data from a data frame, CSV file, or Excel file.

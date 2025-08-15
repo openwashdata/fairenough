@@ -3,7 +3,7 @@
 #' High-level function to initialize a data package project.
 #' Creates necessary directories, organizes data files, and configures git.
 #' 
-#' @param data_dir Name of the raw data directory (default: "data_raw")
+#' @param raw_dir Name of the raw data directory (default: "data_raw")
 #' @param gitignore Whether to add data_raw to .gitignore (default: TRUE)
 #' @param base_path Base path for the project (default: uses get_base_path())
 #' @param verbose Whether to show detailed messages (default: TRUE)
@@ -15,30 +15,31 @@
 #' setup()
 #' 
 #' # Custom data directory
-#' setup(data_dir = "raw_data")
+#' setup(raw_dir = "raw")
 #' 
 #' # Quiet mode
 #' setup(verbose = FALSE)
 #' }
-setup <- function(data_dir = "data_raw", 
+setup <- function(raw_dir = "data_raw", 
                   gitignore = TRUE, 
                   base_path = NULL,
                   verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
+  raw_dir <- get_raw_dir(raw_dir)
   
   if (verbose) cli::cli_h1("Setting up fairenough project")
   
   # Create all necessary directories
   dirs_created <- create_directories(
-    dirs = c(data_dir, "data", "inst/extdata", "inst/templates"),
+    dirs = c(raw_dir, "data", "inst/extdata"),
     base_path = base_path,
     verbose = verbose
   )
   
   # Move data files to data_raw
   files_moved <- move_data_files(
-    data_dir = data_dir,
+    raw_dir = raw_dir,
     base_path = base_path,
     verbose = verbose
   )
@@ -46,7 +47,7 @@ setup <- function(data_dir = "data_raw",
   # Setup gitignore if requested
   if (gitignore) {
     setup_gitignore(
-      data_dir = data_dir,
+      raw_dir = raw_dir,
       base_path = base_path,
       verbose = verbose
     )
@@ -73,7 +74,7 @@ setup <- function(data_dir = "data_raw",
 #' @param verbose Whether to show messages
 #' @return Character vector of created directories
 #' @export
-create_directories <- function(dirs = c("data_raw", "data", "inst/extdata", "inst/templates"),
+create_directories <- function(dirs = c("data_raw", "data", "inst/extdata"),
                               base_path = NULL,
                               verbose = TRUE) {
   
@@ -98,24 +99,24 @@ create_directories <- function(dirs = c("data_raw", "data", "inst/extdata", "ins
 #' 
 #' Moves CSV and Excel files from the project root to the data_raw directory.
 #' 
-#' @param data_dir Name of the raw data directory
+#' @param raw_dir Name of the raw data directory
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Character vector of moved files
 #' @export
-move_data_files <- function(data_dir = "data_raw",
+move_data_files <- function(raw_dir = "data_raw",
                            base_path = NULL,
                            verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
-  data_path <- file.path(base_path, data_dir)
+  data_path <- file.path(base_path, raw_dir)
   
   # Find all data files in root
   all_files <- list.files(base_path, full.names = TRUE)
   data_files <- filter_supported_files(all_files)
   
-  # Filter out files already in data_dir
-  data_files <- data_files[!grepl(paste0("/", data_dir, "/"), data_files)]
+  # Filter out files already in raw_dir
+  data_files <- data_files[!grepl(paste0("/", raw_dir, "/"), data_files)]
   
   moved_files <- character()
   
@@ -128,7 +129,7 @@ move_data_files <- function(data_dir = "data_raw",
       
       if (file.rename(file, new_path)) {
         moved_files <- c(moved_files, file_name)
-        if (verbose) cli::cli_alert_success("Moved {.file {file_name}} to {.path {data_dir}/}")
+        if (verbose) cli::cli_alert_success("Moved {.file {file_name}} to {.path {raw_dir}/}")
       } else {
         if (verbose) cli::cli_alert_warning("Could not move {.file {file_name}}")
       }
@@ -144,18 +145,18 @@ move_data_files <- function(data_dir = "data_raw",
 #' 
 #' Adds the data_raw directory to .gitignore to prevent committing raw data.
 #' 
-#' @param data_dir Name of the directory to ignore
+#' @param raw_dir Name of the directory to ignore
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating success
 #' @export
-setup_gitignore <- function(data_dir = "data_raw",
+setup_gitignore <- function(raw_dir = "data_raw",
                            base_path = NULL,
                            verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
   gitignore_path <- file.path(base_path, ".gitignore")
-  gitignore_entry <- paste0(data_dir, "/")
+  gitignore_entry <- paste0(raw_dir, "/")
   
   # Read existing .gitignore or create new
   if (file.exists(gitignore_path)) {

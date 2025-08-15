@@ -1,9 +1,8 @@
 #' Process all data files
 #' 
 #' High-level function to read, clean, and export all data files.
-#' Processes all files in the data_raw directory and exports them as .rda and CSV.
+#' Processes all files in the raw data directory and exports them as .rda and CSV.
 #' 
-#' @param data_dir Directory containing raw data files (default: "data_raw")
 #' @param auto_clean Whether to automatically clean data (default: TRUE)
 #' @param overwrite Whether to overwrite existing files (default: TRUE)
 #' @param base_path Base path for the project (default: uses get_base_path())
@@ -21,30 +20,30 @@
 #' # Preserve existing files
 #' process(overwrite = FALSE)
 #' }
-process <- function(data_dir = "data_raw",
-                   auto_clean = TRUE,
+process <- function(auto_clean = TRUE,
                    overwrite = TRUE,
                    base_path = NULL,
                    verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
-  data_path <- file.path(base_path, data_dir)
+  raw_dir <- get_raw_dir()
+  raw_path <- file.path(base_path, raw_dir)
   
   if (verbose) cli::cli_h1("Processing data files")
   
   # Check if data_raw directory exists
-  if (!fs::dir_exists(data_path)) {
-    cli::cli_alert_warning("Directory {.path {data_dir}} not found")
+  if (!fs::dir_exists(raw_path)) {
+    cli::cli_alert_warning("Directory {.path {raw_dir}} not found")
     cli::cli_alert_info("Run {.fn setup} first to create project structure")
     return(invisible(NULL))
   }
   
   # Find all data files
-  all_files <- list.files(data_path, full.names = TRUE)
+  all_files <- list.files(raw_path, full.names = TRUE)
   data_files <- filter_supported_files(all_files)
   
   if (length(data_files) == 0) {
-    cli::cli_alert_warning("No data files found in {.path {data_dir}}")
+    cli::cli_alert_warning("No data files found in {.path {raw_dir}}")
     supported <- paste(get_supported_extensions(), collapse = ", ")
     cli::cli_alert_info("Supported formats: {supported}")
     return(invisible(NULL))
@@ -186,13 +185,13 @@ export_rda <- function(data,
   base_path <- get_base_path(base_path)
   
   # Ensure data directory exists
-  data_dir <- file.path(base_path, "data")
-  if (!fs::dir_exists(data_dir)) {
-    fs::dir_create(data_dir)
+  raw_dir <- file.path(base_path, "data")
+  if (!fs::dir_exists(raw_dir)) {
+    fs::dir_create(raw_dir)
   }
   
   # Create file path
-  rda_path <- file.path(data_dir, paste0(name, ".rda"))
+  rda_path <- file.path(raw_dir, paste0(name, ".rda"))
   
   # Check if file exists
   if (file.exists(rda_path) && !overwrite) {
