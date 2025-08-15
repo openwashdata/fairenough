@@ -53,9 +53,8 @@ get_base_path <- function(base_path = NULL) {
 get_raw_dir <- function(raw_dir = NULL) {
   # If raw_dir is provided, set it as option and use it
   if (!is.null(raw_dir)) {
-    normalized_path <- normalizePath(raw_dir, mustWork = TRUE)
-    options(fairenough.raw_dir = normalized_path)
-    return(normalized_path)
+    options(fairenough.raw_dir = raw_dir)
+    return(raw_dir)
   }
   
   # Otherwise, check for existing option
