@@ -1,75 +1,405 @@
-#' Build data package
+#' Build R data package in modern 3-step process
 #' 
-#' High-level function to build the complete data package.
-#' Applies metadata to DESCRIPTION, generates README, and sets up website.
+#' Orchestrates complete package build using modern R development tools.
+#' Separates package structure, documentation, and validation for better control.
 #' 
-#' @param check Whether to run R CMD check (default: TRUE)
-#' @param website Whether to setup pkgdown website (default: TRUE)
+#' @param step Which build step to run: "all" (default), "package", "docs", or "validate"  
 #' @param base_path Base path for the project (default: uses get_base_path())
 #' @param verbose Whether to show detailed messages (default: TRUE)
 #' @return Invisibly returns build status
 #' @export
 #' @examples
 #' \dontrun{
-#' # Full build with checks
+#' # Full 3-step build
 #' build()
 #' 
-#' # Quick build without checks
-#' build(check = FALSE)
+#' # Just build package structure
+#' build(step = "package")
 #' 
-#' # Build without website
-#' build(website = FALSE)
+#' # Build docs and website only
+#' build(step = "docs")
 #' }
-build <- function(check = TRUE,
-                 website = TRUE,
+build <- function(step = "all",
                  base_path = NULL,
                  verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
-
-  # Use withr/usethis to temporarily set project path for this function
-  # This ensures use_template writes to the correct location
-  if (requireNamespace("withr", quietly = TRUE)) {
-    withr::local_options(list(usethis.quiet = TRUE))
-  }
-  usethis::local_project(base_path, setwd = FALSE)
   
-  if (verbose) cli::cli_h1("Building data package")
+  if (verbose) cli::cli_h1("Building data package with modern workflow")
   
-  # Apply metadata to DESCRIPTION and other files
-  if (verbose) cli::cli_h2("Applying Metadata")
-  apply_metadata(base_path = base_path, verbose = verbose)
+  # Execute build steps based on parameter
+  package_result <- NULL
+  docs_result <- NULL
+  validation_result <- NULL
   
-  # Generate data documentation
-  if (verbose) cli::cli_h2("Generating Data Documentation")
-  generate_data_documentation(base_path = base_path, verbose = verbose)
-  
-  # Generate README from template
-  if (verbose) cli::cli_h2("Generating README")
-  generate_readme(base_path = base_path, verbose = verbose)
-  
-  # Setup website if requested
-  if (website) {
-    if (verbose) cli::cli_h2("Setting up Website")
-    setup_website(base_path = base_path, verbose = verbose)
+  if (step %in% c("all", "package")) {
+    package_result <- build_package(base_path = base_path, verbose = verbose)
   }
   
-  # Run checks if requested
-  if (check) {
-    if (verbose) cli::cli_h2("Running Package Checks")
-    check_result <- run_checks(base_path = base_path, verbose = verbose)
+  if (step %in% c("all", "docs")) {
+    docs_result <- build_docs(base_path = base_path, verbose = verbose)
   }
   
-  if (verbose) {
-    cli::cli_alert_success("Package build complete!")
-    cli::cli_alert_info("Next step: Run {.fn publish} to prepare for distribution")
+  if (step %in% c("all", "validate")) {
+    validation_result <- validate_package(base_path = base_path, verbose = verbose)
+  }
+  
+  if (verbose && step == "all") {
+    cli::cli_alert_success("Modern 3-step build complete!")
+    cli::cli_alert_info("Package structure, documentation, and validation finished")
   }
   
   invisible(list(
     base_path = base_path,
-    check_passed = if (check) check_result else NA,
-    website_setup = website
+    step = step,
+    package_result = package_result,
+    docs_result = docs_result,
+    validation_result = validation_result
   ))
+}
+
+#' Ensure .Rproj file exists for proper usethis context
+#' 
+#' Creates an .Rproj file if one doesn't exist in the project directory.
+#' This ensures usethis functions work correctly with the project context.
+#' 
+#' @param base_path Base path for the project
+#' @param verbose Whether to show messages
+#' @return Path to .Rproj file (invisibly)
+#' @noRd
+ensure_rproj <- function(base_path, verbose = TRUE) {
+  
+  # Get package name from DESCRIPTION if it exists
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (file.exists(desc_path)) {
+    desc_obj <- desc::desc(file = desc_path)
+    proj_name <- tryCatch(
+      desc_obj$get_field("Package"),
+      error = function(e) basename(base_path)
+    )
+  } else {
+    proj_name <- basename(base_path)
+  }
+  
+  # Check for existing .Rproj file
+  existing_rproj <- list.files(base_path, pattern = "\\.Rproj$", full.names = TRUE)
+  
+  if (length(existing_rproj) == 0) {
+    # Use usethis to create project properly if no .Rproj exists
+    if (verbose) cli::cli_alert_info("Creating project file for {.path {proj_name}}")
+    
+    # Temporarily suppress usethis messages if not verbose
+    withr::local_options(list(usethis.quiet = !verbose))
+    
+    # Create the project (this also sets it as active)
+    tryCatch({
+      # This creates .Rproj and sets it as the active project
+      usethis::create_project(path = base_path, open = FALSE, rstudio = TRUE)
+      if (verbose) cli::cli_alert_success("Created and activated project at {.path {base_path}}")
+    }, error = function(e) {
+      # If create_project fails (e.g., already exists), just set the project
+      usethis::proj_set(base_path)
+      if (verbose) cli::cli_alert_info("Set active project to {.path {base_path}}")
+    })
+    
+    invisible(file.path(base_path, paste0(proj_name, ".Rproj")))
+  } else {
+    # If .Rproj exists, just set it as active
+    usethis::proj_set(base_path)
+    if (verbose) cli::cli_alert_info("Using existing project at {.path {base_path}}")
+    invisible(existing_rproj[1])
+  }
+}
+
+#' Build package structure and core files
+#' 
+#' Creates the essential R package structure using modern development tools.
+#' Generates DESCRIPTION, NAMESPACE, roxygen docs, LICENSE, and validates structure.
+#' 
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages
+#' @return Logical indicating success
+#' @export
+build_package <- function(base_path = NULL, verbose = TRUE) {
+  
+  base_path <- get_base_path(base_path)
+  
+  # Store current project before changing
+  old_proj <- tryCatch(usethis::proj_get(), error = function(e) NULL)
+  
+  # Ensure .Rproj file exists and set as active project
+  ensure_rproj(base_path, verbose)
+  
+  # Restore previous project on exit
+  on.exit({
+    if (!is.null(old_proj)) usethis::proj_set(old_proj)
+  }, add = TRUE)
+  
+  if (verbose) cli::cli_h2("Step 1: Building Package Structure")
+  
+  # 1. Apply metadata to DESCRIPTION
+  if (verbose) cli::cli_alert_info("Applying metadata to DESCRIPTION")
+  apply_result <- apply_metadata(base_path = base_path, verbose = verbose)
+  
+  # 2. Generate data documentation files in R/
+  if (verbose) cli::cli_alert_info("Generating dataset documentation")  
+  doc_result <- generate_data_documentation(base_path = base_path, verbose = verbose)
+  
+  # 3. Generate NAMESPACE and .Rd files using roxygen2
+  if (verbose) cli::cli_alert_info("Running roxygen2 to generate NAMESPACE and man pages")
+  tryCatch({
+    roxygen2::roxygenise(base_path)
+    if (verbose) cli::cli_alert_success("Generated NAMESPACE and .Rd files")
+  }, error = function(e) {
+    cli::cli_alert_warning("Roxygen2 failed: {e$message}")
+    return(FALSE)
+  })
+  
+  # 4. Create LICENSE file if needed
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (file.exists(desc_path)) {
+    desc_obj <- desc::desc(file = desc_path)
+    license <- desc_obj$get_field("License")
+    license_file <- file.path(base_path, "LICENSE")
+    license_md_file <- file.path(base_path, "LICENSE.md")
+    
+    # Check if any license file exists
+    if (!file.exists(license_file) && !file.exists(license_md_file)) {
+      if (verbose) cli::cli_alert_info("Creating LICENSE file for {license}")
+      
+      tryCatch({
+        # Match license type and use appropriate usethis function
+        license_created <- FALSE
+        
+        if (grepl("CC-BY-4\\.0|CC BY 4\\.0", license, ignore.case = TRUE)) {
+          usethis::use_ccby_license()
+          license_created <- TRUE
+        } else if (grepl("CC0|CC-0", license, ignore.case = TRUE)) {
+          usethis::use_cc0_license()
+          license_created <- TRUE
+        } else if (grepl("MIT", license, ignore.case = TRUE)) {
+          usethis::use_mit_license()
+          license_created <- TRUE
+        } else if (grepl("GPL-3|GPL \\(>= 3\\)", license, ignore.case = TRUE)) {
+          usethis::use_gpl_license(version = 3)
+          license_created <- TRUE
+        } else if (grepl("GPL-2|GPL \\(>= 2\\)", license, ignore.case = TRUE)) {
+          usethis::use_gpl_license(version = 2)
+          license_created <- TRUE
+        } else if (grepl("Apache-2\\.0|Apache 2\\.0", license, ignore.case = TRUE)) {
+          usethis::use_apache_license(version = "2.0")
+          license_created <- TRUE
+        } else if (grepl("AGPL-3|AGPL \\(>= 3\\)", license, ignore.case = TRUE)) {
+          usethis::use_agpl_license(version = 3)
+          license_created <- TRUE
+        } else if (grepl("LGPL-3|LGPL \\(>= 3\\)", license, ignore.case = TRUE)) {
+          usethis::use_lgpl_license(version = 3)
+          license_created <- TRUE
+        } else if (grepl("LGPL-2\\.1|LGPL \\(>= 2\\.1\\)", license, ignore.case = TRUE)) {
+          usethis::use_lgpl_license(version = "2.1")
+          license_created <- TRUE
+        } else if (grepl("Proprietary", license, ignore.case = TRUE)) {
+          usethis::use_proprietary_license()
+          license_created <- TRUE
+        }
+        
+        if (license_created) {
+          if (verbose) cli::cli_alert_success("Created LICENSE file")
+        } else {
+          if (verbose) cli::cli_alert_warning("Unknown license type: {license}")
+          if (verbose) cli::cli_alert_info("Consider using one of: CC-BY-4.0, CC0-1.0, MIT, GPL-3, GPL-2, Apache-2.0, AGPL-3, LGPL-3, LGPL-2.1")
+        }
+      }, error = function(e) {
+        cli::cli_alert_warning("Could not create LICENSE: {e$message}")
+      })
+    }
+  }
+  
+  # 5. Ensure standard .gitignore exists
+  gitignore_file <- file.path(base_path, ".gitignore")
+  if (!file.exists(gitignore_file)) {
+    if (verbose) cli::cli_alert_info("Creating .gitignore")
+    tryCatch({
+
+      usethis::use_git_ignore(c("*.DS_Store", ".Rhistory", ".RData", ".Ruserdata"))
+      if (verbose) cli::cli_alert_success("Created .gitignore")
+    }, error = function(e) {
+      cli::cli_alert_warning("Could not create .gitignore: {e$message}")
+    })
+  }
+  
+  # 6. Final package validation with devtools
+  if (verbose) cli::cli_alert_info("Validating package structure")
+  tryCatch({
+    devtools::document(base_path)
+    if (verbose) cli::cli_alert_success("Package structure validation complete")
+  }, error = function(e) {
+    cli::cli_alert_warning("Package validation issues: {e$message}")
+  })
+  
+  if (verbose) cli::cli_alert_success("Package build step complete!")
+  
+  invisible(TRUE)
+}
+
+#' Build documentation and website
+#' 
+#' Generates README and pkgdown website using modern usethis helpers.
+#' Since both use inst/templates/README.Rmd, they are built together.
+#' 
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages
+#' @return Logical indicating success
+#' @export
+build_docs <- function(base_path = NULL, verbose = TRUE) {
+  
+  base_path <- get_base_path(base_path)
+  
+  # Store current project before changing
+  old_proj <- tryCatch(usethis::proj_get(), error = function(e) NULL)
+  
+  # Ensure .Rproj file exists and set as active project
+  ensure_rproj(base_path, verbose)
+  
+  # Restore previous project on exit
+  on.exit({
+    if (!is.null(old_proj)) usethis::proj_set(old_proj)
+  }, add = TRUE)
+  
+  if (verbose) cli::cli_h2("Step 2: Building Documentation & Website")
+  
+  # 1. Generate README from template
+  if (verbose) cli::cli_alert_info("Generating README from template")
+  readme_result <- generate_readme(base_path = base_path, verbose = verbose)
+  
+  # 2. Setup pkgdown website with modern approach
+  if (verbose) cli::cli_alert_info("Setting up pkgdown website")
+  
+  # Check if pkgdown is available
+  if (!requireNamespace("pkgdown", quietly = TRUE)) {
+    cli::cli_alert_warning("Package {.pkg pkgdown} not installed")
+    cli::cli_alert_info("Install it with: install.packages('pkgdown')")
+    return(invisible(FALSE))
+  }
+  
+  # Use modern usethis helper for GitHub Pages setup if not already configured
+  gh_pages_file <- file.path(base_path, ".github", "workflows", "pkgdown.yaml")
+  if (!file.exists(gh_pages_file)) {
+    if (verbose) cli::cli_alert_info("Setting up GitHub Pages deployment")
+    tryCatch({
+      usethis::use_pkgdown_github_pages()
+      if (verbose) cli::cli_alert_success("GitHub Pages deployment configured")
+    }, error = function(e) {
+      # Fall back to regular setup if GitHub Pages fails
+      if (verbose) cli::cli_alert_info("Setting up standard pkgdown site")
+      tryCatch({
+        usethis::use_pkgdown()
+        if (verbose) cli::cli_alert_success("Pkgdown site configured")
+      }, error = function(e2) {
+        cli::cli_alert_warning("Could not setup pkgdown: {e2$message}")
+      })
+    })
+  }
+  
+  # 3. Generate the website using existing setup_website function
+  website_result <- setup_website(base_path = base_path, verbose = verbose)
+  
+  if (verbose) cli::cli_alert_success("Documentation and website build complete!")
+  
+  invisible(list(
+    readme = readme_result,
+    website = website_result
+  ))
+}
+
+#' Validate package with modern tools
+#' 
+#' Runs comprehensive package validation including R CMD check,
+#' spell checking, and best practices analysis.
+#' 
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages
+#' @param spell_check Whether to run spell check (default: TRUE)
+#' @param good_practice Whether to run good practice checks (default: FALSE, as it's slow)
+#' @return List with validation results
+#' @export
+validate_package <- function(base_path = NULL, 
+                            verbose = TRUE,
+                            spell_check = TRUE,
+                            good_practice = FALSE) {
+  
+  base_path <- get_base_path(base_path)
+  
+  if (verbose) cli::cli_h2("Step 3: Validating Package")
+  
+  results <- list()
+  
+  # 1. Run standard R CMD check
+  if (verbose) cli::cli_alert_info("Running R CMD check")
+  results$check <- run_checks(base_path = base_path, verbose = verbose)
+  
+  # 2. Spell check (if requested)
+  if (spell_check) {
+    if (verbose) cli::cli_alert_info("Running spell check")
+    tryCatch({
+      # Setup spell check if not already configured
+      wordlist_file <- file.path(base_path, "inst", "WORDLIST")
+      if (!file.exists(wordlist_file)) {
+        usethis::use_spell_check()
+      }
+      
+      # Run spell check
+      if (requireNamespace("spelling", quietly = TRUE)) {
+        spell_errors <- spelling::spell_check_package(base_path)
+        if (nrow(spell_errors) > 0) {
+          if (verbose) {
+            cli::cli_alert_warning("Found {nrow(spell_errors)} potential spelling issue{?s}")
+            cli::cli_alert_info("Run spelling::spell_check_package() for details")
+          }
+          results$spelling <- spell_errors
+        } else {
+          if (verbose) cli::cli_alert_success("No spelling issues found")
+          results$spelling <- NULL
+        }
+      }
+    }, error = function(e) {
+      cli::cli_alert_warning("Spell check failed: {e$message}")
+      results$spelling <- NA
+    })
+  }
+  
+  # 3. Good practices check (if requested - can be slow)
+  if (good_practice) {
+    if (verbose) cli::cli_alert_info("Running good practices check (this may take a while)")
+    
+    if (requireNamespace("goodpractice", quietly = TRUE)) {
+      tryCatch({
+        gp_result <- goodpractice::gp(base_path, quiet = !verbose)
+        results$good_practice <- gp_result
+        
+        if (verbose) {
+          # Show summary of issues
+          if (length(goodpractice::failed_checks(gp_result)) > 0) {
+            cli::cli_alert_warning("Some good practice checks failed")
+            cli::cli_alert_info("Run goodpractice::gp() for details")
+          } else {
+            cli::cli_alert_success("All good practice checks passed")
+          }
+        }
+      }, error = function(e) {
+        cli::cli_alert_warning("Good practice check failed: {e$message}")
+        results$good_practice <- NA
+      })
+    } else {
+      cli::cli_alert_warning("Package {.pkg goodpractice} not installed")
+      cli::cli_alert_info("Install it with: install.packages('goodpractice')")
+      results$good_practice <- NA
+    }
+  }
+  
+  if (verbose) cli::cli_alert_success("Package validation complete!")
+  
+  invisible(results)
 }
 
 #' Generate roxygen documentation for datasets
