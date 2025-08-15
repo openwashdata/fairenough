@@ -257,24 +257,6 @@ gendict <- function(data, chat, context = NULL, sample_size = 5, method = "seque
       cli::cli_abort("Cannot proceed without LLM connection")
     }
   }
-
-  # Prepare context from DESCRIPTION file
-  context_from_desc <- ""
-  tryCatch({
-    desc_obj <- desc::desc()
-    title_val <- desc_obj$get_field("Title")
-    description_val <- desc_obj$get_field("Description")
-
-    if (!is.null(title_val) && nzchar(title_val)) {
-      context_from_desc <- paste0(context_from_desc, "Package Title: ", title_val, "\n")
-    }
-    if (!is.null(description_val) && nzchar(description_val)) {
-      context_from_desc <- paste0(context_from_desc, "Package Description: ", description_val, "\n")
-    }
-  }, error = function(e) {
-    cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
-  })
-
   # Define the allowed data types
   allowed_data_types <- c(
     "logical", "integer", "numeric", "text", "datetime",
@@ -325,23 +307,9 @@ gendict <- function(data, chat, context = NULL, sample_size = 5, method = "seque
     # Construct a comprehensive prompt for better descriptions
     prompt_context <- ""
     if (!is.null(context)) {
-      prompt_context <- paste0("Dataset context: ", context, ".")
+      prompt_context <- context
     } else {
-      # Prepare context from DESCRIPTION file
-      tryCatch({
-        desc_obj <- desc::desc()
-        title_val <- desc_obj$get_field("Title")
-        description_val <- desc_obj$get_field("Description")
-
-        if (!is.null(title_val) && nzchar(title_val)) {
-          prompt_context <- paste0(prompt_context, "Dataset Title: ", title_val, ".")
-        }
-        if (!is.null(description_val) && nzchar(description_val)) {
-          prompt_context <- paste0(prompt_context, "Dataset Description: ", description_val, ".")
-        }
-      }, error = function(e) {
-        cli::cli_alert_warning("Could not read DESCRIPTION file using 'desc' package: {e$message}")
-      })
+      cli::cli_alert_warning("Use {.code context = 'Detailed description of the data.'} to give more context to the LLM")
     }
     
     # Adjust instructions based on whether variable is continuous

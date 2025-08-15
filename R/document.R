@@ -15,13 +15,13 @@
 #' @export
 #' @examples
 #' \dontrun{
+#' # Generate empty dictionary structure (no LLM)
+#' generate_dictionary()
+#' 
 #' # Generate dictionary with LLM
 #' library(ellmer)
 #' chat <- chat_openai(model = "gpt-4")
 #' generate_dictionary(chat = chat, overwrite = TRUE)
-#' 
-#' # Generate empty dictionary structure (no LLM)
-#' generate_dictionary()
 #' }
 generate_dictionary <- function(chat = NULL,
                                context = NULL,
@@ -93,7 +93,7 @@ generate_dictionary <- function(chat = NULL,
   if (file.exists(metadata_path) && is.null(context)) {
     metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
     if (!is.null(metadata$package$description)) {
-      context <- paste("This dataset is part of a package:", metadata$package$description)
+      context <- paste("Data's general context:", metadata$package$description)
       if (verbose) cli::cli_alert_info("Using package description as context for LLM")
     }
   }
