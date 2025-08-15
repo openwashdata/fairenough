@@ -67,9 +67,8 @@ get_raw_dir <- function(raw_dir = NULL) {
   # Fall back to data_raw
   default_path <- "data_raw"
   
-  normalized_path <- normalizePath(default_path, mustWork = TRUE)
-  options(fairenough.raw_dir = normalized_path)
-  return(normalized_path)
+  options(fairenough.raw_dir = default_path)
+  return(default_path)
 }
 
 #' Read data from various sources
