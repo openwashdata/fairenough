@@ -289,3 +289,118 @@ use_template <- function(template,
   
   return(invisible(output_path))
 }
+
+#' Update metadata.json with new data
+#' 
+#' Adds or updates data in metadata.json file. Creates the file if it doesn't exist.
+#' 
+#' @param key Top-level key in metadata.json (e.g., "datasets", "package")
+#' @param data Data to add/update for the key
+#' @param base_path Base path for the project
+#' @param verbose Whether to show messages
+#' @return Updated metadata list (invisibly)
+#' @export
+update_metadata <- function(key, data, base_path = NULL, verbose = TRUE) {
+  base_path <- get_base_path(base_path)
+  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+  
+  # Ensure directory exists
+  ensure_directory(file.path(base_path, "inst", "extdata"), verbose = FALSE)
+  
+  # Load existing metadata or create new
+  if (file.exists(metadata_path)) {
+    metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+  } else {
+    metadata <- list()
+    if (verbose) cli::cli_alert_info("Creating new metadata.json")
+  }
+  
+  # Update the specific key
+  metadata[[key]] <- data
+  
+  # Save back to file
+  jsonlite::write_json(
+    metadata,
+    metadata_path,
+    pretty = TRUE,
+    auto_unbox = TRUE
+  )
+  
+  if (verbose) {
+    cli::cli_alert_success("Updated metadata.json with {.field {key}} data")
+  }
+  
+  invisible(metadata)
+}
+
+#' Get metadata from metadata.json
+#' 
+#' Reads and returns data from metadata.json file
+#' 
+#' @param key Optional key to retrieve specific data (e.g., "datasets")
+#' @param base_path Base path for the project
+#' @return Metadata list or specific key data if requested
+#' @export
+get_metadata <- function(key = NULL, base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+  
+  if (!file.exists(metadata_path)) {
+    return(NULL)
+  }
+  
+  metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+  
+  if (!is.null(key)) {
+    return(metadata[[key]])
+  }
+  
+  return(metadata)
+}
+
+#' Collect dataset information from .rda files
+#' 
+#' Scans data directory for .rda files and collects variable information
+#' 
+#' @param base_path Base path for the project
+#' @return Data frame with dataset information
+#' @export
+collect_dataset_info <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  
+  # Check data directory
+  data_dir <- file.path(base_path, "data")
+  if (!fs::dir_exists(data_dir)) {
+    return(NULL)
+  }
+  
+  # Find all .rda files
+  rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
+  
+  if (length(rda_files) == 0) {
+    return(NULL)
+  }
+  
+  # Collect dataset information
+  datasets <- list()
+  
+  for (rda_file in rda_files) {
+    # Load data
+    temp_env <- new.env()
+    load(rda_file, envir = temp_env)
+    data_name <- ls(envir = temp_env)[1]
+    data <- get(data_name, envir = temp_env)
+    
+    # Create dataset info
+    datasets[[data_name]] <- list(
+      rows = nrow(data),
+      cols = ncol(data),
+      variables = list(
+        names = names(data),
+        types = sapply(data, function(x) class(x)[1], USE.NAMES = FALSE)
+      )
+    )
+  }
+  
+  return(datasets)
+}

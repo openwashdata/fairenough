@@ -89,6 +89,12 @@ process <- function(raw_dir = NULL,
     })
   }
   
+  # Save dataset names to metadata.json
+  if (length(processed_files) > 0) {
+    dataset_names <- names(processed_files)
+    update_metadata("datasets", dataset_names, base_path, verbose = verbose)
+  }
+  
   if (verbose) {
     cli::cli_alert_success("Processing complete: {length(processed_files)}/{length(data_files)} files")
     cli::cli_alert_info("Next step: Run {.fn document} to generate documentation")

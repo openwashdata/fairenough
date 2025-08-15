@@ -43,38 +43,26 @@ generate_dictionary <- function(chat = NULL,
     return(invisible(utils::read.csv(dict_path)))
   }
   
-  # Check data directory
-  data_dir <- file.path(base_path, "data")
-  if (!fs::dir_exists(data_dir)) {
-    cli::cli_alert_warning("No data directory found")
-    cli::cli_alert_info("Run {.fn process} first to process your data files")
-    return(invisible(NULL))
-  }
+  # Collect variable information using the utility function
+  datasets_info <- collect_dataset_info(base_path)
   
-  # Find all .rda files
-  rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
-  
-  if (length(rda_files) == 0) {
+  if (is.null(datasets_info)) {
     cli::cli_alert_warning("No .rda files found in {.path data/}")
     cli::cli_alert_info("Run {.fn process} first to process your data files")
     return(invisible(NULL))
   }
   
-  # Collect variable information
+  # Convert datasets_info to the all_vars format needed for dictionary
   all_vars <- data.frame()
   
-  for (rda_file in rda_files) {
-    # Load data
-    temp_env <- new.env()
-    load(rda_file, envir = temp_env)
-    data_name <- ls(envir = temp_env)[1]
-    data <- get(data_name, envir = temp_env)
+  for (data_name in names(datasets_info)) {
+    dataset <- datasets_info[[data_name]]
     
     # Create variable info
     var_info <- data.frame(
       file_name = data_name,
-      variable_name = names(data),
-      variable_type = sapply(data, function(x) class(x)[1]),
+      variable_name = dataset$variables$names,
+      variable_type = dataset$variables$types,
       stringsAsFactors = FALSE
     )
     
@@ -204,13 +192,32 @@ collect_metadata <- function(interactive = TRUE,
   # Construct save path
   save_path <- file.path(base_path, "inst", "extdata", "metadata.json")
   
-  # Use prompt4metadata with save_path
-  metadata <- prompt4metadata(
+  # Get existing metadata
+  existing_metadata <- get_metadata(base_path = base_path)
+  
+  # Use prompt4metadata to collect new metadata
+  new_metadata <- prompt4metadata(
     interactive = interactive,
-    overwrite = overwrite,
-    save_path = save_path,
+    overwrite = FALSE,
+    save_path = NULL,  # Don't let prompt4metadata save directly
     ...
   )
+  
+  # Update keys from prompt4metadata based on overwrite setting
+  for (key in names(new_metadata)) {
+    if (overwrite || is.null(existing_metadata[[key]])) {
+      update_metadata(key, new_metadata[[key]], base_path, verbose = FALSE)
+    } else if (verbose) {
+      cli::cli_alert_info("Skipping existing {.field {key}} data (use overwrite = TRUE to replace)")
+    }
+  }
+  
+  if (verbose) {
+    cli::cli_alert_success("Metadata collection complete")
+  }
+  
+  # Return the complete metadata
+  metadata <- get_metadata(base_path = base_path)
   
   return(invisible(metadata))
 }
