@@ -36,12 +36,12 @@ metadata.json exists as it uses the package description for context.
 }
 \examples{
 \dontrun{
+# Generate empty dictionary structure (no LLM)
+generate_dictionary()
+
 # Generate dictionary with LLM
 library(ellmer)
 chat <- chat_openai(model = "gpt-4")
 generate_dictionary(chat = chat, overwrite = TRUE)
-
-# Generate empty dictionary structure (no LLM)
-generate_dictionary()
 }
 }

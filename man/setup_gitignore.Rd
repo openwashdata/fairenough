@@ -4,10 +4,10 @@
 \alias{setup_gitignore}
 \title{Setup gitignore for data directory}
 \usage{
-setup_gitignore(data_dir = "data_raw", base_path = NULL, verbose = TRUE)
+setup_gitignore(raw_dir = "data_raw", base_path = NULL, verbose = TRUE)
 }
 \arguments{
-\item{data_dir}{Name of the directory to ignore}
+\item{raw_dir}{Name of the directory to ignore}
 
 \item{base_path}{Base path for the project}
 

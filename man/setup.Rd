@@ -4,15 +4,10 @@
 \alias{setup}
 \title{Setup fairenough project structure}
 \usage{
-setup(
-  data_dir = "data_raw",
-  gitignore = TRUE,
-  base_path = NULL,
-  verbose = TRUE
-)
+setup(raw_dir = "data_raw", gitignore = TRUE, base_path = NULL, verbose = TRUE)
 }
 \arguments{
-\item{data_dir}{Name of the raw data directory (default: "data_raw")}
+\item{raw_dir}{Name of the raw data directory (default: "data_raw")}
 
 \item{gitignore}{Whether to add data_raw to .gitignore (default: TRUE)}
 
@@ -33,7 +28,7 @@ Creates necessary directories, organizes data files, and configures git.
 setup()
 
 # Custom data directory
-setup(data_dir = "raw_data")
+setup(raw_dir = "raw")
 
 # Quiet mode
 setup(verbose = FALSE)

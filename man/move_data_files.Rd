@@ -4,10 +4,10 @@
 \alias{move_data_files}
 \title{Move data files to raw data directory}
 \usage{
-move_data_files(data_dir = "data_raw", base_path = NULL, verbose = TRUE)
+move_data_files(raw_dir = "data_raw", base_path = NULL, verbose = TRUE)
 }
 \arguments{
-\item{data_dir}{Name of the raw data directory}
+\item{raw_dir}{Name of the raw data directory}
 
 \item{base_path}{Base path for the project}
 

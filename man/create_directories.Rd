@@ -5,7 +5,7 @@
 \title{Create project directories}
 \usage{
 create_directories(
-  dirs = c("data_raw", "data", "inst/extdata", "inst/templates"),
+  dirs = c("data_raw", "data", "inst/extdata"),
   base_path = NULL,
   verbose = TRUE
 )

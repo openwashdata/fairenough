@@ -5,7 +5,7 @@
 \title{Process all data files}
 \usage{
 process(
-  data_dir = "data_raw",
+  raw_dir = NULL,
   auto_clean = TRUE,
   overwrite = TRUE,
   base_path = NULL,
@@ -13,7 +13,7 @@ process(
 )
 }
 \arguments{
-\item{data_dir}{Directory containing raw data files (default: "data_raw")}
+\item{raw_dir}{Directory containing raw data files (default: "data_raw")}
 
 \item{auto_clean}{Whether to automatically clean data (default: TRUE)}
 
@@ -28,7 +28,7 @@ Invisibly returns a list of processed files
 }
 \description{
 High-level function to read, clean, and export all data files.
-Processes all files in the data_raw directory and exports them as .rda and CSV.
+Processes all files in the raw data directory and exports them as .rda and CSV.
 }
 \examples{
 \dontrun{
