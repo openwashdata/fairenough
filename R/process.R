@@ -91,7 +91,7 @@ process <- function(raw_dir = NULL,
   
   # Save dataset names to metadata.json
   if (length(processed_files) > 0) {
-    dataset_names <- names(processed_files)
+    dataset_names <- list(names(processed_files))
     update_metadata("datasets", dataset_names, base_path, verbose = verbose)
   }
   
