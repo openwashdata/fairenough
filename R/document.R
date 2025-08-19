@@ -3,7 +3,7 @@
 #' 
 #' Creates a data dictionary for all data files in the package.
 #' Can use LLM for automatic description generation. Works best when
-#' metadata.json exists as it uses the package description for context.
+#' package metadata exists in DESCRIPTION as it uses the package description for context.
 #' 
 #' @param chat Optional chat object for LLM-based generation
 #' @param context Optional context for LLM generation
@@ -69,20 +69,17 @@ generate_dictionary <- function(chat = NULL,
     all_vars <- rbind(all_vars, var_info)
   }
   
-  # Check for metadata.json to enhance context
-  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
-  if (!file.exists(metadata_path) && !is.null(chat) && verbose) {
-    cli::cli_alert_warning("No metadata.json found")
-    cli::cli_alert_info("generate_dictionary uses package description as context for better LLM generation")
-    cli::cli_alert_info("Consider running {.fn collect_metadata} first for improved results")
-  }
-  
-  # Load metadata for context if available and no context provided
-  if (file.exists(metadata_path) && is.null(context)) {
-    metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
-    if (!is.null(metadata$package$description)) {
+  # Check for metadata in DESCRIPTION to enhance context
+  if (is.null(context)) {
+    metadata <- get_metadata_from_desc(base_path)
+    if (!is.null(metadata) && !is.null(metadata$package$description)) {
       context <- paste("Data's general context:", metadata$package$description)
-      if (verbose) cli::cli_alert_info("Using package description as context for LLM")
+      if (verbose && !is.null(chat)) {
+        cli::cli_alert_info("Using package description from DESCRIPTION as context for LLM")
+      }
+    } else if (!is.null(chat) && verbose) {
+      cli::cli_alert_info("No package description found in DESCRIPTION")
+      cli::cli_alert_info("Consider running {.fn collect_metadata} first for improved LLM results")
     }
   }
   
@@ -157,7 +154,7 @@ generate_dictionary <- function(chat = NULL,
 #' Collect package metadata
 #' 
 #' Package-specific wrapper around prompt4metadata that saves to 
-#' inst/extdata/metadata.json and integrates with fairenough workflow.
+#' DESCRIPTION file and integrates with fairenough workflow.
 #' 
 #' @param interactive Whether to use interactive prompts (default: TRUE)
 #' @param overwrite Whether to overwrite existing metadata (default: FALSE)
@@ -189,35 +186,18 @@ collect_metadata <- function(interactive = TRUE,
   
   base_path <- get_base_path(base_path)
   
-  # Construct save path
-  save_path <- file.path(base_path, "inst", "extdata", "metadata.json")
-  
-  # Get existing metadata
-  existing_metadata <- get_metadata(base_path = base_path)
-  
-  # Use prompt4metadata to collect new metadata
-  new_metadata <- prompt4metadata(
+  # Simply use prompt4metadata which now handles everything
+  metadata <- prompt4metadata(
     interactive = interactive,
-    overwrite = FALSE,
-    save_path = NULL,  # Don't let prompt4metadata save directly
+    overwrite = overwrite,
+    save_to_desc = TRUE,
+    base_path = base_path,
     ...
   )
-  
-  # Update keys from prompt4metadata based on overwrite setting
-  for (key in names(new_metadata)) {
-    if (overwrite || is.null(existing_metadata[[key]])) {
-      update_metadata(key, new_metadata[[key]], base_path, verbose = FALSE)
-    } else if (verbose) {
-      cli::cli_alert_info("Skipping existing {.field {key}} data (use overwrite = TRUE to replace)")
-    }
-  }
   
   if (verbose) {
     cli::cli_alert_success("Metadata collection complete")
   }
-  
-  # Return the complete metadata
-  metadata <- get_metadata(base_path = base_path)
   
   return(invisible(metadata))
 }

@@ -89,10 +89,12 @@ process <- function(raw_dir = NULL,
     })
   }
   
-  # Save dataset names to metadata.json
+  # Save dataset names to DESCRIPTION
   if (length(processed_files) > 0) {
     dataset_names <- list(names(processed_files))
-    update_metadata("datasets", dataset_names, base_path, verbose = verbose)
+    # Create minimal metadata structure with just datasets
+    metadata <- list(datasets = dataset_names)
+    write_metadata_to_desc(metadata, base_path, overwrite = TRUE, create = TRUE, verbose = verbose)
   }
   
   if (verbose) {
