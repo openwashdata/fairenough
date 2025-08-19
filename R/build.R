@@ -249,7 +249,7 @@ generate_data_documentation <- function(base_path = NULL,
   }
   
   # Load dictionary
-  dictionary <- utils::read.csv(dict_path)
+  dictionary <- fairenough::read_data(dict_path)
   
   # Get unique datasets
   datasets <- unique(dictionary$file_name)
@@ -345,11 +345,7 @@ generate_readme <- function(base_path = NULL,
   
   # Load dictionary
   dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
-  dictionary <- if (file.exists(dict_path)) {
-    utils::read.csv(dict_path)
-  } else {
-    NULL
-  }
+  dictionary <- fairenough::read_data(dict_path)
   
   # No need for template data - README will read from DESCRIPTION directly
   template_data <- list()
