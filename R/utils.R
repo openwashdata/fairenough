@@ -94,8 +94,6 @@ read_data <- function(data, show_messages = TRUE) {
   if (file_ext == "csv") {
     if (show_messages) cli::cli_alert_info("Reading CSV file: {data_path}")
     data <- readr::read_csv(data_path, show_col_types = FALSE)
-    # Convert tibble to regular data frame to avoid issues
-    data <- as.data.frame(data, stringsAsFactors = FALSE)
   } else if (file_ext %in% c("xlsx", "xls")) {
     # Ensure readxl is available
     if (!requireNamespace("readxl", quietly = TRUE)) {
@@ -106,9 +104,10 @@ read_data <- function(data, show_messages = TRUE) {
     }
     if (show_messages) cli::cli_alert_info("Reading Excel file: {data_path}")
     data <- readxl::read_excel(data_path)
-    # Convert tibble to regular data frame to avoid issues
-    data <- as.data.frame(data, stringsAsFactors = FALSE)
   }
+  
+  # Convert tibble to regular data frame to avoid issues
+  data <- as.data.frame(data, stringsAsFactors = FALSE)
   
   # Validate and return the loaded data
   return(validate_data_frame(data))
