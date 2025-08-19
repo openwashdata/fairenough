@@ -2,12 +2,12 @@
 % Please edit documentation in R/utils.R
 \name{update_metadata}
 \alias{update_metadata}
-\title{Update metadata.json with new data}
+\title{Update metadata in DESCRIPTION file}
 \usage{
 update_metadata(key, data, base_path = NULL, verbose = TRUE)
 }
 \arguments{
-\item{key}{Top-level key in metadata.json (e.g., "datasets", "package")}
+\item{key}{Top-level key (e.g., "datasets", "package")}
 
 \item{data}{Data to add/update for the key}
 
@@ -16,8 +16,9 @@ update_metadata(key, data, base_path = NULL, verbose = TRUE)
 \item{verbose}{Whether to show messages}
 }
 \value{
-Updated metadata list (invisibly)
+NULL (invisibly)
 }
 \description{
-Adds or updates data in metadata.json file. Creates the file if it doesn't exist.
+Simple wrapper around write_metadata_to_desc for updating a single key.
+Creates a metadata structure with just the specified key and writes it.
 }

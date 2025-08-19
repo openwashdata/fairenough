@@ -8,3 +8,6 @@ inst/doc
 CLAUDE.md
 tests/
 !tests/testthat
+TODO.md
+legacy
+.claude

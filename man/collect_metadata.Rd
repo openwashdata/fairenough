@@ -28,7 +28,7 @@ List containing metadata
 }
 \description{
 Package-specific wrapper around prompt4metadata that saves to
-inst/extdata/metadata.json and integrates with fairenough workflow.
+DESCRIPTION file and integrates with fairenough workflow.
 }
 \examples{
 \dontrun{

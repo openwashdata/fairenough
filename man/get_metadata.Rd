@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_metadata}
 \alias{get_metadata}
-\title{Get metadata from metadata.json}
+\title{Get metadata from DESCRIPTION file}
 \usage{
 get_metadata(key = NULL, base_path = NULL)
 }
@@ -15,5 +15,5 @@ get_metadata(key = NULL, base_path = NULL)
 Metadata list or specific key data if requested
 }
 \description{
-Reads and returns data from metadata.json file
+Reads and returns metadata from DESCRIPTION file
 }

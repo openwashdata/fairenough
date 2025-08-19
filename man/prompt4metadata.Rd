@@ -24,7 +24,8 @@ prompt4metadata(
   communities = NULL,
   interactive = TRUE,
   overwrite = FALSE,
-  save_path = NULL
+  save_to_desc = TRUE,
+  base_path = NULL
 )
 }
 \arguments{
@@ -67,7 +68,7 @@ orcid, affiliation, and roles.}
 
 \item{overwrite}{Logical. Whether to overwrite existing metadata file. Default is FALSE.}
 
-\item{save_path}{Character string. Optional path to save metadata.json. If NULL, metadata is not saved.}
+\item{save_to_desc}{Logical. Whether to save metadata to DESCRIPTION file. Default is TRUE.}
 }
 \value{
 A list containing all metadata organized by category:
@@ -84,6 +85,11 @@ A list containing all metadata organized by category:
 General-purpose interactive function to collect metadata for datasets.
 Supports interactive prompts, partial pre-filling, or full specification.
 This function is independent of any specific package structure.
+}
+\details{
+This function collects metadata and can optionally save it to the DESCRIPTION file.
+Standard fields are saved to their respective DESCRIPTION fields, while custom
+metadata is saved with the Config/ prefix following R package conventions.
 }
 \examples{
 \dontrun{

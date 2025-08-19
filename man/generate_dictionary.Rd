@@ -32,7 +32,7 @@ Data frame containing the dictionary
 \description{
 Creates a data dictionary for all data files in the package.
 Can use LLM for automatic description generation. Works best when
-metadata.json exists as it uses the package description for context.
+package metadata exists in DESCRIPTION as it uses the package description for context.
 }
 \examples{
 \dontrun{
