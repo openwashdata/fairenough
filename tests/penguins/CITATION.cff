@@ -1,0 +1,58 @@
+# --------------------------------------------
+# CITATION file created with {cffr} R package
+# See also: https://docs.ropensci.org/cffr/
+# --------------------------------------------
+ 
+cff-version: 1.2.0
+message: 'To cite package "palmerpenguins" in publications use:'
+type: software
+title: 'palmerpenguins: Palmer Penguins'
+version: 0.0.1
+doi: 10.32614/CRAN.package.palmerpenguins
+identifiers:
+- type: doi
+  value: 10.32614/CRAN.package.palmerpenguins
+abstract: The Palmer Penguins dataset contains penguins measurements
+authors:
+- family-names: Massari
+  given-names: Nicolo
+  email: nmassari@ethz.ch
+  orcid: https://orcid.org/0009-0006-8421-930X
+- family-names: Schöbitz
+  given-names: Lars
+  email: lschoebitz@ethz.ch
+  orcid: https://orcid.org/0000-0003-2196-5015
+- family-names: Tilley
+  given-names: Elizabeth
+  email: tilleye@ethz.ch
+  orcid: https://orcid.org/0000-0002-2095-9724
+preferred-citation:
+  type: generic
+  title: 'palmerpenguins: Fairenough Test with Palmer Penguins Dataset'
+  authors:
+  - family-names: Massari
+    given-names: Nicolo
+    email: nmassari@ethz.ch
+    orcid: https://orcid.org/0009-0006-8421-930X
+  - family-names: Schöbitz
+    given-names: Lars
+    email: lschoebitz@ethz.ch
+    orcid: https://orcid.org/0000-0003-2196-5015
+  - family-names: Tilley
+    given-names: Elizabeth
+    email: tilleye@ethz.ch
+    orcid: https://orcid.org/0000-0002-2095-9724
+  doi: 10.32614/CRAN.package.palmerpenguins
+  url: https://Global-Health-Engineering.github.io/palmerpenguins
+  abstract: This data package is a test for the fairenough package and use the Palmer
+    Penguins Dataset.
+  version: 0.0.1
+repository: https://CRAN.R-project.org/package=palmerpenguins
+repository-code: https://github.com/Global-Health-Engineering/palmerpenguins
+url: https://Global-Health-Engineering.github.io/palmerpenguins
+contact:
+- family-names: Massari
+  given-names: Nicolo
+  email: nmassari@ethz.ch
+  orcid: https://orcid.org/0009-0006-8421-930X
+
