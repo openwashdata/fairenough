@@ -6,8 +6,9 @@
 .quarto
 inst/doc
 CLAUDE.md
-tests/
+tests/*
 !tests/testthat
+!tests/penguins
 TODO.md
 legacy
 .claude
