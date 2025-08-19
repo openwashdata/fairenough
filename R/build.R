@@ -1,116 +1,3 @@
-#' Build R data package in modern 3-step process
-#' 
-#' Orchestrates complete package build using modern R development tools.
-#' Separates package structure, documentation, and validation for better control.
-#' 
-#' @param step Which build step to run: "all" (default), "package", "docs", or "validate"  
-#' @param base_path Base path for the project (default: uses get_base_path())
-#' @param verbose Whether to show detailed messages (default: TRUE)
-#' @return Invisibly returns build status
-#' @export
-#' @examples
-#' \dontrun{
-#' # Full 3-step build
-#' build()
-#' 
-#' # Just build package structure
-#' build(step = "package")
-#' 
-#' # Build docs and website only
-#' build(step = "docs")
-#' }
-build <- function(step = "all",
-                 base_path = NULL,
-                 verbose = TRUE) {
-  
-  base_path <- get_base_path(base_path)
-  
-  if (verbose) cli::cli_h1("Building data package with modern workflow")
-  
-  # Execute build steps based on parameter
-  package_result <- NULL
-  docs_result <- NULL
-  validation_result <- NULL
-  
-  if (step %in% c("all", "package")) {
-    package_result <- build_package(base_path = base_path, verbose = verbose)
-  }
-  
-  if (step %in% c("all", "docs")) {
-    docs_result <- build_docs(base_path = base_path, verbose = verbose)
-  }
-  
-  if (step %in% c("all", "validate")) {
-    validation_result <- validate_package(base_path = base_path, verbose = verbose)
-  }
-  
-  if (verbose && step == "all") {
-    cli::cli_alert_success("Modern 3-step build complete!")
-    cli::cli_alert_info("Package structure, documentation, and validation finished")
-  }
-  
-  invisible(list(
-    base_path = base_path,
-    step = step,
-    package_result = package_result,
-    docs_result = docs_result,
-    validation_result = validation_result
-  ))
-}
-
-#' Ensure .Rproj file exists for proper usethis context
-#' 
-#' Creates an .Rproj file if one doesn't exist in the project directory.
-#' This ensures usethis functions work correctly with the project context.
-#' 
-#' @param base_path Base path for the project
-#' @param verbose Whether to show messages
-#' @return Path to .Rproj file (invisibly)
-#' @noRd
-ensure_rproj <- function(base_path, verbose = TRUE) {
-  
-  # Get package name from DESCRIPTION if it exists
-  desc_path <- file.path(base_path, "DESCRIPTION")
-  if (file.exists(desc_path)) {
-    desc_obj <- desc::desc(file = desc_path)
-    proj_name <- tryCatch(
-      desc_obj$get_field("Package"),
-      error = function(e) basename(base_path)
-    )
-  } else {
-    proj_name <- basename(base_path)
-  }
-  
-  # Check for existing .Rproj file
-  existing_rproj <- list.files(base_path, pattern = "\\.Rproj$", full.names = TRUE)
-  
-  if (length(existing_rproj) == 0) {
-    # Use usethis to create project properly if no .Rproj exists
-    if (verbose) cli::cli_alert_info("Creating project file for {.path {proj_name}}")
-    
-    # Temporarily suppress usethis messages if not verbose
-    withr::local_options(list(usethis.quiet = !verbose))
-    
-    # Create the project (this also sets it as active)
-    tryCatch({
-      # This creates .Rproj and sets it as the active project
-      usethis::create_project(path = base_path, open = FALSE, rstudio = TRUE)
-      if (verbose) cli::cli_alert_success("Created and activated project at {.path {base_path}}")
-    }, error = function(e) {
-      # If create_project fails (e.g., already exists), just set the project
-      usethis::proj_set(base_path)
-      if (verbose) cli::cli_alert_info("Set active project to {.path {base_path}}")
-    })
-    
-    invisible(file.path(base_path, paste0(proj_name, ".Rproj")))
-  } else {
-    # If .Rproj exists, just set it as active
-    usethis::proj_set(base_path)
-    if (verbose) cli::cli_alert_info("Using existing project at {.path {base_path}}")
-    invisible(existing_rproj[1])
-  }
-}
-
 #' Build package structure and core files
 #' 
 #' Creates the essential R package structure using modern development tools.
@@ -242,76 +129,6 @@ build_package <- function(base_path = NULL, verbose = TRUE) {
   invisible(TRUE)
 }
 
-#' Build documentation and website
-#' 
-#' Generates README and pkgdown website using modern usethis helpers.
-#' Since both use inst/templates/README.Rmd, they are built together.
-#' 
-#' @param base_path Base path for the project
-#' @param verbose Whether to show detailed messages
-#' @return Logical indicating success
-#' @export
-build_docs <- function(base_path = NULL, verbose = TRUE) {
-  
-  base_path <- get_base_path(base_path)
-  
-  # Store current project before changing
-  old_proj <- tryCatch(usethis::proj_get(), error = function(e) NULL)
-  
-  # Ensure .Rproj file exists and set as active project
-  ensure_rproj(base_path, verbose)
-  
-  # Restore previous project on exit
-  on.exit({
-    if (!is.null(old_proj)) usethis::proj_set(old_proj)
-  }, add = TRUE)
-  
-  if (verbose) cli::cli_h2("Step 2: Building Documentation & Website")
-  
-  # 1. Generate README from template
-  if (verbose) cli::cli_alert_info("Generating README from template")
-  readme_result <- generate_readme(base_path = base_path, verbose = verbose)
-  
-  # 2. Setup pkgdown website with modern approach
-  if (verbose) cli::cli_alert_info("Setting up pkgdown website")
-  
-  # Check if pkgdown is available
-  if (!requireNamespace("pkgdown", quietly = TRUE)) {
-    cli::cli_alert_warning("Package {.pkg pkgdown} not installed")
-    cli::cli_alert_info("Install it with: install.packages('pkgdown')")
-    return(invisible(FALSE))
-  }
-  
-  # Use modern usethis helper for GitHub Pages setup if not already configured
-  gh_pages_file <- file.path(base_path, ".github", "workflows", "pkgdown.yaml")
-  if (!file.exists(gh_pages_file)) {
-    if (verbose) cli::cli_alert_info("Setting up GitHub Pages deployment")
-    tryCatch({
-      usethis::use_pkgdown_github_pages()
-      if (verbose) cli::cli_alert_success("GitHub Pages deployment configured")
-    }, error = function(e) {
-      # Fall back to regular setup if GitHub Pages fails
-      if (verbose) cli::cli_alert_info("Setting up standard pkgdown site")
-      tryCatch({
-        usethis::use_pkgdown()
-        if (verbose) cli::cli_alert_success("Pkgdown site configured")
-      }, error = function(e2) {
-        cli::cli_alert_warning("Could not setup pkgdown: {e2$message}")
-      })
-    })
-  }
-  
-  # 3. Generate the website using existing setup_website function
-  website_result <- setup_website(base_path = base_path, verbose = verbose)
-  
-  if (verbose) cli::cli_alert_success("Documentation and website build complete!")
-  
-  invisible(list(
-    readme = readme_result,
-    website = website_result
-  ))
-}
-
 #' Validate package with modern tools
 #' 
 #' Runs comprehensive package validation including R CMD check,
@@ -424,16 +241,15 @@ generate_data_documentation <- function(base_path = NULL,
   }
   
   # Check for metadata
-  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
-  if (!file.exists(metadata_path)) {
+  metadata <- get_metadata_from_desc(base_path)
+  if (is.null(metadata)) {
     cli::cli_alert_warning("No metadata found")
-    cli::cli_alert_info("Run {.fn document} first to collect metadata")
+    cli::cli_alert_info("Run {.fn collect_metadata} first to collect metadata")
     return(invisible(FALSE))
   }
   
-  # Load dictionary and metadata
+  # Load dictionary
   dictionary <- utils::read.csv(dict_path)
-  metadata <- jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
   
   # Get unique datasets
   datasets <- unique(dictionary$file_name)
@@ -522,15 +338,13 @@ apply_metadata <- function(base_path = NULL,
   base_path <- get_base_path(base_path)
   
   # Load metadata
-  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+  metadata <- get_metadata_from_desc(base_path)
   
-  if (!file.exists(metadata_path)) {
-    cli::cli_alert_warning("No metadata found at {.path inst/extdata/metadata.json}")
-    cli::cli_alert_info("Run {.fn document} first to collect metadata")
+  if (is.null(metadata)) {
+    cli::cli_alert_warning("No metadata found")
+    cli::cli_alert_info("Run {.fn collect_metadata} first to collect metadata")
     return(invisible(FALSE))
   }
-  
-  metadata <- jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
   
   # Update DESCRIPTION file
   desc_path <- file.path(base_path, "DESCRIPTION")
@@ -563,6 +377,9 @@ apply_metadata <- function(base_path = NULL,
     desc_obj$set("github_user", metadata$package$github_user)
   }
   
+  # Add Encoding field to handle non-ASCII characters
+  desc_obj$set("Encoding", "UTF-8")
+  
   # Apply authors using desc package methods
   if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
     # Clear all existing authors
@@ -591,17 +408,34 @@ apply_metadata <- function(base_path = NULL,
         affiliation <- if (!is.null(author$affiliation)) author$affiliation else author[["affiliation"]]
         roles <- if (!is.null(author$roles)) author$roles else author[["roles"]]
       } else {
-        # Skip malformed author entries
-        if (verbose) cli::cli_alert_warning("Skipping malformed author entry {i}")
-        next
+        # Try to extract from string if it's a character vector
+        if (is.character(author) && length(author) > 0) {
+          # Parse simple "FirstName LastName" format
+          name_parts <- strsplit(author[1], " ")[[1]]
+          if (length(name_parts) >= 2) {
+            given <- paste(name_parts[1:(length(name_parts)-1)], collapse = " ")
+            family <- name_parts[length(name_parts)]
+            email <- NULL
+            orcid <- NULL
+            affiliation <- NULL
+            roles <- c("aut")
+          } else {
+            if (verbose) cli::cli_alert_warning("Skipping malformed author entry {i}")
+            next
+          }
+        } else {
+          # Skip malformed author entries
+          if (verbose) cli::cli_alert_warning("Skipping malformed author entry {i}")
+          next
+        }
       }
       
       # Build comment field safely
       comment <- character()
-      if (!is.null(orcid) && orcid != "") {
+      if (!is.null(orcid) && !is.na(orcid) && orcid != "") {
         comment <- c(ORCID = orcid)
       }
-      if (!is.null(affiliation) && affiliation != "") {
+      if (!is.null(affiliation) && !is.na(affiliation) && affiliation != "") {
         comment <- c(comment, affiliation = affiliation)
       }
       
@@ -621,7 +455,7 @@ apply_metadata <- function(base_path = NULL,
       }
       
       # Validate ORCID format
-      if (!is.null(orcid) && orcid != "") {
+      if (!is.null(orcid) && !is.na(orcid) && orcid != "") {
         # Check if it's the placeholder ORCID
         if (orcid == "0000-0000-0000-0000") {
           orcid <- NULL  # Remove invalid placeholder
@@ -633,10 +467,10 @@ apply_metadata <- function(base_path = NULL,
       
       # Rebuild comment field after ORCID validation
       comment <- character()
-      if (!is.null(orcid) && orcid != "") {
+      if (!is.null(orcid) && !is.na(orcid) && orcid != "") {
         comment <- c(ORCID = orcid)
       }
-      if (!is.null(affiliation) && affiliation != "") {
+      if (!is.null(affiliation) && !is.na(affiliation) && affiliation != "") {
         comment <- c(comment, affiliation = affiliation)
       }
       
@@ -663,6 +497,9 @@ apply_metadata <- function(base_path = NULL,
   desc_obj$set_dep("fs", type = "Imports")
   desc_obj$set_dep("cli", type = "Imports")
   desc_obj$set_dep("here", type = "Imports")
+  
+  # Ensure Encoding field is set (must be done AFTER all other fields)
+  desc_obj$set("Encoding", "UTF-8")
   
   # Save DESCRIPTION
   desc_obj$write(file = desc_path)
@@ -691,11 +528,9 @@ generate_readme <- function(base_path = NULL,
   base_path <- get_base_path(base_path)
   
   # Load metadata
-  metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
-  metadata <- if (file.exists(metadata_path)) {
-    jsonlite::fromJSON(metadata_path, simplifyDataFrame = FALSE)
-  } else {
-    list()
+  metadata <- get_metadata_from_desc(base_path)
+  if (is.null(metadata)) {
+    metadata <- list()
   }
   
   # Load dictionary
@@ -706,11 +541,8 @@ generate_readme <- function(base_path = NULL,
     NULL
   }
   
-  # Prepare template data (though README.Rmd doesn't use substitution, keeping for consistency)
-  template_data <- list(
-    package_name = if (!is.null(metadata$package$name)) metadata$package$name else "package",
-    github_user = if (!is.null(metadata$package$github_user)) metadata$package$github_user else "openwashdata"
-  )
+  # No need for template data - README will read from DESCRIPTION directly
+  template_data <- list()
   
   # Create README.Rmd from template if it doesn't exist
   readme_rmd <- file.path(base_path, "README.Rmd")
@@ -730,12 +562,15 @@ generate_readme <- function(base_path = NULL,
   # Check if rmarkdown is available
   if (requireNamespace("rmarkdown", quietly = TRUE)) {
     tryCatch({
-      rmarkdown::render(
-        readme_rmd,
-        output_format = "github_document",
-        output_file = "README.md",
-        quiet = !verbose
-      )
+      # Render README with proper working directory
+      withr::with_dir(base_path, {
+        rmarkdown::render(
+          "README.Rmd",
+          output_format = "github_document",
+          output_file = "README.md",
+          quiet = !verbose
+        )
+      })
       if (verbose) cli::cli_alert_success("Generated README.md")
     }, error = function(e) {
       cli::cli_alert_warning("Could not render README: {e$message}")
@@ -753,11 +588,15 @@ generate_readme <- function(base_path = NULL,
 #' Configures pkgdown for creating a package website.
 #' 
 #' @param base_path Base path for the project
-#' @param verbose Whether to show messages
+#' @param verbose Whether to show messages (default: TRUE)
+#' @param install Whether to install the package before building site (default: TRUE)
+#' @param preview Whether to preview the site (default: TRUE)
 #' @return Logical indicating success
 #' @export
 setup_website <- function(base_path = NULL,
-                         verbose = TRUE) {
+                         verbose = TRUE,
+                         install = TRUE,
+                         preview = TRUE) {
   
   base_path <- get_base_path(base_path)
   
@@ -773,20 +612,36 @@ setup_website <- function(base_path = NULL,
   
   if (!file.exists(pkgdown_yml)) {
     # Load metadata for template data
-    metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
+    metadata <- get_metadata_from_desc(base_path)
     
-    if (file.exists(metadata_path)) {
-      # Use simplifyVector = FALSE to preserve list structure for whisker templating
-      metadata <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+    if (!is.null(metadata)) {
       
       # Prepare authors data for Mustache iteration
       # Add a flag for comma placement between authors
       if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
+        # Ensure authors is a proper list structure
+        authors_list <- list()
         for (i in seq_along(metadata$authors)) {
-          # Add flag for whether this is NOT the last author (for comma placement)
-          metadata$authors[[i]]$not_last <- i < length(metadata$authors)
+          author <- metadata$authors[[i]]
+          if (is.list(author)) {
+            # Extract fields safely
+            given <- if (!is.null(author$given)) author$given else if (!is.null(author[["given"]])) author[["given"]] else ""
+            family <- if (!is.null(author$family)) author$family else if (!is.null(author[["family"]])) author[["family"]] else ""
+            
+            # Only add if we have valid names
+            if (given != "" && family != "") {
+              authors_list[[length(authors_list) + 1]] <- list(
+                given = given,
+                family = family,
+                not_last = i < length(metadata$authors)
+              )
+            }
+          }
         }
+        metadata$authors <- authors_list
       }
+    } else {
+      metadata <- list()
     }
     
     # Use our own template function that respects base_path
@@ -806,9 +661,9 @@ setup_website <- function(base_path = NULL,
   tryCatch({
     # pkgdown::build_site() needs to know the package path
     if (verbose) {
-      pkgdown::build_site(pkg = base_path, preview = FALSE)
+      pkgdown::build_site(pkg = base_path, preview = preview, install = install)
     } else {
-      suppressMessages(pkgdown::build_site(pkg = base_path, preview = FALSE))
+      suppressMessages(pkgdown::build_site(pkg = base_path, preview = preview, install = install))
     }
     if (verbose) cli::cli_alert_success("Website built in {.path docs/}")
   }, error = function(e) {
@@ -897,7 +752,7 @@ create_citation <- function(metadata, base_path, verbose = TRUE) {
     desc_path <- file.path(base_path, "DESCRIPTION")
     if (file.exists(desc_path)) {
       # Create CITATION.cff in root
-      cffr::cff_write(x = base_path)
+      cffr::cff_write(x = desc_path)
       
       # Also create inst/CITATION file for R
       citation_dir <- file.path(base_path, "inst")
@@ -905,14 +760,39 @@ create_citation <- function(metadata, base_path, verbose = TRUE) {
         dir.create(citation_dir, recursive = TRUE)
       }
       
-      # Generate R citation format
-      cit <- utils::citation(auto = desc::desc(file = desc_path))
-      citation_file <- file.path(citation_dir, "CITATION")
+      # Create a simple citation file
+      citation_content <- paste0(
+        "bibentry(\n",
+        "  bibtype = \"Manual\",\n",
+        "  title = \"{" , metadata$package$title, "}\",\n",
+        "  author = c(\n"
+      )
       
-      # Write the CITATION file
-      sink(citation_file)
-      print(cit, style = "R")
-      sink()
+      # Add authors
+      if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
+        author_strings <- character()
+        for (author in metadata$authors) {
+          if (is.list(author)) {
+            given <- if (!is.null(author$given)) author$given else author[["given"]]
+            family <- if (!is.null(author$family)) author$family else author[["family"]]
+            if (!is.null(given) && !is.null(family)) {
+              author_strings <- c(author_strings, 
+                sprintf("    person(\"%s\", \"%s\")", given, family))
+            }
+          }
+        }
+        citation_content <- paste0(citation_content, 
+          paste(author_strings, collapse = ",\n"), "\n")
+      }
+      
+      citation_content <- paste0(citation_content,
+        "  ),\n",
+        "  year = ", format(Sys.Date(), "%Y"), ",\n",
+        "  note = \"R package version ", metadata$package$version, "\"\n",
+        ")\n")
+      
+      citation_file <- file.path(citation_dir, "CITATION")
+      writeLines(citation_content, citation_file)
       
       if (verbose) {
         cli::cli_alert_success("Created CITATION.cff and inst/CITATION files")
