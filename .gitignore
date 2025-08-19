@@ -9,6 +9,7 @@ CLAUDE.md
 tests/*
 !tests/testthat
 !tests/penguins
+tests/penguins/docs
 TODO.md
 legacy
 .claude
