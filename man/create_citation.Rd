@@ -4,12 +4,19 @@
 \alias{create_citation}
 \title{Create CITATION file using cffr}
 \usage{
-create_citation(base_path = NULL, verbose = TRUE, validate = FALSE)
+create_citation(
+  base_path = NULL,
+  verbose = TRUE,
+  validate = FALSE,
+  overwrite = TRUE
+)
 }
 \arguments{
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show messages}
+
+\item{overwrite}{Whether to overwrite the CITATION file}
 }
 \description{
 Creates a CITATION file from DESCRIPTION using the cffr package.

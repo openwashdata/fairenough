@@ -538,8 +538,9 @@ run_checks <- function(base_path = NULL,
 #' 
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
+#' @param overwrite Whether to overwrite the CITATION file
 #' @export
-create_citation <- function(base_path = NULL, verbose = TRUE, validate = FALSE) {
+create_citation <- function(base_path = NULL, verbose = TRUE, validate = FALSE, overwrite = TRUE) {
   base_path <- get_base_path(base_path)
   
   # Check if cffr is available
@@ -557,8 +558,11 @@ create_citation <- function(base_path = NULL, verbose = TRUE, validate = FALSE) 
       cff <- cffr::cff_write(x = desc_path, 
                             outfile = file.path(base_path, "CITATION.cff"), 
                             validate = validate, 
-                            verbose = verbose)
-      cffr::cff_write_citation(cff, file = file.path(base_path, "inst", "CITATION"))
+                            verbose = verbose,
+                            overwrite = overwrite)
+      cffr::cff_write_citation(cff, 
+                              file = file.path(base_path, "inst", "CITATION"),
+                              overwrite = overwrite)
     }
   }, error = function(e) {
     cli::cli_alert_warning("Could not create citation: {e$message}")
