@@ -3,7 +3,8 @@ Title: Automated R Data Package Creation with AI-Powered Documentation
 Version: 0.1.0
 Date: 2025-07-01
 Authors@R: c(
-    person("Nicolo", "Massari", , "nmassari@ethz.ch", role = c("aut", "cre")),
+    person("Nicolo", "Massari", , "nmassari@ethz.ch", role = c("aut", "cre"),
+            comment = c(ORCID = "0009-0006-8421-930X")),
     person("Mian", "Zhong", , "mzhong@ethz.ch", role = "aut",
            comment = c(ORCID = "0009-0009-4546-7214")),
     person("Margaux", "Götschmann", , "margauxg@ethz.ch", role = "aut",
