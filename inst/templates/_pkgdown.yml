@@ -1,34 +1,26 @@
-url: https://{{{github_user}}}.github.io/{{{package_name}}}/
+url: https://{{package.github_user}}.github.io/{{package.name}}/
+
 template:
   bootstrap: 5
   light-switch: yes
   bslib:
-    bg: '#F8F8F8'
-    fg: '#333333'
-    primary: '#007bff'
+    font_scale: 1.0
     base_font:
-      google: Open Sans
-    heading_font:
-      google: Montserrat
+      google: "Jost"
     code_font:
-      google: Fira Code
+      google: "Overpass Mono"
+    heading_font:
+      google: "Abhaya Libre"
   theme: arrow-light
   theme-dark: arrow-dark
   includes:
     in_header: |
       <script defer data-domain="openwashdata.github.io" src="https://plausible.io/js/script.js"></script>
 navbar:
+  type: light
   structure:
-    left:
-    - intro
-    - reference
-    - articles
-    - news
-    - organisation
-    right:
-    - search
-    - github
-    - lightswitch
+    left: [home, reference]
+    right: [search, github, lightswitch]
   components:
     organisation:
       text: openwashdata
@@ -40,27 +32,29 @@ footer:
   components:
     copyright: openwashdata
 home:
+  title: {{package.title}}
+  description: {{package.description}}
   sidebar:
     structure:
-    - links
-    - citation
-    - authors
-    - dev
-    - custom
+     - links
+     - citation
+     - authors
+     - dev
+     - custom
     components:
       custom:
         title: Funding
         text: This project was funded by the [Open Research Data Program of the ETH
-          Board](https://ethrat.ch/en/eth-domain/open-research-data/).
+         Board](https://ethrat.ch/en/eth-domain/open-research-data/).
 authors:
   footer:
     roles: cre
     text: Crafted by
   sidebar:
     roles:
-    - cre
-    - aut
-    - ctb
-    - fnd
+     - cre
+     - aut
+     - ctb
+     - fnd
     before: Supported by
     after: Thanks all!
