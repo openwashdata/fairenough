@@ -25,7 +25,7 @@
 #' @param communities Character vector. Zenodo communities (e.g., "global-health-engineering").
 #' @param interactive Logical. Whether to use interactive prompts. Default is TRUE.
 #' @param overwrite Logical. Whether to overwrite existing metadata file. Default is FALSE.
-#' @param save_path Character string. Optional path to save metadata.json. If NULL, metadata is not saved.
+#' @param save_to_desc Logical. Whether to save metadata to DESCRIPTION file. Default is TRUE.
 #' 
 #' @return A list containing all metadata organized by category:
 #'   - package: title, description, version, language
@@ -34,6 +34,11 @@
 #'   - publication: keywords, funder, grant_id, communities
 #'   - coverage: temporal and spatial information
 #'   - related: related identifiers
+#'   
+#' @details
+#' This function collects metadata and can optionally save it to the DESCRIPTION file.
+#' Standard fields are saved to their respective DESCRIPTION fields, while custom
+#' metadata is saved with the Config/ prefix following R package conventions.
 #' 
 #' @examples
 #' \dontrun{
@@ -78,7 +83,8 @@ prompt4metadata <- function(
   communities = NULL,
   interactive = TRUE,
   overwrite = FALSE,
-  save_path = NULL
+  save_to_desc = TRUE,
+  base_path = NULL
 ) {
   
   # Helper function for yes/no prompts
@@ -92,16 +98,31 @@ prompt4metadata <- function(
     return(response %in% c("y", "yes"))
   }
   
-  # Check for existing metadata file if save_path is provided
-  if (!is.null(save_path) && file.exists(save_path) && !overwrite) {
-    if (interactive) {
-      cli::cli_alert_info("Metadata file already exists at {.path {save_path}}")
-      if (!prompt_yes_no("Do you want to overwrite it?", default = FALSE)) {
-        return(jsonlite::fromJSON(save_path, simplifyVector = FALSE))
+  # Get base path
+  if (!is.null(base_path)) {
+    base_path <- get_base_path(base_path)
+  } else if (save_to_desc) {
+    base_path <- get_base_path()
+  }
+  
+  # Check for existing metadata in DESCRIPTION if save_to_desc is TRUE
+  if (save_to_desc && !overwrite) {
+    desc_path <- file.path(base_path, "DESCRIPTION")
+    if (file.exists(desc_path)) {
+      # Try to read existing metadata from DESCRIPTION
+      existing_meta <- tryCatch({
+        get_metadata_from_desc(base_path)
+      }, error = function(e) NULL)
+      
+      if (!is.null(existing_meta) && interactive) {
+        cli::cli_alert_info("Metadata already exists in DESCRIPTION")
+        if (!prompt_yes_no("Do you want to overwrite it?", default = FALSE)) {
+          return(existing_meta)
+        }
+      } else if (!is.null(existing_meta) && !interactive) {
+        # In non-interactive mode, return existing metadata
+        return(existing_meta)
       }
-    } else {
-      # In non-interactive mode, return existing metadata
-      return(jsonlite::fromJSON(save_path, simplifyVector = FALSE))
     }
   }
   
@@ -367,17 +388,9 @@ prompt4metadata <- function(
     }
   }
   
-  # Save metadata if save_path is provided
-  if (!is.null(save_path)) {
-    # Ensure directory exists
-    save_dir <- dirname(save_path)
-    if (!dir.exists(save_dir)) {
-      dir.create(save_dir, recursive = TRUE)
-    }
-    
-    # Save as JSON
-    jsonlite::write_json(metadata, save_path, pretty = TRUE, auto_unbox = TRUE)
-    cli::cli_alert_success("Metadata saved to {.path {save_path}}")
+  # Save metadata to DESCRIPTION if requested
+  if (save_to_desc) {
+    write_metadata_to_desc(metadata, base_path, overwrite = overwrite, verbose = TRUE)
   }
   
   return(metadata)
