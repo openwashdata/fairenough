@@ -324,196 +324,6 @@ generate_data_documentation <- function(base_path = NULL,
   return(invisible(TRUE))
 }
 
-#' Apply metadata to package files
-#' 
-#' Updates DESCRIPTION file and other package files with collected metadata.
-#' 
-#' @param base_path Base path for the project
-#' @param verbose Whether to show messages
-#' @return Logical indicating success
-#' @export
-apply_metadata <- function(base_path = NULL,
-                          verbose = TRUE) {
-  
-  base_path <- get_base_path(base_path)
-  
-  # Load metadata
-  metadata <- get_metadata_from_desc(base_path)
-  
-  if (is.null(metadata)) {
-    cli::cli_alert_warning("No metadata found")
-    cli::cli_alert_info("Run {.fn collect_metadata} first to collect metadata")
-    return(invisible(FALSE))
-  }
-  
-  # Update DESCRIPTION file
-  desc_path <- file.path(base_path, "DESCRIPTION")
-  
-  if (file.exists(desc_path)) {
-    desc_obj <- desc::desc(file = desc_path)
-  } else {
-    # Create minimal DESCRIPTION if it doesn't exist
-    desc_obj <- desc::desc(text = "Package: placeholder\nVersion: 0.0.1\n")
-  }
-  
-  # Apply package metadata
-  if (!is.null(metadata$package$name)) {
-    desc_obj$set("Package", metadata$package$name)
-  }
-  
-  if (!is.null(metadata$package$title)) {
-    desc_obj$set("Title", metadata$package$title)
-  }
-  
-  if (!is.null(metadata$package$description)) {
-    desc_obj$set("Description", metadata$package$description)
-  }
-  
-  if (!is.null(metadata$package$version)) {
-    desc_obj$set("Version", metadata$package$version)
-  }
-  
-  if (!is.null(metadata$package$github_user)) {
-    desc_obj$set("github_user", metadata$package$github_user)
-  }
-  
-  # Add Encoding field to handle non-ASCII characters
-  desc_obj$set("Encoding", "UTF-8")
-  
-  # Apply authors using desc package methods
-  if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
-    # Clear all existing authors
-    tryCatch({
-      desc_obj$del_author()
-    }, error = function(e) {
-      # Ignore if no authors to remove
-    })
-    
-    # Add each author using desc package approach
-    for (i in seq_along(metadata$authors)) {
-      author <- metadata$authors[[i]]
-      
-      # Debug: check author structure
-      if (verbose) {
-        cli::cli_alert_info("Processing author {i}: {class(author)}")
-      }
-      
-      # Handle different author structures
-      if (is.list(author)) {
-        # Author is a proper list - try both $ and [[ access
-        given <- if (!is.null(author$given)) author$given else author[["given"]]
-        family <- if (!is.null(author$family)) author$family else author[["family"]]
-        email <- if (!is.null(author$email)) author$email else author[["email"]]
-        orcid <- if (!is.null(author$orcid)) author$orcid else author[["orcid"]]
-        affiliation <- if (!is.null(author$affiliation)) author$affiliation else author[["affiliation"]]
-        roles <- if (!is.null(author$roles)) author$roles else author[["roles"]]
-      } else {
-        # Try to extract from string if it's a character vector
-        if (is.character(author) && length(author) > 0) {
-          # Parse simple "FirstName LastName" format
-          name_parts <- strsplit(author[1], " ")[[1]]
-          if (length(name_parts) >= 2) {
-            given <- paste(name_parts[1:(length(name_parts)-1)], collapse = " ")
-            family <- name_parts[length(name_parts)]
-            email <- NULL
-            orcid <- NULL
-            affiliation <- NULL
-            roles <- c("aut")
-          } else {
-            if (verbose) cli::cli_alert_warning("Skipping malformed author entry {i}")
-            next
-          }
-        } else {
-          # Skip malformed author entries
-          if (verbose) cli::cli_alert_warning("Skipping malformed author entry {i}")
-          next
-        }
-      }
-      
-      # Build comment field safely
-      comment <- character()
-      if (!is.null(orcid) && !is.na(orcid) && orcid != "") {
-        comment <- c(ORCID = orcid)
-      }
-      if (!is.null(affiliation) && !is.na(affiliation) && affiliation != "") {
-        comment <- c(comment, affiliation = affiliation)
-      }
-      
-      # Handle roles - convert string to character vector if needed
-      if (is.character(roles) && length(roles) == 1) {
-        # Split by comma if it's a comma-separated string
-        roles <- trimws(strsplit(roles, ",")[[1]])
-      } else if (is.null(roles) || length(roles) == 0) {
-        # Default roles if none specified
-        roles <- c("aut")
-      }
-      
-      # Skip invalid entries
-      if (is.null(given) || given == "" || is.null(family) || family == "") {
-        if (verbose) cli::cli_alert_warning("Skipping author with missing name")
-        next
-      }
-      
-      # Validate ORCID format
-      if (!is.null(orcid) && !is.na(orcid) && orcid != "") {
-        # Check if it's the placeholder ORCID
-        if (orcid == "0000-0000-0000-0000") {
-          orcid <- NULL  # Remove invalid placeholder
-        } else if (!grepl("^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$", orcid)) {
-          if (verbose) cli::cli_alert_warning("Invalid ORCID format for {given} {family}, skipping ORCID")
-          orcid <- NULL
-        }
-      }
-      
-      # Rebuild comment field after ORCID validation
-      comment <- character()
-      if (!is.null(orcid) && !is.na(orcid) && orcid != "") {
-        comment <- c(ORCID = orcid)
-      }
-      if (!is.null(affiliation) && !is.na(affiliation) && affiliation != "") {
-        comment <- c(comment, affiliation = affiliation)
-      }
-      
-      desc_obj$add_author(
-        given = given,
-        family = family,
-        email = email,
-        role = roles,
-        comment = if (length(comment) > 0) comment else NULL
-      )
-    }
-  }
-  
-  # Apply license
-  if (!is.null(metadata$license$id)) {
-    desc_obj$set("License", metadata$license$id)
-  }
-  
-  # Add dependencies
-  desc_obj$set_dep("R", type = "Depends", version = ">= 3.5.0")
-  desc_obj$set_dep("readr", type = "Imports")
-  desc_obj$set_dep("dplyr", type = "Imports")
-  desc_obj$set_dep("janitor", type = "Imports")
-  desc_obj$set_dep("fs", type = "Imports")
-  desc_obj$set_dep("cli", type = "Imports")
-  desc_obj$set_dep("here", type = "Imports")
-  
-  # Ensure Encoding field is set (must be done AFTER all other fields)
-  desc_obj$set("Encoding", "UTF-8")
-  
-  # Save DESCRIPTION
-  desc_obj$write(file = desc_path)
-  
-  if (verbose) {
-    cli::cli_alert_success("Updated DESCRIPTION file")
-  }
-  
-  # Create or update CITATION file
-  create_citation(metadata, base_path, verbose)
-  
-  return(invisible(TRUE))
-}
-
 #' Generate README from template
 #' 
 #' Creates README.md from a template, incorporating package metadata.
@@ -728,17 +538,13 @@ run_checks <- function(base_path = NULL,
 
 #' Create CITATION file using cffr
 #' 
-#' Creates a CITATION file from metadata using the cffr package.
+#' Creates a CITATION file from DESCRIPTION using the cffr package.
 #' 
-#' @param metadata List containing metadata
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
-#' @noRd
-create_citation <- function(metadata, base_path, verbose = TRUE) {
-  
-  if (is.null(metadata$authors) || length(metadata$authors) == 0) {
-    return(invisible(NULL))
-  }
+#' @export
+create_citation <- function(base_path = NULL, verbose = TRUE, validate = FALSE) {
+  base_path <- get_base_path(base_path)
   
   # Check if cffr is available
   if (!requireNamespace("cffr", quietly = TRUE)) {
@@ -751,52 +557,12 @@ create_citation <- function(metadata, base_path, verbose = TRUE) {
     # Use cffr to create citation from DESCRIPTION
     desc_path <- file.path(base_path, "DESCRIPTION")
     if (file.exists(desc_path)) {
-      # Create CITATION.cff in root
-      cffr::cff_write(x = desc_path)
-      
-      # Also create inst/CITATION file for R
-      citation_dir <- file.path(base_path, "inst")
-      if (!dir.exists(citation_dir)) {
-        dir.create(citation_dir, recursive = TRUE)
-      }
-      
-      # Create a simple citation file
-      citation_content <- paste0(
-        "bibentry(\n",
-        "  bibtype = \"Manual\",\n",
-        "  title = \"{" , metadata$package$title, "}\",\n",
-        "  author = c(\n"
-      )
-      
-      # Add authors
-      if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
-        author_strings <- character()
-        for (author in metadata$authors) {
-          if (is.list(author)) {
-            given <- if (!is.null(author$given)) author$given else author[["given"]]
-            family <- if (!is.null(author$family)) author$family else author[["family"]]
-            if (!is.null(given) && !is.null(family)) {
-              author_strings <- c(author_strings, 
-                sprintf("    person(\"%s\", \"%s\")", given, family))
-            }
-          }
-        }
-        citation_content <- paste0(citation_content, 
-          paste(author_strings, collapse = ",\n"), "\n")
-      }
-      
-      citation_content <- paste0(citation_content,
-        "  ),\n",
-        "  year = ", format(Sys.Date(), "%Y"), ",\n",
-        "  note = \"R package version ", metadata$package$version, "\"\n",
-        ")\n")
-      
-      citation_file <- file.path(citation_dir, "CITATION")
-      writeLines(citation_content, citation_file)
-      
-      if (verbose) {
-        cli::cli_alert_success("Created CITATION.cff and inst/CITATION files")
-      }
+      # Create CITATION.cff in base_path
+      cff <- cffr::cff_write(x = desc_path, 
+                            outfile = file.path(base_path, "CITATION.cff"), 
+                            validate = validate, 
+                            verbose = verbose)
+      cffr::cff_write_citation(cff, file = file.path(base_path, "inst", "CITATION"))
     }
   }, error = function(e) {
     cli::cli_alert_warning("Could not create citation: {e$message}")
