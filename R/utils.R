@@ -71,10 +71,10 @@ get_raw_dir <- function(raw_dir = NULL) {
 }
 
 #' Read data from various sources
-#' 
+#'
 #' This function reads data from a data frame, CSV file, or Excel file.
 #' It handles all validation and provides consistent error messages.
-#' 
+#'
 #' @param data Either a data frame or a path to a CSV/Excel file
 #' @param show_messages Whether to show informational messages (default TRUE)
 #' @return A data frame
@@ -94,6 +94,8 @@ read_data <- function(data, show_messages = TRUE) {
   if (file_ext == "csv") {
     if (show_messages) cli::cli_alert_info("Reading CSV file: {data_path}")
     data <- readr::read_csv(data_path, show_col_types = FALSE)
+    # Convert tibble to regular data frame to avoid issues
+    data <- as.data.frame(data, stringsAsFactors = FALSE)
   } else if (file_ext %in% c("xlsx", "xls")) {
     # Ensure readxl is available
     if (!requireNamespace("readxl", quietly = TRUE)) {
@@ -104,6 +106,8 @@ read_data <- function(data, show_messages = TRUE) {
     }
     if (show_messages) cli::cli_alert_info("Reading Excel file: {data_path}")
     data <- readxl::read_excel(data_path)
+    # Convert tibble to regular data frame to avoid issues
+    data <- as.data.frame(data, stringsAsFactors = FALSE)
   }
   
   # Validate and return the loaded data
