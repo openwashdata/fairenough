@@ -5,46 +5,46 @@
 #'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show detailed messages
+#' @param open Whether to open new R project
 #' @return Logical indicating success
 #' @export
-build_package <- function(base_path = NULL, verbose = TRUE) {
+build_package <- function(base_path = NULL, 
+                          verbose = TRUE,
+                          open = rlang::is_interactive(),
+                          overwrite = TRUE) {
   base_path <- get_base_path(base_path)
 
-  if (verbose) {
-    cli::cli_h2("Step 1: Building Package Structure")
-  }
-
-  # 1. Apply metadata to DESCRIPTION
-  if (verbose) {
-    cli::cli_alert_info("Applying metadata to DESCRIPTION")
-  }
-  apply_result <- apply_metadata(base_path = base_path, verbose = verbose)
-
-  # 2. Generate data documentation files in R/
+  # Generate automatic roxygen documentation for dataset functions in R/
   if (verbose) {
     cli::cli_alert_info("Generating dataset documentation")
   }
-  doc_result <- generate_data_documentation(
+  doc_result <- build_roxygen(
+    type = "dataset",
     base_path = base_path,
     verbose = verbose
   )
 
-  # 3. Generate NAMESPACE and .Rd files using roxygen2
+  # Run usethis::create_package with roxygen
   if (verbose) {
-    cli::cli_alert_info("Running roxygen2 to generate NAMESPACE and man pages")
+    cli::cli_alert_info("Running usethis::create_package with roxygen")
   }
   tryCatch(
     {
-      roxygen2::roxygenise(base_path)
-      if (verbose) cli::cli_alert_success("Generated NAMESPACE and .Rd files")
+      usethis::create_package(path = base_path,
+                              fields = list(),
+                              rstudio = rstudioapi::isAvailable(),
+                              roxygen = TRUE,
+                              check_name = TRUE,
+                              open = open)
+      if (verbose) cli::cli_alert_success("Generated R package")
     },
     error = function(e) {
-      cli::cli_alert_warning("Roxygen2 failed: {e$message}")
+      cli::cli_alert_warning("usethis::create_package failed: {e$message}")
       return(FALSE)
     }
   )
 
-  # 4. Create LICENSE file if needed
+  # Create LICENSE file
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (file.exists(desc_path)) {
     desc_obj <- desc::desc(file = desc_path)
@@ -53,81 +53,12 @@ build_package <- function(base_path = NULL, verbose = TRUE) {
     license_md_file <- file.path(base_path, "LICENSE.md")
 
     # Check if any license file exists
-    if (!file.exists(license_file) && !file.exists(license_md_file)) {
-      if (verbose) {
-        cli::cli_alert_info("Creating LICENSE file for {license}")
-      }
-
-      tryCatch(
-        {
-          # Match license type and use appropriate usethis function
-          license_created <- FALSE
-
-          if (grepl("CC-BY-4\\.0|CC BY 4\\.0", license, ignore.case = TRUE)) {
-            usethis::use_ccby_license()
-            license_created <- TRUE
-          } else if (grepl("CC0|CC-0", license, ignore.case = TRUE)) {
-            usethis::use_cc0_license()
-            license_created <- TRUE
-          } else if (grepl("MIT", license, ignore.case = TRUE)) {
-            usethis::use_mit_license()
-            license_created <- TRUE
-          } else if (
-            grepl("GPL-3|GPL \\(>= 3\\)", license, ignore.case = TRUE)
-          ) {
-            usethis::use_gpl_license(version = 3)
-            license_created <- TRUE
-          } else if (
-            grepl("GPL-2|GPL \\(>= 2\\)", license, ignore.case = TRUE)
-          ) {
-            usethis::use_gpl_license(version = 2)
-            license_created <- TRUE
-          } else if (
-            grepl("Apache-2\\.0|Apache 2\\.0", license, ignore.case = TRUE)
-          ) {
-            usethis::use_apache_license(version = "2.0")
-            license_created <- TRUE
-          } else if (
-            grepl("AGPL-3|AGPL \\(>= 3\\)", license, ignore.case = TRUE)
-          ) {
-            usethis::use_agpl_license(version = 3)
-            license_created <- TRUE
-          } else if (
-            grepl("LGPL-3|LGPL \\(>= 3\\)", license, ignore.case = TRUE)
-          ) {
-            usethis::use_lgpl_license(version = 3)
-            license_created <- TRUE
-          } else if (
-            grepl("LGPL-2\\.1|LGPL \\(>= 2\\.1\\)", license, ignore.case = TRUE)
-          ) {
-            usethis::use_lgpl_license(version = "2.1")
-            license_created <- TRUE
-          } else if (grepl("Proprietary", license, ignore.case = TRUE)) {
-            usethis::use_proprietary_license()
-            license_created <- TRUE
-          }
-
-          if (license_created) {
-            if (verbose) cli::cli_alert_success("Created LICENSE file")
-          } else {
-            if (verbose) {
-              cli::cli_alert_warning("Unknown license type: {license}")
-            }
-            if (verbose) {
-              cli::cli_alert_info(
-                "Consider using one of: CC-BY-4.0, CC0-1.0, MIT, GPL-3, GPL-2, Apache-2.0, AGPL-3, LGPL-3, LGPL-2.1"
-              )
-            }
-          }
-        },
-        error = function(e) {
-          cli::cli_alert_warning("Could not create LICENSE: {e$message}")
-        }
-      )
+    if (overwrite || !file.exists(license_file) && !file.exists(license_md_file)) {
+        build_license(license)
     }
   }
 
-  # 5. Ensure standard .gitignore exists
+  # Ensure standard .gitignore exists
   gitignore_file <- file.path(base_path, ".gitignore")
   if (!file.exists(gitignore_file)) {
     if (verbose) {
@@ -149,7 +80,7 @@ build_package <- function(base_path = NULL, verbose = TRUE) {
     )
   }
 
-  # 6. Final package validation with devtools
+  # Package validation with devtools
   if (verbose) {
     cli::cli_alert_info("Validating package structure")
   }
@@ -295,7 +226,7 @@ validate_package <- function(
 #' @param verbose Whether to show messages
 #' @return Logical indicating success
 #' @export
-generate_data_documentation <- function(base_path = NULL, verbose = TRUE) {
+build_roxygen <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
 
   # Check for dictionary
