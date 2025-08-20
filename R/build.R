@@ -8,10 +8,12 @@
 #' @param open Whether to open new R project
 #' @return Logical indicating success
 #' @export
-build_package <- function(base_path = NULL, 
-                          verbose = TRUE,
-                          open = rlang::is_interactive(),
-                          overwrite = TRUE) {
+build_package <- function(
+  base_path = NULL,
+  verbose = TRUE,
+  open = FALSE,
+  overwrite = TRUE
+) {
   base_path <- get_base_path(base_path)
 
   # Generate automatic roxygen documentation for dataset functions in R/
@@ -30,12 +32,14 @@ build_package <- function(base_path = NULL,
   }
   tryCatch(
     {
-      usethis::create_package(path = base_path,
-                              fields = list(),
-                              rstudio = rstudioapi::isAvailable(),
-                              roxygen = TRUE,
-                              check_name = TRUE,
-                              open = open)
+      usethis::create_package(
+        path = base_path,
+        fields = list(),
+        rstudio = rstudioapi::isAvailable(),
+        roxygen = TRUE,
+        check_name = TRUE,
+        open = open
+      )
       if (verbose) cli::cli_alert_success("Generated R package")
     },
     error = function(e) {
@@ -53,8 +57,10 @@ build_package <- function(base_path = NULL,
     license_md_file <- file.path(base_path, "LICENSE.md")
 
     # Check if any license file exists
-    if (overwrite || !file.exists(license_file) && !file.exists(license_md_file)) {
-        build_license(license)
+    if (
+      overwrite || !file.exists(license_file) && !file.exists(license_md_file)
+    ) {
+      build_license(license)
     }
   }
 
@@ -66,12 +72,15 @@ build_package <- function(base_path = NULL,
     }
     tryCatch(
       {
-        usethis::use_git_ignore(c(
-          "*.DS_Store",
-          ".Rhistory",
-          ".RData",
-          ".Ruserdata"
-        ))
+        usethis::use_git_ignore(
+          directory = base_path,
+          ignores = c(
+            "*.DS_Store",
+            ".Rhistory",
+            ".RData",
+            ".Ruserdata"
+          )
+        )
         if (verbose) cli::cli_alert_success("Created .gitignore")
       },
       error = function(e) {
@@ -226,7 +235,7 @@ validate_package <- function(
 #' @param verbose Whether to show messages
 #' @return Logical indicating success
 #' @export
-build_roxygen <- function(base_path = NULL, verbose = TRUE) {
+build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
 
   # Check for dictionary
