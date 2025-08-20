@@ -11,17 +11,6 @@ build_package <- function(base_path = NULL, verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
   
-  # Store current project before changing
-  old_proj <- tryCatch(usethis::proj_get(), error = function(e) NULL)
-  
-  # Ensure .Rproj file exists and set as active project
-  ensure_rproj(base_path, verbose)
-  
-  # Restore previous project on exit
-  on.exit({
-    if (!is.null(old_proj)) usethis::proj_set(old_proj)
-  }, add = TRUE)
-  
   if (verbose) cli::cli_h2("Step 1: Building Package Structure")
   
   # 1. Apply metadata to DESCRIPTION
@@ -324,59 +313,38 @@ generate_data_documentation <- function(base_path = NULL,
   return(invisible(TRUE))
 }
 
-#' Generate README from template
+#' Build README from inst/templates/README.Rmd
 #' 
-#' Creates README.md from a template, incorporating package metadata.
+#' Build README.md from the README.Rmd template, incorporating package metadata.
 #' 
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
+#' @param overwrite Whether to overwrite README.Rmd found at base_path
 #' @return Path to generated README
 #' @export
-generate_readme <- function(base_path = NULL,
+build_readme <- function(base_path = NULL,
                            verbose = TRUE) {
   
   base_path <- get_base_path(base_path)
   
-  # Load metadata
-  metadata <- get_metadata_from_desc(base_path)
-  if (is.null(metadata)) {
-    metadata <- list()
-  }
-  
-  # Load dictionary
-  dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
-  dictionary <- fairenough::read_data(dict_path)
-  
-  # No need for template data - README will read from DESCRIPTION directly
-  template_data <- list()
-  
   # Create README.Rmd from template if it doesn't exist
   readme_rmd <- file.path(base_path, "README.Rmd")
-  
-  if (!file.exists(readme_rmd)) {
-    # Use our template function
-    use_template(
-      template = "README.Rmd",
-      save_as = "README.Rmd",
-      data = template_data,
-      base_path = base_path,
-      package = "fairenough",
-      verbose = FALSE  # Suppress the success message since we'll show our own
-    )
-  }
+  template_path <- system.file("templates", template, package = package)
+  fs::file_copy(template_path,
+                readme_rmd,
+                overwrite = overwrite)
   
   # Check if rmarkdown is available
   if (requireNamespace("rmarkdown", quietly = TRUE)) {
     tryCatch({
       # Render README with proper working directory
-      withr::with_dir(base_path, {
-        rmarkdown::render(
-          "README.Rmd",
-          output_format = "github_document",
-          output_file = "README.md",
-          quiet = !verbose
-        )
-      })
+      readme_md <- file.path(base_path, "README.md")
+      rmarkdown::render(
+        readme_rmd,
+        output_format = "github_document",
+        output_file = readme_md,
+        quiet = !verbose
+      )
       if (verbose) cli::cli_alert_success("Generated README.md")
     }, error = function(e) {
       cli::cli_alert_warning("Could not render README: {e$message}")
@@ -389,9 +357,9 @@ generate_readme <- function(base_path = NULL,
   return(invisible(file.path(base_path, "README.md")))
 }
 
-#' Setup package website
+#' Build website with pkgdown
 #' 
-#' Configures pkgdown for creating a package website.
+#' Configures pkgdown for building the package's website.
 #' 
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages (default: TRUE)
@@ -399,7 +367,7 @@ generate_readme <- function(base_path = NULL,
 #' @param preview Whether to preview the site (default: TRUE)
 #' @return Logical indicating success
 #' @export
-setup_website <- function(base_path = NULL,
+build_website <- function(base_path = NULL,
                          verbose = TRUE,
                          install = TRUE,
                          preview = TRUE) {
@@ -532,15 +500,15 @@ run_checks <- function(base_path = NULL,
 }
 
 
-#' Create CITATION file using cffr
+#' Build CITATION file using cffr
 #' 
-#' Creates a CITATION file from DESCRIPTION using the cffr package.
+#' Builds a CITATION file from DESCRIPTION using the cffr package.
 #' 
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @param overwrite Whether to overwrite the CITATION file
 #' @export
-create_citation <- function(base_path = NULL, verbose = TRUE, validate = FALSE, overwrite = TRUE) {
+build_citation <- function(base_path = NULL, verbose = TRUE, validate = FALSE, overwrite = TRUE) {
   base_path <- get_base_path(base_path)
   
   # Check if cffr is available
