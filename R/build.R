@@ -26,47 +26,9 @@ build_package <- function(
     verbose = verbose
   )
 
-  # Run usethis::create_package with roxygen
-  if (verbose) {
-    cli::cli_alert_info("Running usethis::create_package with roxygen")
-  }
-  tryCatch(
-    {
-      usethis::create_package(
-        path = base_path,
-        fields = list(),
-        rstudio = rstudioapi::isAvailable(),
-        roxygen = TRUE,
-        check_name = TRUE,
-        open = open
-      )
-      if (verbose) cli::cli_alert_success("Generated R package")
-    },
-    error = function(e) {
-      cli::cli_alert_warning("usethis::create_package failed: {e$message}")
-      return(FALSE)
-    }
-  )
-
-  # Create LICENSE file
-  desc_path <- file.path(base_path, "DESCRIPTION")
-  if (file.exists(desc_path)) {
-    desc_obj <- desc::desc(file = desc_path)
-    license <- desc_obj$get_field("License")
-    license_file <- file.path(base_path, "LICENSE")
-    license_md_file <- file.path(base_path, "LICENSE.md")
-
-    # Check if any license file exists
-    if (
-      overwrite || !file.exists(license_file) && !file.exists(license_md_file)
-    ) {
-      build_license(license)
-    }
-  }
-
   # Ensure standard .gitignore exists
   gitignore_file <- file.path(base_path, ".gitignore")
-  if (!file.exists(gitignore_file)) {
+  if (overwrite || !file.exists(gitignore_file)) {
     if (verbose) {
       cli::cli_alert_info("Creating .gitignore")
     }
@@ -90,6 +52,50 @@ build_package <- function(
         cli::cli_alert_warning("Could not create .gitignore: {e$message}")
       }
     )
+  }
+
+  # Run usethis::create_package with roxygen
+  if (verbose) {
+    cli::cli_alert_info("Running usethis::create_package with roxygen")
+  }
+  tryCatch(
+    {
+      # run usethis::create_package with usethis.allow_nested_project = TRUE
+      withr::with_options(
+        list(usethis.allow_nested_project = TRUE),
+        usethis::create_package(
+          path = base_path,
+          fields = list(),
+          rstudio = rstudioapi::isAvailable(),
+          roxygen = TRUE,
+          check_name = TRUE,
+          open = open
+        )
+      )
+
+
+      if (verbose) cli::cli_alert_success("Generated R package")
+    },
+    error = function(e) {
+      cli::cli_alert_warning("usethis::create_package failed: {e$message}")
+      return(FALSE)
+    }
+  )
+
+  # Create LICENSE file
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (file.exists(desc_path)) {
+    desc_obj <- desc::desc(file = desc_path)
+    license <- desc_obj$get_field("License")
+    license_file <- file.path(base_path, "LICENSE")
+    license_md_file <- file.path(base_path, "LICENSE.md")
+
+    # Check if any license file exists
+    if (
+      overwrite || !file.exists(license_file) && !file.exists(license_md_file)
+    ) {
+      build_license(license)
+    }
   }
 
   # Package validation with devtools
@@ -360,12 +366,14 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
 #' @param overwrite Whether to overwrite README.Rmd found at base_path
 #' @return Path to generated README
 #' @export
-build_readme <- function(base_path = NULL, verbose = TRUE) {
+build_readme <- function(base_path = NULL, 
+                         verbose = TRUE,
+                         overwrite = TRUE) {
   base_path <- get_base_path(base_path)
 
   # Create README.Rmd from template if it doesn't exist
   readme_rmd <- file.path(base_path, "README.Rmd")
-  template_path <- system.file("templates", template, package = package)
+  template_path <- system.file("templates", "README.Rmd", package = "fairenough")
   fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
 
   # Check if rmarkdown is available
@@ -400,15 +408,15 @@ build_readme <- function(base_path = NULL, verbose = TRUE) {
 #'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages (default: TRUE)
-#' @param install Whether to install the package before building site (default: TRUE)
 #' @param preview Whether to preview the site (default: TRUE)
+#' @param install Whether to install the package (default: TRUE)
 #' @return Logical indicating success
 #' @export
-build_website <- function(
+build_site <- function(
   base_path = NULL,
   verbose = TRUE,
-  install = TRUE,
-  preview = TRUE
+  preview = TRUE,
+  install = TRUE
 ) {
   base_path <- get_base_path(base_path)
 
@@ -575,14 +583,15 @@ run_checks <- function(base_path = NULL, verbose = TRUE) {
 #'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
+#' @param validate Whether to validate the CITATION file
 #' @param overwrite Whether to overwrite the CITATION file
 #' @export
 build_citation <- function(
   base_path = NULL,
   verbose = TRUE,
-  validate = FALSE,
+  validate = TRUE,
   overwrite = TRUE
-) {
+  ) {
   base_path <- get_base_path(base_path)
 
   # Check if cffr is available
@@ -596,20 +605,21 @@ build_citation <- function(
     {
       # Use cffr to create citation from DESCRIPTION
       desc_path <- file.path(base_path, "DESCRIPTION")
-      if (file.exists(desc_path)) {
+      if (overwrite || !file.exists(desc_path)) {
         # Create CITATION.cff in base_path
         cff <- cffr::cff_write(
           x = desc_path,
           outfile = file.path(base_path, "CITATION.cff"),
           validate = validate,
           verbose = verbose,
-          overwrite = overwrite
         )
         cffr::cff_write_citation(
           cff,
           file = file.path(base_path, "inst", "CITATION"),
-          overwrite = overwrite
         )
+      }
+      else {
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to overwrite existing CITATION.")
       }
     },
     error = function(e) {
