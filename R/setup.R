@@ -33,6 +33,16 @@ setup <- function(
     cli::cli_h1("Setting up fairenough project")
   }
 
+  # Create basic package structure
+  usethis::create_package(
+    path = base_path,
+    fields = list(),
+    rstudio = rstudioapi::isAvailable(),
+    roxygen = TRUE,
+    check_name = TRUE,
+    open = FALSE
+  )
+
   # Create all necessary directories
   dirs_created <- create_directories(
     dirs = c(raw_dir, "data", "inst/extdata"),
@@ -158,46 +168,61 @@ move_data_files <- function(
   return(moved_files)
 }
 
-#' Setup gitignore for data directory
+#' Setup gitignore for data directory and R files
 #'
-#' Adds the data_raw directory to .gitignore to prevent committing raw data.
+#' Adds the data_raw directory and standard R ignores to .gitignore.
+#' Uses usethis::use_git_ignore() for consistent handling.
 #'
-#' @param raw_dir Name of the directory to ignore
+#' @param raw_dir Name of the directory to ignore (default handled by get_raw_dir())
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating success
 #' @export
 setup_gitignore <- function(
-  raw_dir = "data_raw",
+  raw_dir = NULL,
   base_path = NULL,
   verbose = TRUE
 ) {
   base_path <- get_base_path(base_path)
-  gitignore_path <- file.path(base_path, ".gitignore")
-  gitignore_entry <- paste0(raw_dir, "/")
-
-  # Read existing .gitignore or create new
-  if (file.exists(gitignore_path)) {
-    gitignore_lines <- readLines(gitignore_path)
-    entry_exists <- any(grepl(
-      paste0("^", gitignore_entry, "$"),
-      gitignore_lines
-    ))
-  } else {
-    gitignore_lines <- character()
-    entry_exists <- FALSE
+  raw_dir <- get_raw_dir(raw_dir)
+  
+  # Prepare ignores list
+  ignores <- c(
+    paste0(raw_dir, "/"),
+    "*.DS_Store",
+    ".Rhistory",
+    ".RData",
+    ".Ruserdata"
+  )
+  
+  if (verbose) {
+    cli::cli_alert_info("Setting up .gitignore")
   }
-
-  if (!entry_exists) {
-    write(gitignore_entry, file = gitignore_path, append = TRUE)
-    if (verbose) {
-      cli::cli_alert_success("Added {.path {gitignore_entry}} to .gitignore")
+  
+  tryCatch(
+    {
+      active_path <- usethis::proj_get()
+      # use_git_ignore's directory option uses path relative to active dir
+      relative_path <- fs::path_rel(base_path, start = active_path)
+      
+      usethis::use_git_ignore(
+        directory = relative_path,
+        ignores = ignores
+      )
+      
+      if (verbose) {
+        cli::cli_alert_success("Added entries to .gitignore:")
+        for (ignore in ignores) {
+          cli::cli_alert_info("  {.path {ignore}}")
+        }
+      }
+      return(TRUE)
+    },
+    error = function(e) {
+      if (verbose) {
+        cli::cli_alert_warning("Could not setup .gitignore: {e$message}")
+      }
+      return(FALSE)
     }
-    return(TRUE)
-  } else {
-    if (verbose) {
-      cli::cli_alert_info("{.path {gitignore_entry}} already in .gitignore")
-    }
-    return(FALSE)
-  }
+  )
 }
