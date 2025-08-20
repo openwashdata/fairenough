@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_license.R
 \name{match_license}
 \alias{match_license}
-\title{Match License to Supported License}
+\title{Match License to License Config}
 \usage{
 match_license(license)
 }
@@ -10,15 +10,14 @@ match_license(license)
 \item{license}{Character string to match}
 }
 \value{
-Character string matching one of SUPPORTED_LICENSES, or NULL if no match found
+Character string matching a canonical license, or NULL if no match
 }
 \description{
-Helper function that maps a license string to one of the SUPPORTED_LICENSES elements.
 This is the core pattern matching function used by build_license().
+Uses the centralized configuration for pattern matching.
 }
 \examples{
 match_license("MIT")           # "MIT"
-match_license("gpl v3")        # "GPL-3"
-match_license("cc-by-4.0")     # "CC-BY"
-match_license("unknown")       # NULL
+match_license("gpl v3")        # "GPL-3" 
+match_license("apache 2.0")    # "Apache-2.0"
 }

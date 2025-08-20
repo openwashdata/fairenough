@@ -4,31 +4,15 @@
 \alias{build_license}
 \title{Build License}
 \usage{
-build_license(
-  license,
-  copyright_holder = NULL,
-  version = NULL,
-  include_future = TRUE,
-  ...
-)
+build_license(license, ...)
 }
 \arguments{
-\item{license}{Character string specifying the license name.
-Supports common variations and is case-insensitive.}
+\item{license}{Character string specifying the license name}
 
-\item{copyright_holder}{Character string specifying the copyright holder.
-For MIT and proprietary licenses. Defaults to "{package name} authors".}
-
-\item{version}{Numeric version number for GPL, AGPL, LGPL, and Apache licenses.
-Defaults to the latest version for each license type.}
-
-\item{include_future}{Logical indicating whether to include future versions.
-Only applicable to GPL, AGPL, LGPL, and Apache licenses. Default is TRUE.}
-
-\item{...}{Additional arguments passed to the underlying usethis function.}
+\item{...}{Additional arguments passed to underlying usethis function}
 }
 \value{
-Invisible TRUE if successful, stops with error if license not found.
+Invisible TRUE if successful
 }
 \description{
 A unified interface to usethis license functions. Uses match_license() to map

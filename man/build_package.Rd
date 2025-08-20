@@ -4,12 +4,19 @@
 \alias{build_package}
 \title{Build package structure and core files}
 \usage{
-build_package(base_path = NULL, verbose = TRUE)
+build_package(
+  base_path = NULL,
+  verbose = TRUE,
+  open = rlang::is_interactive(),
+  overwrite = TRUE
+)
 }
 \arguments{
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show detailed messages}
+
+\item{open}{Whether to open new R project}
 }
 \value{
 Logical indicating success

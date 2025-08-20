@@ -2,16 +2,16 @@
 % Please edit documentation in R/build_license.R
 \name{get_available_licenses}
 \alias{get_available_licenses}
-\title{Get Available License Names}
+\title{Get Supported License Names}
 \usage{
-get_available_licenses()
+get_available_licenses(format = c("canonical", "description", "both"))
+}
+\arguments{
+\item{format}{Character. Either "canonical" (default), "description", or "both"}
 }
 \value{
-Character vector of supported license names
+Character vector of license names
 }
 \description{
-Returns a character vector of all supported license names.
-}
-\examples{
-get_available_licenses()
+Extract supported license names from configuration.
 }
