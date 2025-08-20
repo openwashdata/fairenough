@@ -1,8 +1,8 @@
 #' Publish data package
-#' 
+#'
 #' High-level function to prepare package for publication.
 #' Creates Zenodo metadata and validates the package.
-#' 
+#'
 #' @param platforms Character vector of platforms to prepare for (default: c("zenodo", "github"))
 #' @param validate Whether to validate the package (default: TRUE)
 #' @param base_path Base path for the project (default: uses get_base_path())
@@ -13,27 +13,35 @@
 #' \dontrun{
 #' # Prepare for all platforms
 #' publish()
-#' 
+#'
 #' # Only prepare for GitHub
 #' publish(platforms = "github")
-#' 
+#'
 #' # Skip validation
 #' publish(validate = FALSE)
 #' }
-publish <- function(platforms = c("zenodo", "github"),
-                   validate = TRUE,
-                   base_path = NULL,
-                   verbose = TRUE) {
-  
+publish <- function(
+  platforms = c("zenodo", "github"),
+  validate = TRUE,
+  base_path = NULL,
+  verbose = TRUE
+) {
   base_path <- get_base_path(base_path)
-  
-  if (verbose) cli::cli_h1("Preparing package for publication")
-  
+
+  if (verbose) {
+    cli::cli_h1("Preparing package for publication")
+  }
+
   # Validate package if requested
   if (validate) {
-    if (verbose) cli::cli_h2("Validating Package")
-    validation_result <- validate_package(base_path = base_path, verbose = verbose)
-    
+    if (verbose) {
+      cli::cli_h2("Validating Package")
+    }
+    validation_result <- validate_package(
+      base_path = base_path,
+      verbose = verbose
+    )
+
     if (!validation_result$is_valid) {
       cli::cli_alert_warning("Package validation failed")
       cli::cli_alert_info("Fix the issues above before publishing")
@@ -43,31 +51,44 @@ publish <- function(platforms = c("zenodo", "github"),
       )))
     }
   }
-  
+
   # Prepare for each platform
   results <- list()
-  
+
   if ("zenodo" %in% platforms) {
-    if (verbose) cli::cli_h2("Preparing for Zenodo")
-    results$zenodo <- create_zenodo_json(base_path = base_path, verbose = verbose)
+    if (verbose) {
+      cli::cli_h2("Preparing for Zenodo")
+    }
+    results$zenodo <- create_zenodo_json(
+      base_path = base_path,
+      verbose = verbose
+    )
   }
-  
+
   if ("github" %in% platforms) {
-    if (verbose) cli::cli_h2("Preparing for GitHub")
+    if (verbose) {
+      cli::cli_h2("Preparing for GitHub")
+    }
     results$github <- prepare_github(base_path = base_path, verbose = verbose)
   }
-  
+
   if ("cran" %in% platforms) {
-    if (verbose) cli::cli_h2("Preparing for CRAN")
+    if (verbose) {
+      cli::cli_h2("Preparing for CRAN")
+    }
     results$cran <- prepare_cran(base_path = base_path, verbose = verbose)
   }
-  
+
   if (verbose) {
     cli::cli_alert_success("Package prepared for publication!")
-    cli::cli_alert_info("Review the generated files and proceed with platform-specific submission")
-    
+    cli::cli_alert_info(
+      "Review the generated files and proceed with platform-specific submission"
+    )
+
     if ("zenodo" %in% platforms) {
-      cli::cli_alert_info("Zenodo: Upload {.path .zenodo.json} with your repository")
+      cli::cli_alert_info(
+        "Zenodo: Upload {.path .zenodo.json} with your repository"
+      )
     }
     if ("github" %in% platforms) {
       cli::cli_alert_info("GitHub: Push to repository and create a release")
@@ -76,7 +97,7 @@ publish <- function(platforms = c("zenodo", "github"),
       cli::cli_alert_info("CRAN: Run {.code devtools::release()} when ready")
     }
   }
-  
+
   invisible(list(
     validation = if (validate) validation_result else NULL,
     results = results,
@@ -85,29 +106,27 @@ publish <- function(platforms = c("zenodo", "github"),
 }
 
 #' Create Zenodo metadata file
-#' 
+#'
 #' Creates a .zenodo.json file with metadata for Zenodo repository.
-#' 
+#'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Path to created file
 #' @export
-create_zenodo_json <- function(base_path = NULL,
-                              verbose = TRUE) {
-  
+create_zenodo_json <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
-  
+
   # Load metadata
   metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
-  
+
   if (!file.exists(metadata_path)) {
     cli::cli_alert_warning("No metadata found")
     cli::cli_alert_info("Run {.fn document} first to collect metadata")
     return(invisible(NULL))
   }
-  
+
   metadata <- jsonlite::fromJSON(metadata_path)
-  
+
   # Build Zenodo metadata
   zenodo_meta <- list(
     title = metadata$package$title,
@@ -117,12 +136,12 @@ create_zenodo_json <- function(base_path = NULL,
     upload_type = "dataset",
     access_right = "open"
   )
-  
+
   # Add license
   if (!is.null(metadata$license$id)) {
     zenodo_meta$license <- tolower(metadata$license$id)
   }
-  
+
   # Add creators
   if (!is.null(metadata$authors) && length(metadata$authors) > 0) {
     zenodo_meta$creators <- lapply(metadata$authors, function(author) {
@@ -138,19 +157,19 @@ create_zenodo_json <- function(base_path = NULL,
       return(creator)
     })
   }
-  
+
   # Add keywords
   if (!is.null(metadata$publication$keywords)) {
     zenodo_meta$keywords <- metadata$publication$keywords
   }
-  
+
   # Add grants
   if (!is.null(metadata$publication$grant_id)) {
     zenodo_meta$grants <- list(
       list(id = metadata$publication$grant_id)
     )
   }
-  
+
   # Add communities
   if (!is.null(metadata$publication$communities)) {
     zenodo_meta$communities <- lapply(
@@ -158,12 +177,12 @@ create_zenodo_json <- function(base_path = NULL,
       function(x) list(identifier = x)
     )
   }
-  
+
   # Add related identifiers
   if (!is.null(metadata$related) && length(metadata$related) > 0) {
     zenodo_meta$related_identifiers <- metadata$related
   }
-  
+
   # Save as .zenodo.json
   zenodo_path <- file.path(base_path, ".zenodo.json")
   jsonlite::write_json(
@@ -172,39 +191,44 @@ create_zenodo_json <- function(base_path = NULL,
     pretty = TRUE,
     auto_unbox = TRUE
   )
-  
+
   if (verbose) {
     cli::cli_alert_success("Created {.path .zenodo.json}")
   }
-  
+
   return(invisible(zenodo_path))
 }
 
 #' Validate package for publication
-#' 
+#'
 #' Checks that the package meets requirements for publication.
-#' 
+#'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return List with validation results
 #' @export
-validate_package <- function(base_path = NULL,
-                            verbose = TRUE) {
-  
+validate_package <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
-  
+
   checks <- list()
   issues <- character()
-  
+
   # Check DESCRIPTION file
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (file.exists(desc_path)) {
     checks$description <- TRUE
-    
+
     desc_obj <- desc::desc(file = desc_path)
-    
+
     # Check required fields
-    required_fields <- c("Package", "Title", "Description", "Version", "Authors@R", "License")
+    required_fields <- c(
+      "Package",
+      "Title",
+      "Description",
+      "Version",
+      "Authors@R",
+      "License"
+    )
     for (field in required_fields) {
       if (is.na(desc_obj$get(field))) {
         checks[[paste0("description_", tolower(field))]] <- FALSE
@@ -215,7 +239,7 @@ validate_package <- function(base_path = NULL,
     checks$description <- FALSE
     issues <- c(issues, "DESCRIPTION file not found")
   }
-  
+
   # Check data files
   data_dir <- file.path(base_path, "data")
   if (fs::dir_exists(data_dir)) {
@@ -228,31 +252,31 @@ validate_package <- function(base_path = NULL,
     checks$data <- FALSE
     issues <- c(issues, "data/ directory not found")
   }
-  
+
   # Check documentation
   dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
   checks$dictionary <- file.exists(dict_path)
   if (!checks$dictionary) {
     issues <- c(issues, "Data dictionary not found")
   }
-  
+
   # Check README
   readme_path <- file.path(base_path, "README.md")
   checks$readme <- file.exists(readme_path)
   if (!checks$readme) {
     issues <- c(issues, "README.md not found")
   }
-  
+
   # Check metadata
   metadata_path <- file.path(base_path, "inst", "extdata", "metadata.json")
   checks$metadata <- file.exists(metadata_path)
   if (!checks$metadata) {
     issues <- c(issues, "Metadata not found")
   }
-  
+
   # Overall validation
   is_valid <- all(unlist(checks))
-  
+
   if (verbose) {
     if (is_valid) {
       cli::cli_alert_success("Package validation passed!")
@@ -263,7 +287,7 @@ validate_package <- function(base_path = NULL,
       }
     }
   }
-  
+
   return(list(
     is_valid = is_valid,
     checks = checks,
@@ -272,24 +296,22 @@ validate_package <- function(base_path = NULL,
 }
 
 #' Prepare package for GitHub
-#' 
+#'
 #' Creates or updates GitHub-specific files.
-#' 
+#'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating success
 #' @export
-prepare_github <- function(base_path = NULL,
-                          verbose = TRUE) {
-  
+prepare_github <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
-  
+
   # Create .github directory if needed
   github_dir <- file.path(base_path, ".github")
   if (!fs::dir_exists(github_dir)) {
     fs::dir_create(github_dir)
   }
-  
+
   # Create CONTRIBUTING.md if it doesn't exist
   contrib_path <- file.path(base_path, "CONTRIBUTING.md")
   if (!file.exists(contrib_path)) {
@@ -311,7 +333,7 @@ Please be respectful and constructive in all interactions.
     writeLines(contrib_content, contrib_path)
     if (verbose) cli::cli_alert_success("Created CONTRIBUTING.md")
   }
-  
+
   # Create CODE_OF_CONDUCT.md if it doesn't exist
   coc_path <- file.path(base_path, "CODE_OF_CONDUCT.md")
   if (!file.exists(coc_path)) {
@@ -334,27 +356,25 @@ This Code of Conduct is adapted from the Contributor Covenant, version 1.1.0, av
     writeLines(coc_content, coc_path)
     if (verbose) cli::cli_alert_success("Created CODE_OF_CONDUCT.md")
   }
-  
+
   if (verbose) {
     cli::cli_alert_success("GitHub files prepared")
   }
-  
+
   return(invisible(TRUE))
 }
 
 #' Prepare package for CRAN
-#' 
+#'
 #' Prepares package for CRAN submission.
-#' 
+#'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating readiness
 #' @export
-prepare_cran <- function(base_path = NULL,
-                        verbose = TRUE) {
-  
+prepare_cran <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
-  
+
   # Create cran-comments.md
   comments_path <- file.path(base_path, "cran-comments.md")
   if (!file.exists(comments_path)) {
@@ -374,28 +394,32 @@ There are currently no downstream dependencies for this package.
     writeLines(comments_content, comments_path)
     if (verbose) cli::cli_alert_success("Created cran-comments.md")
   }
-  
+
   # Create NEWS.md if it doesn't exist
   news_path <- file.path(base_path, "NEWS.md")
   if (!file.exists(news_path)) {
     # Get version from DESCRIPTION
     desc_obj <- desc::desc(file = file.path(base_path, "DESCRIPTION"))
     version <- desc_obj$get_version()
-    
-    news_content <- sprintf("# %s %s
+
+    news_content <- sprintf(
+      "# %s %s
 
 * Initial release
-", desc_obj$get("Package"), version)
-    
+",
+      desc_obj$get("Package"),
+      version
+    )
+
     writeLines(news_content, news_path)
     if (verbose) cli::cli_alert_success("Created NEWS.md")
   }
-  
+
   if (verbose) {
     cli::cli_alert_success("CRAN preparation complete")
     cli::cli_alert_info("Run {.code devtools::check()} for final checks")
     cli::cli_alert_info("Run {.code devtools::release()} when ready to submit")
   }
-  
+
   return(invisible(TRUE))
 }

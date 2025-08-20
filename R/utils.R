@@ -5,11 +5,11 @@ SUPPORTED_EXTENSIONS <- c("csv", "xlsx", "xls")
 SUPPORTED_EXTENSIONS_DOT <- c(".csv", ".xlsx", ".xls")
 
 #' Get base path with consistent handling across all functions
-#' 
+#'
 #' This function provides a consistent way to handle base_path across all fairenough functions.
 #' If base_path is provided, it sets the global option and returns the normalized path.
 #' If base_path is NULL, it checks for the global option, falling back to here::here() or "."
-#' 
+#'
 #' @param base_path Optional base path to set
 #' @return Normalized base path
 #' @export
@@ -20,13 +20,13 @@ get_base_path <- function(base_path = NULL) {
     options(fairenough.base_path = normalized_path)
     return(normalized_path)
   }
-  
+
   # Otherwise, check for existing option
   stored_path <- getOption("fairenough.base_path")
   if (!is.null(stored_path)) {
     return(stored_path)
   }
-  
+
   # Fall back to here::here() or current directory
   default_path <- tryCatch(
     here::here(),
@@ -35,18 +35,18 @@ get_base_path <- function(base_path = NULL) {
       "."
     }
   )
-  
+
   normalized_path <- normalizePath(default_path, mustWork = TRUE)
   options(fairenough.base_path = normalized_path)
   return(normalized_path)
 }
 
 #' Get raw directory path with consistent handling across all functions
-#' 
+#'
 #' This function provides a consistent way to handle raw_dir across all fairenough functions.
 #' If raw_dir is provided, it sets the global option and returns the normalized path.
 #' If raw_dir is NULL, it checks for the global option, falling back to "data_raw"
-#' 
+#'
 #' @param raw_dir Optional base path to set
 #' @return Normalized base path
 #' @export
@@ -56,16 +56,16 @@ get_raw_dir <- function(raw_dir = NULL) {
     options(fairenough.raw_dir = raw_dir)
     return(raw_dir)
   }
-  
+
   # Otherwise, check for existing option
   stored_path <- getOption("fairenough.raw_dir")
   if (!is.null(stored_path)) {
     return(stored_path)
   }
-  
+
   # Fall back to data_raw
   default_path <- "data_raw"
-  
+
   options(fairenough.raw_dir = default_path)
   return(default_path)
 }
@@ -84,15 +84,17 @@ read_data <- function(data, show_messages = TRUE) {
   if (is.data.frame(data)) {
     return(validate_data_frame(data))
   }
-  
+
   # Must be a file path - validate it
   data_path <- validate_file_path(data)
-  
+
   # Determine file type and read accordingly
   file_ext <- tolower(tools::file_ext(data_path))
-  
+
   if (file_ext == "csv") {
-    if (show_messages) cli::cli_alert_info("Reading CSV file: {data_path}")
+    if (show_messages) {
+      cli::cli_alert_info("Reading CSV file: {data_path}")
+    }
     data <- readr::read_csv(data_path, show_col_types = FALSE)
   } else if (file_ext %in% c("xlsx", "xls")) {
     # Ensure readxl is available
@@ -102,13 +104,15 @@ read_data <- function(data, show_messages = TRUE) {
         "i" = "Install it with: install.packages('readxl')"
       ))
     }
-    if (show_messages) cli::cli_alert_info("Reading Excel file: {data_path}")
+    if (show_messages) {
+      cli::cli_alert_info("Reading Excel file: {data_path}")
+    }
     data <- readxl::read_excel(data_path)
   }
-  
+
   # Convert tibble to regular data frame to avoid issues
   data <- as.data.frame(data, stringsAsFactors = FALSE)
-  
+
   # Validate and return the loaded data
   return(validate_data_frame(data))
 }
@@ -140,14 +144,14 @@ filter_supported_files <- function(file_paths) {
   if (length(file_paths) == 0) {
     return(character(0))
   }
-  
+
   supported_files <- character(0)
   for (ext in SUPPORTED_EXTENSIONS_DOT) {
     pattern <- paste0("\\", ext, "$")
     matching_files <- file_paths[grepl(pattern, file_paths, ignore.case = TRUE)]
     supported_files <- c(supported_files, matching_files)
   }
-  
+
   return(supported_files)
 }
 
@@ -159,16 +163,18 @@ validate_file_path <- function(file_path) {
   if (!is.character(file_path) || length(file_path) != 1) {
     cli::cli_abort("File path must be a single character string")
   }
-  
+
   if (!file.exists(file_path)) {
     cli::cli_abort("File not found: {file_path}")
   }
-  
+
   if (!is_supported_file_type(file_path)) {
     file_ext <- tools::file_ext(file_path)
-    cli::cli_abort("Unsupported file type: {file_ext}. Supported types: {paste(SUPPORTED_EXTENSIONS, collapse=', ')}")
+    cli::cli_abort(
+      "Unsupported file type: {file_ext}. Supported types: {paste(SUPPORTED_EXTENSIONS, collapse=', ')}"
+    )
   }
-  
+
   return(file_path)
 }
 
@@ -181,11 +187,11 @@ validate_data_frame <- function(data, min_rows = 1) {
   if (!is.data.frame(data)) {
     cli::cli_abort("Input must be a data frame")
   }
-  
+
   if (nrow(data) < min_rows) {
     cli::cli_abort("Data frame must have at least {min_rows} row{?s}")
   }
-  
+
   return(data)
 }
 
@@ -196,26 +202,33 @@ validate_data_frame <- function(data, min_rows = 1) {
 #' @param verbose Whether to show messages (default TRUE)
 #' @return The directory path
 #' @export
-ensure_directory <- function(dir_path, description = NULL, recursive = TRUE, verbose = TRUE) {
+ensure_directory <- function(
+  dir_path,
+  description = NULL,
+  recursive = TRUE,
+  verbose = TRUE
+) {
   if (is.null(description)) {
     description <- "Directory"
   }
-  
+
   if (fs::dir_exists(dir_path)) {
-    if (verbose) cli::cli_alert_info("{description} '{dir_path}' already exists")
+    if (verbose) {
+      cli::cli_alert_info("{description} '{dir_path}' already exists")
+    }
   } else {
     fs::dir_create(dir_path, recurse = recursive)
     if (verbose) cli::cli_alert_success("Created {description}: {dir_path}")
   }
-  
+
   return(dir_path)
 }
 
 #' Use a template file with data substitution
-#' 
+#'
 #' Similar to usethis::use_template but respects base_path.
 #' Reads a template from the package, substitutes data, and writes to target location.
-#' 
+#'
 #' @param template Name of template file in inst/templates
 #' @param save_as Path to save file relative to base_path
 #' @param data List of data for substitution
@@ -225,54 +238,63 @@ ensure_directory <- function(dir_path, description = NULL, recursive = TRUE, ver
 #' @param verbose Whether to show messages
 #' @return Path to created file
 #' @export
-use_template <- function(template,
-                        save_as = template,
-                        data = list(),
-                        base_path = NULL,
-                        package = "fairenough",
-                        open = FALSE,
-                        verbose = TRUE) {
-  
+use_template <- function(
+  template,
+  save_as = template,
+  data = list(),
+  base_path = NULL,
+  package = "fairenough",
+  open = FALSE,
+  verbose = TRUE
+) {
   base_path <- get_base_path(base_path)
-  
+
   # Get template from package
   template_path <- system.file("templates", template, package = package)
   if (template_path == "") {
-    cli::cli_abort("Template {.file {template}} not found in package {.pkg {package}}")
+    cli::cli_abort(
+      "Template {.file {template}} not found in package {.pkg {package}}"
+    )
   }
-  
+
   # Read template
   template_content <- paste(readLines(template_path), collapse = "\n")
-  
+
   # Use whisker for template rendering (same as usethis)
   if (!requireNamespace("whisker", quietly = TRUE)) {
-    cli::cli_abort("Package {.pkg whisker} is required. Install it with: install.packages('whisker')")
+    cli::cli_abort(
+      "Package {.pkg whisker} is required. Install it with: install.packages('whisker')"
+    )
   }
-  
+
   # Render template with whisker
   rendered_content <- whisker::whisker.render(template_content, data)
-  
+
   # Create output path
   output_path <- file.path(base_path, save_as)
-  
+
   # Ensure directory exists
   output_dir <- dirname(output_path)
   if (!dir.exists(output_dir)) {
     dir.create(output_dir, recursive = TRUE)
   }
-  
+
   # Check if file exists and prompt
   if (file.exists(output_path)) {
     if (interactive()) {
-      if (!usethis::ui_yeah("Overwrite pre-existing file {usethis::ui_path(save_as)}?")) {
+      if (
+        !usethis::ui_yeah(
+          "Overwrite pre-existing file {usethis::ui_path(save_as)}?"
+        )
+      ) {
         return(invisible(NULL))
       }
     }
   }
-  
+
   # Write file
   writeLines(rendered_content, output_path)
-  
+
   if (verbose) {
     if (file.exists(output_path)) {
       cli::cli_alert_success("Writing {.path {save_as}}")
@@ -280,24 +302,27 @@ use_template <- function(template,
       cli::cli_alert_success("Creating {.path {save_as}}")
     }
   }
-  
+
   # Open file if requested
   if (open && interactive()) {
-    if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    if (
+      requireNamespace("rstudioapi", quietly = TRUE) &&
+        rstudioapi::isAvailable()
+    ) {
       rstudioapi::navigateToFile(output_path)
     } else {
       utils::file.edit(output_path)
     }
   }
-  
+
   return(invisible(output_path))
 }
 
 #' Update metadata in DESCRIPTION file
-#' 
+#'
 #' Simple wrapper around write_metadata_to_desc for updating a single key.
 #' Creates a metadata structure with just the specified key and writes it.
-#' 
+#'
 #' @param key Top-level key (e.g., "datasets", "package")
 #' @param data Data to add/update for the key
 #' @param base_path Base path for the project
@@ -308,17 +333,23 @@ update_metadata <- function(key, data, base_path = NULL, verbose = TRUE) {
   # Create metadata structure with just this key
   metadata <- list()
   metadata[[key]] <- data
-  
+
   # Write to DESCRIPTION (without overwriting other fields)
-  write_metadata_to_desc(metadata, base_path, overwrite = FALSE, create = TRUE, verbose = verbose)
-  
+  write_metadata_to_desc(
+    metadata,
+    base_path,
+    overwrite = FALSE,
+    create = TRUE,
+    verbose = verbose
+  )
+
   invisible(NULL)
 }
 
 #' Get metadata from DESCRIPTION file
-#' 
+#'
 #' Reads and returns metadata from DESCRIPTION file
-#' 
+#'
 #' @param key Optional key to retrieve specific data (e.g., "datasets")
 #' @param base_path Base path for the project
 #' @return Metadata list or specific key data if requested
@@ -326,47 +357,47 @@ update_metadata <- function(key, data, base_path = NULL, verbose = TRUE) {
 get_metadata <- function(key = NULL, base_path = NULL) {
   base_path <- get_base_path(base_path)
   metadata <- get_metadata_from_desc(base_path)
-  
+
   if (!is.null(key)) {
     return(metadata[[key]])
   }
-  
+
   return(metadata)
 }
 
 #' Collect dataset information from .rda files
-#' 
+#'
 #' Scans data directory for .rda files and collects variable information
-#' 
+#'
 #' @param base_path Base path for the project
 #' @return Data frame with dataset information
 #' @export
 collect_dataset_info <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
-  
+
   # Check data directory
   data_dir <- file.path(base_path, "data")
   if (!fs::dir_exists(data_dir)) {
     return(NULL)
   }
-  
+
   # Find all .rda files
   rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
-  
+
   if (length(rda_files) == 0) {
     return(NULL)
   }
-  
+
   # Collect dataset information
   datasets <- list()
-  
+
   for (rda_file in rda_files) {
     # Load data
     temp_env <- new.env()
     load(rda_file, envir = temp_env)
     data_name <- ls(envir = temp_env)[1]
     data <- get(data_name, envir = temp_env)
-    
+
     # Create dataset info
     datasets[[data_name]] <- list(
       rows = nrow(data),
@@ -377,15 +408,15 @@ collect_dataset_info <- function(base_path = NULL) {
       )
     )
   }
-  
+
   return(datasets)
 }
 
 #' Write metadata to DESCRIPTION file
-#' 
+#'
 #' Writes metadata structure to DESCRIPTION file using appropriate fields.
 #' Handles both creating new metadata and updating existing metadata.
-#' 
+#'
 #' @param metadata List containing metadata
 #' @param base_path Base path for the project
 #' @param overwrite Whether to overwrite existing metadata fields
@@ -393,15 +424,23 @@ collect_dataset_info <- function(base_path = NULL) {
 #' @param verbose Whether to show messages
 #' @return NULL (invisibly)
 #' @export
-write_metadata_to_desc <- function(metadata, base_path = NULL, overwrite = TRUE, create = TRUE, verbose = TRUE) {
+write_metadata_to_desc <- function(
+  metadata,
+  base_path = NULL,
+  overwrite = TRUE,
+  create = TRUE,
+  verbose = TRUE
+) {
   base_path <- get_base_path(base_path)
   desc_path <- file.path(base_path, "DESCRIPTION")
-  
+
   if (!file.exists(desc_path)) {
     if (create) {
       # Create a minimal DESCRIPTION file
-      if (verbose) cli::cli_alert_info("Creating DESCRIPTION file")
-      
+      if (verbose) {
+        cli::cli_alert_info("Creating DESCRIPTION file")
+      }
+
       # Initialize with minimal required fields
       desc_content <- c(
         "Package: placeholder",
@@ -412,16 +451,16 @@ write_metadata_to_desc <- function(metadata, base_path = NULL, overwrite = TRUE,
         "License: MIT",
         "Encoding: UTF-8"
       )
-      
+
       writeLines(desc_content, desc_path)
     } else {
       cli::cli_abort("No DESCRIPTION file found at {.path {desc_path}}")
     }
   }
-  
+
   # Create desc object
   d <- desc::desc(file = desc_path)
-  
+
   # Helper function to conditionally set fields
   set_if_new <- function(field, value) {
     if (!is.null(value)) {
@@ -431,7 +470,7 @@ write_metadata_to_desc <- function(metadata, base_path = NULL, overwrite = TRUE,
       }
     }
   }
-  
+
   # Set standard fields
   if (!is.null(metadata$package)) {
     set_if_new("Package", metadata$package$name)
@@ -439,22 +478,38 @@ write_metadata_to_desc <- function(metadata, base_path = NULL, overwrite = TRUE,
     set_if_new("Description", metadata$package$description)
     set_if_new("Version", metadata$package$version)
     set_if_new("Language", metadata$package$language)
-    
+
     # Build URLs from github_user if available
-    if (!is.null(metadata$package$github_user) && !is.null(metadata$package$name)) {
+    if (
+      !is.null(metadata$package$github_user) && !is.null(metadata$package$name)
+    ) {
       # Store github_user as a custom field for easy access
       set_if_new("github_user", metadata$package$github_user)
-      
+
       # Build and set URLs
-      github_url <- paste0("https://github.com/", metadata$package$github_user, "/", metadata$package$name)
-      package_url <- paste0("https://", metadata$package$github_user, ".github.io/", metadata$package$name)
+      github_url <- paste0(
+        "https://github.com/",
+        metadata$package$github_user,
+        "/",
+        metadata$package$name
+      )
+      package_url <- paste0(
+        "https://",
+        metadata$package$github_user,
+        ".github.io/",
+        metadata$package$name
+      )
       d$set_urls(c(package_url, github_url))
     }
   }
-  
+
   # Set authors (only if overwrite or no existing authors)
   existing_authors <- d$get_authors()
-  if (!is.null(metadata$authors) && length(metadata$authors) > 0 && (overwrite || length(existing_authors) == 0)) {
+  if (
+    !is.null(metadata$authors) &&
+      length(metadata$authors) > 0 &&
+      (overwrite || length(existing_authors) == 0)
+  ) {
     # Convert to person objects
     authors_list <- lapply(metadata$authors, function(author) {
       person(
@@ -465,55 +520,82 @@ write_metadata_to_desc <- function(metadata, base_path = NULL, overwrite = TRUE,
         comment = if (!is.null(author$orcid)) c(ORCID = author$orcid) else NULL
       )
     })
-    
+
     # Combine into Authors@R field
     authors_r <- do.call("c", authors_list)
     d$set_authors(authors_r)
   }
-  
+
   # Set license
   set_if_new("License", metadata$license$id)
-  
+
   # Set custom fields with Config/ prefix
   if (!is.null(metadata$publication)) {
     if (!is.null(metadata$publication$keywords)) {
-      set_if_new("Config/Keywords", paste(metadata$publication$keywords, collapse = ", "))
+      set_if_new(
+        "Config/Keywords",
+        paste(metadata$publication$keywords, collapse = ", ")
+      )
     }
     set_if_new("Config/Funder", metadata$publication$funder)
     set_if_new("Config/GrantID", metadata$publication$grant_id)
     if (!is.null(metadata$publication$communities)) {
-      set_if_new("Config/Communities", paste(metadata$publication$communities, collapse = ", "))
+      set_if_new(
+        "Config/Communities",
+        paste(metadata$publication$communities, collapse = ", ")
+      )
     }
   }
-  
+
   # Coverage (store as JSON for complex structure)
   if (!is.null(metadata$coverage)) {
     if (!is.null(metadata$coverage$temporal)) {
-      set_if_new("Config/TemporalCoverage", jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE))
+      set_if_new(
+        "Config/TemporalCoverage",
+        jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE)
+      )
     }
     if (!is.null(metadata$coverage$spatial)) {
-      set_if_new("Config/SpatialCoverage", jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE))
+      set_if_new(
+        "Config/SpatialCoverage",
+        jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE)
+      )
     }
   }
-  
+
   # Related identifiers (store as JSON)
   if (!is.null(metadata$related) && length(metadata$related) > 0) {
-    set_if_new("Config/RelatedIdentifiers", jsonlite::toJSON(metadata$related, auto_unbox = TRUE))
+    set_if_new(
+      "Config/RelatedIdentifiers",
+      jsonlite::toJSON(metadata$related, auto_unbox = TRUE)
+    )
   }
-  
+
   # Handle any other custom fields generically
-  standard_fields <- c("package", "authors", "license", "publication", "coverage", "related")
+  standard_fields <- c(
+    "package",
+    "authors",
+    "license",
+    "publication",
+    "coverage",
+    "related"
+  )
   other_fields <- setdiff(names(metadata), standard_fields)
-  
+
   for (field in other_fields) {
     if (!is.null(metadata[[field]])) {
       # Convert field name to Config/ format
       config_field <- paste0("Config/", tools::toTitleCase(field))
-      
+
       # Store as JSON if it's a complex structure, otherwise as string
       if (is.list(metadata[[field]]) && !is.data.frame(metadata[[field]])) {
-        set_if_new(config_field, jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE))
-      } else if (is.vector(metadata[[field]]) && length(metadata[[field]]) > 1) {
+        set_if_new(
+          config_field,
+          jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE)
+        )
+      } else if (
+        is.vector(metadata[[field]]) && length(metadata[[field]]) > 1
+      ) {
         # Multiple values - join with commas
         set_if_new(config_field, paste(metadata[[field]], collapse = ", "))
       } else {
@@ -522,44 +604,44 @@ write_metadata_to_desc <- function(metadata, base_path = NULL, overwrite = TRUE,
       }
     }
   }
-  
+
   # Write back to file
   d$write(file = desc_path)
-  
+
   if (verbose) {
     cli::cli_alert_success("Metadata saved to DESCRIPTION file")
   }
-  
+
   invisible(NULL)
 }
 
 #' Get metadata from DESCRIPTION file
-#' 
+#'
 #' Reads DESCRIPTION file and reconstructs metadata structure
-#' 
+#'
 #' @param base_path Base path for the project
 #' @return List containing metadata
 #' @export
 get_metadata_from_desc <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
   desc_path <- file.path(base_path, "DESCRIPTION")
-  
+
   if (!file.exists(desc_path)) {
     return(NULL)
   }
-  
+
   # Read DESCRIPTION
   d <- desc::desc(file = desc_path)
-  
+
   # Initialize metadata structure
   metadata <- list()
-  
+
   # Helper to safely get field value
   safe_get <- function(field) {
     val <- d$get(field)
     if (is.null(val) || length(val) == 0) NULL else val[[1]]
   }
-  
+
   # Package metadata
   metadata$package <- list(
     name = safe_get("Package"),
@@ -568,16 +650,20 @@ get_metadata_from_desc <- function(base_path = NULL) {
     version = safe_get("Version"),
     language = safe_get("Language")
   )
-  
+
   # Extract github_user from URL if present
   urls <- d$get_urls()
   if (length(urls) > 0) {
     github_pattern <- "https://github.com/([^/]+)/"
     if (grepl(github_pattern, urls[1])) {
-      metadata$package$github_user <- sub(paste0(github_pattern, ".*"), "\\1", urls[1])
+      metadata$package$github_user <- sub(
+        paste0(github_pattern, ".*"),
+        "\\1",
+        urls[1]
+      )
     }
   }
-  
+
   # Authors
   authors_r <- d$get_authors()
   if (length(authors_r) > 0) {
@@ -587,17 +673,17 @@ get_metadata_from_desc <- function(base_path = NULL) {
         family = author$family,
         email = author$email,
         orcid = author$comment["ORCID"],
-        affiliation = NULL,  # Not stored in standard person object
+        affiliation = NULL, # Not stored in standard person object
         roles = author$role
       )
     })
   }
-  
+
   # License
   license_id <- safe_get("License")
   if (!is.null(license_id)) {
     metadata$license <- list(id = license_id)
-    
+
     # Add standard license URLs
     license_urls <- list(
       "CC-BY-4.0" = "https://creativecommons.org/licenses/by/4.0/",
@@ -607,72 +693,79 @@ get_metadata_from_desc <- function(base_path = NULL) {
       "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
       "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0"
     )
-    
+
     if (license_id %in% names(license_urls)) {
       metadata$license$url <- license_urls[[license_id]]
     }
   }
-  
+
   # Publication metadata from custom fields
   metadata$publication <- list()
-  
+
   keywords <- safe_get("Config/Keywords")
   if (!is.null(keywords)) {
     metadata$publication$keywords <- trimws(strsplit(keywords, ",")[[1]])
   }
-  
+
   funder <- safe_get("Config/Funder")
-  if (!is.null(funder)) metadata$publication$funder <- funder
-  
+  if (!is.null(funder)) {
+    metadata$publication$funder <- funder
+  }
+
   grant_id <- safe_get("Config/GrantID")
-  if (!is.null(grant_id)) metadata$publication$grant_id <- grant_id
-  
+  if (!is.null(grant_id)) {
+    metadata$publication$grant_id <- grant_id
+  }
+
   communities <- safe_get("Config/Communities")
   if (!is.null(communities)) {
     metadata$publication$communities <- trimws(strsplit(communities, ",")[[1]])
   }
-  
+
   # Helper function to safely parse JSON
   safe_json_parse <- function(json_string) {
     if (is.null(json_string) || json_string == "" || is.na(json_string)) {
       return(NULL)
     }
-    tryCatch({
-      jsonlite::fromJSON(json_string, simplifyVector = FALSE)
-    }, error = function(e) {
-      NULL
-    })
+    tryCatch(
+      {
+        jsonlite::fromJSON(json_string, simplifyVector = FALSE)
+      },
+      error = function(e) {
+        NULL
+      }
+    )
   }
-  
+
   # Coverage from custom fields (parse JSON)
   metadata$coverage <- list()
-  
+
   temporal <- safe_get("Config/TemporalCoverage")
   parsed_temporal <- safe_json_parse(temporal)
   if (!is.null(parsed_temporal)) {
     metadata$coverage$temporal <- parsed_temporal
   }
-  
+
   spatial <- safe_get("Config/SpatialCoverage")
   parsed_spatial <- safe_json_parse(spatial)
   if (!is.null(parsed_spatial)) {
     metadata$coverage$spatial <- parsed_spatial
   }
-  
+
   # Related identifiers (parse JSON)
   related <- safe_get("Config/RelatedIdentifiers")
   parsed_related <- safe_json_parse(related)
   if (!is.null(parsed_related)) {
     metadata$related <- parsed_related
   }
-  
+
   # Datasets (parse JSON)
   datasets <- safe_get("Config/Datasets")
   parsed_datasets <- safe_json_parse(datasets)
   if (!is.null(parsed_datasets)) {
     metadata$datasets <- parsed_datasets
   }
-  
+
   # Clean up empty elements
   metadata <- lapply(metadata, function(x) {
     if (is.list(x) && length(x) > 0) {
@@ -681,7 +774,7 @@ get_metadata_from_desc <- function(base_path = NULL) {
       x
     }
   })
-  
+
   # Remove empty top-level elements
   metadata[sapply(metadata, function(x) length(x) > 0)]
 }
