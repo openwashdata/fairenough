@@ -72,8 +72,11 @@ build_package <- function(
     }
     tryCatch(
       {
+        active_path <- usethis::proj_get()
+        # use_git_ignore's directory option uses path relative to active dir
+        relative_path <- fs::path_rel(base_path, start = active_path)
         usethis::use_git_ignore(
-          directory = base_path,
+          directory = relative_path,
           ignores = c(
             "*.DS_Store",
             ".Rhistory",
