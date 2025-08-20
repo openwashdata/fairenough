@@ -34,13 +34,17 @@ setup <- function(
   }
 
   # Create basic package structure
-  usethis::create_package(
-    path = base_path,
-    fields = list(),
-    rstudio = rstudioapi::isAvailable(),
-    roxygen = TRUE,
-    check_name = TRUE,
-    open = FALSE
+  # run usethis::create_package with usethis.allow_nested_project = TRUE
+  withr::with_options(
+    list(usethis.allow_nested_project = TRUE),
+    usethis::create_package(
+      path = base_path,
+      fields = list(),
+      rstudio = rstudioapi::isAvailable(),
+      roxygen = TRUE,
+      check_name = TRUE,
+      open = FALSE
+    )
   )
 
   # Create all necessary directories
