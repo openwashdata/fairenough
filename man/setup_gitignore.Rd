@@ -2,12 +2,12 @@
 % Please edit documentation in R/setup.R
 \name{setup_gitignore}
 \alias{setup_gitignore}
-\title{Setup gitignore for data directory}
+\title{Setup gitignore for data directory and R files}
 \usage{
-setup_gitignore(raw_dir = "data_raw", base_path = NULL, verbose = TRUE)
+setup_gitignore(raw_dir = NULL, base_path = NULL, verbose = TRUE)
 }
 \arguments{
-\item{raw_dir}{Name of the directory to ignore}
+\item{raw_dir}{Name of the directory to ignore (default handled by get_raw_dir())}
 
 \item{base_path}{Base path for the project}
 
@@ -17,5 +17,6 @@ setup_gitignore(raw_dir = "data_raw", base_path = NULL, verbose = TRUE)
 Logical indicating success
 }
 \description{
-Adds the data_raw directory to .gitignore to prevent committing raw data.
+Adds the data_raw directory and standard R ignores to .gitignore.
+Uses usethis::use_git_ignore() for consistent handling.
 }

@@ -7,7 +7,7 @@
 build_citation(
   base_path = NULL,
   verbose = TRUE,
-  validate = FALSE,
+  validate = TRUE,
   overwrite = TRUE
 )
 }
@@ -15,6 +15,8 @@ build_citation(
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show messages}
+
+\item{validate}{Whether to validate the CITATION file}
 
 \item{overwrite}{Whether to overwrite the CITATION file}
 }

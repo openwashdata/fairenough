@@ -4,7 +4,7 @@
 \alias{build_readme}
 \title{Build README from inst/templates/README.Rmd}
 \usage{
-build_readme(base_path = NULL, verbose = TRUE)
+build_readme(base_path = NULL, verbose = TRUE, overwrite = TRUE)
 }
 \arguments{
 \item{base_path}{Base path for the project}

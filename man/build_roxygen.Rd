@@ -4,7 +4,7 @@
 \alias{build_roxygen}
 \title{Generate roxygen documentation for datasets}
 \usage{
-build_roxygen(base_path = NULL, verbose = TRUE)
+build_roxygen(type = "dataset", base_path = NULL, verbose = TRUE)
 }
 \arguments{
 \item{base_path}{Base path for the project}

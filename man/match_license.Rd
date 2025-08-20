@@ -18,6 +18,6 @@ Uses the centralized configuration for pattern matching.
 }
 \examples{
 match_license("MIT")           # "MIT"
-match_license("gpl v3")        # "GPL-3" 
+match_license("gpl v3")        # "GPL-3"
 match_license("apache 2.0")    # "Apache-2.0"
 }
