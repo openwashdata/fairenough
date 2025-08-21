@@ -15,7 +15,7 @@ build_package <- function(
   overwrite = TRUE
 ) {
   base_path <- get_base_path(base_path)
-  
+
   # Generate automatic roxygen documentation for dataset functions in R/
   if (verbose) {
     cli::cli_alert_info("Generating dataset documentation")
@@ -29,31 +29,25 @@ build_package <- function(
   # Create LICENSE file
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (file.exists(desc_path)) {
-    desc_obj <- desc::desc(file = desc_path)
-    license <- desc_obj$get_field("License")
+    license <- desc::desc_get_field("License")
     license_file <- file.path(base_path, "LICENSE")
     license_md_file <- file.path(base_path, "LICENSE.md")
-    
+
     # Check if any license file exists
-    if (overwrite || (!file.exists(license_file) || !file.exists(license_md_file))) {
+    if (
+      overwrite || (!file.exists(license_file) || !file.exists(license_md_file))
+    ) {
       if (verbose) {
         cli::cli_alert_info("Creating LICENSE file")
       }
 
-      # Store current project to restore later
-      old_proj <- tryCatch(usethis::proj_get(), error = function(e) NULL)
-      
-      # Set the target package as active project
-      usethis::proj_set(base_path)
-      
-      # Ensure we restore the original project
-      on.exit({
-        if (!is.null(old_proj)) {
-          usethis::proj_set(old_proj)
-        }
-      }, add = TRUE)
-      
-      build_license(license)
+      usethis::with_project(
+        base_path,
+        {
+          build_license(license)
+        },
+        force = TRUE
+      )
     }
   }
 
@@ -76,7 +70,7 @@ build_package <- function(
   if (verbose) {
     cli::cli_alert_success("Package build step complete!")
   }
-  
+
   invisible(TRUE)
 }
 
@@ -325,14 +319,16 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
 #' @param overwrite Whether to overwrite README.Rmd found at base_path
 #' @return Path to generated README
 #' @export
-build_readme <- function(base_path = NULL, 
-                         verbose = TRUE,
-                         overwrite = TRUE) {
+build_readme <- function(base_path = NULL, verbose = TRUE, overwrite = TRUE) {
   base_path <- get_base_path(base_path)
 
   # Create README.Rmd from template if it doesn't exist
   readme_rmd <- file.path(base_path, "README.Rmd")
-  template_path <- system.file("templates", "README.Rmd", package = "fairenough")
+  template_path <- system.file(
+    "templates",
+    "README.Rmd",
+    package = "fairenough"
+  )
   fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
 
   # Check if rmarkdown is available
@@ -550,7 +546,7 @@ build_citation <- function(
   verbose = TRUE,
   validate = TRUE,
   overwrite = TRUE
-  ) {
+) {
   base_path <- get_base_path(base_path)
 
   # Check if cffr is available
@@ -562,23 +558,32 @@ build_citation <- function(
 
   tryCatch(
     {
-      # Use cffr to create citation from DESCRIPTION
       desc_path <- file.path(base_path, "DESCRIPTION")
-      if (overwrite || !file.exists(desc_path)) {
-        # Create CITATION.cff in base_path
-        cff <- cffr::cff_write(
-          x = desc_path,
-          outfile = file.path(base_path, "CITATION.cff"),
-          validate = validate,
-          verbose = verbose,
-        )
-        cffr::cff_write_citation(
-          cff,
-          file = file.path(base_path, "inst", "CITATION"),
-        )
-      }
-      else {
-        cli::cli_alert_info("Use {.code overwrite = TRUE} to overwrite existing CITATION.")
+      if (file.exists(desc_path)) {
+        # Use cffr to create citation from DESCRIPTION
+        citation_cff_file <- file.path(base_path, "CITATION.cff")
+        citation_file <- file.path(base_path, "inst", "CITATION")
+
+        if (
+          overwrite ||
+            (!file.exists(citation_cff_file) || !file.exists(citation_cff_file))
+        ) {
+          # Create CITATION.cff in base_path
+          cff <- cffr::cff_write(
+            x = desc_path,
+            outfile = file.path(base_path, "CITATION.cff"),
+            validate = validate,
+            verbose = verbose,
+          )
+          cffr::cff_write_citation(
+            cff,
+            file = file.path(base_path, "inst", "CITATION"),
+          )
+        } else {
+          cli::cli_alert_info(
+            "Use {.code overwrite = TRUE} to overwrite existing CITATION."
+          )
+        }
       }
     },
     error = function(e) {
