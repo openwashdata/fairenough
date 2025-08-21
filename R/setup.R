@@ -24,7 +24,8 @@ setup <- function(
   raw_dir = "data_raw",
   gitignore = TRUE,
   base_path = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  overwrite = FALSE
 ) {
   base_path <- get_base_path(base_path)
   raw_dir <- get_raw_dir(raw_dir)
@@ -33,19 +34,31 @@ setup <- function(
     cli::cli_h1("Setting up fairenough project")
   }
 
-  # Create basic package structure
-  # run usethis::create_package with usethis.allow_nested_project = TRUE
-  withr::with_options(
-    list(usethis.allow_nested_project = TRUE),
-    usethis::create_package(
-      path = base_path,
-      fields = list(),
-      rstudio = rstudioapi::isAvailable(),
-      roxygen = TRUE,
-      check_name = TRUE,
-      open = FALSE
+  desc_path <- file.path(base_path, "DESCRIPTION")
+
+  check_exists <- function(path = base_path, pattern = NULL) {
+    # List .Rproj files in the specified path
+    files <- list.files(path = path, pattern = pattern, full.names = TRUE)
+    
+    # Return TRUE if any files exist, otherwise FALSE
+    return(length(files) > 0)
+  }
+
+  if (overwrite || (!file.exists(desc_path) || !check_exists(pattern = "\\.Rproj$"))) {
+    # Create basic package structure
+    # run usethis::create_package with usethis.allow_nested_project = TRUE
+    withr::with_options(
+      list(usethis.allow_nested_project = TRUE),
+      usethis::create_package(
+        path = base_path,
+        fields = list(),
+        rstudio = rstudioapi::isAvailable(),
+        roxygen = TRUE,
+        check_name = TRUE,
+        open = FALSE
+      )
     )
-  )
+  }
 
   # Create all necessary directories
   dirs_created <- create_directories(
