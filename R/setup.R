@@ -192,7 +192,8 @@ setup_gitignore <- function(
   
   # Prepare ignores list
   ignores <- c(
-    paste0(raw_dir, "/"),
+    paste0(raw_dir, "/"), # ignore raw data
+    "*.bk*", # ignore inst/CITATION backups
     "*.DS_Store",
     ".Rhistory",
     ".RData",
