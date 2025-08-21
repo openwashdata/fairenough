@@ -426,6 +426,20 @@ prompt4metadata <- function(
     }
   })
 
+  # Helper function to recursively apply UTF-8 encoding
+  ensure_utf8 <- function(x) {
+    rapply(
+      x,
+      function(y) {
+        if (is.character(y)) enc2utf8(y) else y
+      },
+      how = "replace"
+    )
+  }
+
+  # Apply UTF-8 encoding
+  metadata <- ensure_utf8(metadata)
+
   cli::cli_alert_success("Metadata collection complete!")
 
   # Show summary
