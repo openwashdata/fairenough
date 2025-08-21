@@ -4,19 +4,20 @@
 \alias{build_package}
 \title{Build package structure and core files}
 \usage{
-build_package(base_path = NULL, verbose = TRUE, open = FALSE, overwrite = TRUE)
+build_package(base_path = NULL, verbose = TRUE, overwrite = TRUE)
 }
 \arguments{
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show detailed messages}
 
-\item{open}{Whether to open new R project}
+\item{overwrite}{Whether to overwrite existing files}
 }
 \value{
 Logical indicating success
 }
 \description{
 Creates the essential R package structure using modern development tools.
-Generates DESCRIPTION, NAMESPACE, roxygen docs, LICENSE, and validates structure.
+Generates roxygen docs for dataset functions, LICENSE, and validates structure.
+Note: This assumes usethis::create_package() has already been run in setup().
 }

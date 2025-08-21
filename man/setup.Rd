@@ -4,7 +4,13 @@
 \alias{setup}
 \title{Setup fairenough project structure}
 \usage{
-setup(raw_dir = "data_raw", gitignore = TRUE, base_path = NULL, verbose = TRUE)
+setup(
+  raw_dir = "data_raw",
+  gitignore = TRUE,
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{raw_dir}{Name of the raw data directory (default: "data_raw")}
