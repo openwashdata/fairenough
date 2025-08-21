@@ -1,21 +1,21 @@
 #' Build package structure and core files
 #'
 #' Creates the essential R package structure using modern development tools.
-#' Generates DESCRIPTION, NAMESPACE, roxygen docs, LICENSE, and validates structure.
+#' Generates roxygen docs for dataset functions, LICENSE, and validates structure.
+#' Note: This assumes usethis::create_package() has already been run in setup().
 #'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show detailed messages
-#' @param open Whether to open new R project
+#' @param overwrite Whether to overwrite existing files
 #' @return Logical indicating success
 #' @export
 build_package <- function(
   base_path = NULL,
   verbose = TRUE,
-  open = FALSE,
   overwrite = TRUE
 ) {
   base_path <- get_base_path(base_path)
-
+  
   # Generate automatic roxygen documentation for dataset functions in R/
   if (verbose) {
     cli::cli_alert_info("Generating dataset documentation")
@@ -26,62 +26,6 @@ build_package <- function(
     verbose = verbose
   )
 
-  # Ensure standard .gitignore exists
-  gitignore_file <- file.path(base_path, ".gitignore")
-  if (overwrite || !file.exists(gitignore_file)) {
-    if (verbose) {
-      cli::cli_alert_info("Creating .gitignore")
-    }
-    tryCatch(
-      {
-        active_path <- usethis::proj_get()
-        # use_git_ignore's directory option uses path relative to active dir
-        relative_path <- fs::path_rel(base_path, start = active_path)
-        usethis::use_git_ignore(
-          directory = relative_path,
-          ignores = c(
-            "*.DS_Store",
-            ".Rhistory",
-            ".RData",
-            ".Ruserdata"
-          )
-        )
-        if (verbose) cli::cli_alert_success("Created .gitignore")
-      },
-      error = function(e) {
-        cli::cli_alert_warning("Could not create .gitignore: {e$message}")
-      }
-    )
-  }
-
-  # Run usethis::create_package with roxygen
-  if (verbose) {
-    cli::cli_alert_info("Running usethis::create_package with roxygen")
-  }
-  tryCatch(
-    {
-      # run usethis::create_package with usethis.allow_nested_project = TRUE
-      withr::with_options(
-        list(usethis.allow_nested_project = TRUE),
-        usethis::create_package(
-          path = base_path,
-          fields = list(),
-          rstudio = rstudioapi::isAvailable(),
-          roxygen = TRUE,
-          check_name = TRUE,
-          open = open
-        )
-      )
-
-
-      if (verbose) cli::cli_alert_success("Generated R package")
-    },
-    error = function(e) {
-      cli::cli_alert_warning("usethis::create_package failed: {e$message}")
-      return(FALSE)
-    }
-  )
-
   # Create LICENSE file
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (file.exists(desc_path)) {
@@ -89,18 +33,33 @@ build_package <- function(
     license <- desc_obj$get_field("License")
     license_file <- file.path(base_path, "LICENSE")
     license_md_file <- file.path(base_path, "LICENSE.md")
-
+    
     # Check if any license file exists
-    if (
-      overwrite || !file.exists(license_file) && !file.exists(license_md_file)
-    ) {
+    if (overwrite || (!file.exists(license_file) || !file.exists(license_md_file))) {
+      if (verbose) {
+        cli::cli_alert_info("Creating LICENSE file")
+      }
+
+      # Store current project to restore later
+      old_proj <- tryCatch(usethis::proj_get(), error = function(e) NULL)
+      
+      # Set the target package as active project
+      usethis::proj_set(base_path)
+      
+      # Ensure we restore the original project
+      on.exit({
+        if (!is.null(old_proj)) {
+          usethis::proj_set(old_proj)
+        }
+      }, add = TRUE)
+      
       build_license(license)
     }
   }
 
-  # Package validation with devtools
+  # Package validation and documentation with devtools
   if (verbose) {
-    cli::cli_alert_info("Validating package structure")
+    cli::cli_alert_info("Running roxygen2 and validating package structure")
   }
   tryCatch(
     {
@@ -117,7 +76,7 @@ build_package <- function(
   if (verbose) {
     cli::cli_alert_success("Package build step complete!")
   }
-
+  
   invisible(TRUE)
 }
 
