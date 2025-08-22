@@ -22,6 +22,7 @@ collect_metadata(
   spatial_coordinates = NULL,
   related_identifiers = NULL,
   communities = NULL,
+  extended = FALSE,
   interactive = TRUE,
   save_to_desc = TRUE,
   base_path = NULL,
@@ -45,23 +46,25 @@ collect_metadata(
 
 \item{license}{License identifier (e.g., "CC-BY-4.0")}
 
-\item{keywords}{Character vector of keywords}
+\item{keywords}{Character vector of keywords (only prompted if extended=TRUE)}
 
-\item{funder}{Funding organization}
+\item{funder}{Funding organization (only prompted if extended=TRUE)}
 
-\item{grant_id}{Grant identifier}
+\item{grant_id}{Grant identifier (only prompted if extended=TRUE)}
 
-\item{temporal_start}{Start date of data coverage}
+\item{temporal_start}{Start date of data coverage (only prompted if extended=TRUE)}
 
-\item{temporal_end}{End date of data coverage}
+\item{temporal_end}{End date of data coverage (only prompted if extended=TRUE)}
 
-\item{spatial_description}{Geographic coverage description}
+\item{spatial_description}{Geographic coverage description (only prompted if extended=TRUE)}
 
-\item{spatial_coordinates}{List with lat and lon}
+\item{spatial_coordinates}{List with lat and lon (only prompted if extended=TRUE)}
 
-\item{related_identifiers}{List of related publications}
+\item{related_identifiers}{List of related publications (only prompted if extended=TRUE)}
 
-\item{communities}{Character vector of Zenodo communities}
+\item{communities}{Character vector of Zenodo communities (only prompted if extended=TRUE)}
+
+\item{extended}{Whether to prompt for extended metadata fields (default: FALSE)}
 
 \item{interactive}{Whether to use interactive prompts (default: TRUE)}
 
@@ -78,4 +81,6 @@ List containing all metadata organized by category
 Collects metadata for R data packages using interactive prompts.
 Supports partial pre-filling where provided values are used and
 missing required fields are prompted. Uses the general prompt.R utilities.
+By default, collects only essential metadata. Set extended=TRUE to collect
+additional optional metadata for publication and archiving.
 }
