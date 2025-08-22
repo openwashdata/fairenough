@@ -192,27 +192,45 @@ collect_metadata <- function(
   # License
   cli::cli_h2("License")
 
+  # Generate license options from LICENSE_CONFIG
+  license_choices <- get_available_licenses("both")
+  
+  # Match existing license value if provided
+  if (!is.null(license)) {
+    matched_license <- match_license(license)
+    if (!is.null(matched_license)) {
+      license <- matched_license
+    }
+  }
+
   license <- prompt_menu(
-    choices = c(
-      "CC-BY-4.0 (Creative Commons Attribution)" = "CC-BY-4.0",
-      "CC0-1.0 (Public Domain)" = "CC0-1.0",
-      "MIT (MIT License)" = "MIT",
-      "GPL-3 (GNU General Public License v3)" = "GPL-3",
-      "Apache-2.0 (Apache License 2.0)" = "Apache-2.0"
-    ),
+    choices = license_choices,
     title = "Select a license",
     value = license,
-    default = "CC-BY-4.0",
+    default = "CC-BY",
     allow_other = TRUE
   )
+  
+  # If user provided a custom license, try to match it
+  if (!is.null(license) && !(license %in% names(license_choices))) {
+    matched_license <- match_license(license)
+    if (!is.null(matched_license)) {
+      license <- matched_license
+    }
+  }
 
-  # Get license URL
+  # Get license URL based on canonical name
   license_urls <- list(
-    "CC-BY-4.0" = "https://creativecommons.org/licenses/by/4.0/",
-    "CC0-1.0" = "https://creativecommons.org/publicdomain/zero/1.0/",
+    "CC-BY" = "https://creativecommons.org/licenses/by/4.0/",
+    "CC0" = "https://creativecommons.org/publicdomain/zero/1.0/",
     "MIT" = "https://opensource.org/licenses/MIT",
+    "GPL-2" = "https://www.gnu.org/licenses/gpl-2.0.html",
     "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
-    "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0"
+    "LGPL-2.1" = "https://www.gnu.org/licenses/lgpl-2.1.html",
+    "LGPL-3" = "https://www.gnu.org/licenses/lgpl-3.0.html",
+    "AGPL-3" = "https://www.gnu.org/licenses/agpl-3.0.html",
+    "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0",
+    "Proprietary" = NULL
   )
 
   license_url <- if (!is.null(license) && license %in% names(license_urls)) {
