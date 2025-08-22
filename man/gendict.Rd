@@ -11,6 +11,7 @@ gendict(
   sample_size = 5,
   method = "sequential",
   test_llm_connection = FALSE,
+  verbose = FALSE,
   ...
 )
 }

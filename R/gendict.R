@@ -46,7 +46,7 @@ NULL
 
     response <- tryCatch(
       {
-        chat$chat(prompts[[i]])
+        chat$chat(as.character(prompts[[i]]))
       },
       error = function(e) {
         cli::cli_alert_warning(
@@ -143,7 +143,7 @@ NULL
         )
 
         # Send the request with the fresh connection
-        result <- fresh_chat$chat(prompts[[i]])
+        result <- fresh_chat$chat(as.character(prompts[[i]]))
 
         # Ensure we got a response
         if (!is.null(result) && nchar(result) > 0) {
@@ -292,17 +292,42 @@ gendict <- function(
   sample_size = 5,
   method = "sequential",
   test_llm_connection = FALSE,
+  verbose = FALSE,
   ...
 ) {
+  if (verbose) {
+    cat("DEBUG: gendict called with data:", class(data), "\n")
+  }
+  if (verbose) {
+    cat("DEBUG: ... args:", length(list(...)), "\n")
+  }
+  if (verbose) {
+    cat("DEBUG: About to call match.arg\n")
+  }
   # Validate method parameter
   method <- match.arg(method, c("sequential", "parallel"))
+  if (verbose) {
+    cat("DEBUG: match.arg successful, method =", method, "\n")
+  }
 
+  if (verbose) {
+    cat("DEBUG: About to call read_data\n")
+  }
   # Use utility function to read and validate data
   data <- read_data(data)
+  if (verbose) {
+    cat("DEBUG: read_data successful\n")
+  }
 
   cli::cli_alert_info("Generating dictionary for {ncol(data)} variable{?s}...")
+  if (verbose) {
+    cat("DEBUG: After cli_alert_info\n")
+  }
 
   # Test LLM connection first
+  if (verbose) {
+    cat("DEBUG: About to check test_llm_connection\n")
+  }
   if (test_llm_connection) {
     cli::cli_alert_info("Testing LLM connection...")
     test_response <- tryCatch(
@@ -323,6 +348,9 @@ gendict <- function(
       cli::cli_abort("Cannot proceed without LLM connection")
     }
   }
+  if (verbose) {
+    cat("DEBUG: After test_llm_connection check\n")
+  }
   # Define the allowed data types
   allowed_data_types <- c(
     "logical",
@@ -337,6 +365,9 @@ gendict <- function(
     "json",
     "array"
   )
+  if (verbose) {
+    cat("DEBUG: After defining allowed_data_types\n")
+  }
 
   # Prepare a list of prompts, one for each column, including the sampled data
   column_prompts <- list()
@@ -344,19 +375,50 @@ gendict <- function(
   sample_strings <- list() # Store formatted sample strings
   continuity_flags <- list() # Store whether each column is continuous
   col_names <- names(data)
+  if (verbose) {
+    cat(
+      "DEBUG: About to start for loop, col_names:",
+      paste(col_names, collapse = ", "),
+      "\n"
+    )
+  }
 
   for (i in seq_along(col_names)) {
+    if (verbose) {
+      cat("DEBUG: Processing column", i, ":", col_names[i], "\n")
+    }
     col_name <- col_names[i]
     column_data <- data[[col_name]]
 
+    if (verbose) {
+      cat("DEBUG: About to call .generate_samples for", col_name, "\n")
+    }
     # Generate samples using helper function
     samples <- .generate_samples(column_data, sample_size)
+    if (verbose) {
+      cat("DEBUG: .generate_samples successful for", col_name, "\n")
+    }
     sample_data[[i]] <- samples
 
+    if (verbose) {
+      cat("DEBUG: About to check continuity for", col_name, "\n")
+    }
     # Check if continuous and store flag
     is_cont <- samples$type == "continuous"
     continuity_flags[[i]] <- is_cont
+    if (verbose) {
+      cat(
+        "DEBUG: Continuity check done for",
+        col_name,
+        "is_cont =",
+        is_cont,
+        "\n"
+      )
+    }
 
+    if (verbose) {
+      cat("DEBUG: About to convert samples to string for", col_name, "\n")
+    }
     # Convert samples to string for prompt
     if (is_cont) {
       if (is.na(samples$min) && is.na(samples$max)) {
@@ -366,7 +428,7 @@ gendict <- function(
       }
     } else {
       # Handle NA values in categorical samples
-      sample_values <- sapply(
+      sample_values <- vapply(
         samples$values,
         function(x) {
           if (is.na(x)) {
@@ -381,9 +443,21 @@ gendict <- function(
         sample_str <- paste0(sample_str, ", ...")
       }
     }
+    if (verbose) {
+      cat(
+        "DEBUG: Sample string conversion done for",
+        col_name,
+        "sample_str =",
+        sample_str,
+        "\n"
+      )
+    }
 
     # Store the formatted string for later use
     sample_strings[[i]] <- sample_str
+    if (verbose) {
+      cat("DEBUG: Stored sample string for", col_name, "\n")
+    }
 
     # Construct a comprehensive prompt for better descriptions
     prompt_context <- ""
@@ -445,6 +519,7 @@ DESCRIPTION:"
         method,
         sequential = .gendict_sequential_chat(chat, column_prompts, col_names),
         parallel = .gendict_parallel_chat(chat, column_prompts, col_names),
+        stop("Unknown method: ", method)
       )
 
       # Create the final dictionary with variable names, descriptions, and examples/ranges
