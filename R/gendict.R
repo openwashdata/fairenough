@@ -291,10 +291,11 @@ gendict <- function(
   context = NULL,
   sample_size = 5,
   method = "sequential",
-  test_llm_connection = FALSE
+  test_llm_connection = FALSE,
+  ...
 ) {
   # Validate method parameter
-  method <- match.arg(method, c("sequential", "sequential_fresh", "parallel"))
+  method <- match.arg(method, c("sequential", "parallel"))
 
   # Use utility function to read and validate data
   data <- read_data(data)
@@ -439,22 +440,10 @@ DESCRIPTION:"
         "Using {method} method to process {length(column_prompts)} prompts..."
       )
 
-      # Extract chat configuration for fresh connections
-      chat_config <- list(
-        base_url = "https://api.helmholtz-blablador.fz-juelich.de/v1",
-        api_key = Sys.getenv("OPENAI_API_KEY"),
-        model = "alias-fast" # Use same model as in setup
-      )
-
       # Use the appropriate helper function based on method
       llm_responses <- switch(
         method,
         sequential = .gendict_sequential_chat(chat, column_prompts, col_names),
-        sequential_fresh = .gendict_sequential_fresh(
-          chat_config,
-          column_prompts,
-          col_names
-        ),
         parallel = .gendict_parallel_chat(chat, column_prompts, col_names),
       )
 

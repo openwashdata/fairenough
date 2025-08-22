@@ -10,7 +10,8 @@ gendict(
   context = NULL,
   sample_size = 5,
   method = "sequential",
-  test_llm_connection = FALSE
+  test_llm_connection = FALSE,
+  ...
 )
 }
 \arguments{
