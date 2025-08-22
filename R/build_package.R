@@ -29,7 +29,7 @@ build_package <- function(
   # Create LICENSE file
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (file.exists(desc_path)) {
-    license <- desc::desc_get_field("License")
+    license <- get_metadata()$license$id
     license_file <- file.path(base_path, "LICENSE")
     license_md_file <- file.path(base_path, "LICENSE.md")
 
