@@ -73,7 +73,7 @@ generate_dictionary <- function(
 
   # Check for metadata in DESCRIPTION to enhance context
   if (is.null(context)) {
-    metadata <- get_metadata_from_desc(base_path)
+    metadata <- get_metadata(base_path)
     if (!is.null(metadata) && !is.null(metadata$package$description)) {
       context <- paste("Data's general context:", metadata$package$description)
       if (verbose && !is.null(chat)) {

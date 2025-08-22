@@ -68,7 +68,7 @@ collect_metadata <- function(
     desc_path <- file.path(base_path, "DESCRIPTION")
     if (file.exists(desc_path)) {
       existing_meta <- tryCatch(
-        get_metadata_from_desc(base_path),
+        get_metadata(base_path),
         error = function(e) NULL
       )
 
@@ -198,7 +198,7 @@ collect_metadata <- function(
 
   # Generate license options from LICENSE_CONFIG
   license_choices <- get_available_licenses("both")
-  
+
   # Match existing license value if provided
   if (!is.null(license)) {
     matched_license <- match_license(license)
@@ -214,7 +214,7 @@ collect_metadata <- function(
     default = "CC-BY",
     allow_other = TRUE
   )
-  
+
   # If user provided a custom license, try to match it
   if (!is.null(license) && !(license %in% names(license_choices))) {
     matched_license <- match_license(license)
@@ -443,7 +443,7 @@ collect_metadata <- function(
 
   # Save to DESCRIPTION if requested
   if (save_to_desc) {
-    write_metadata_to_desc(
+    save_metadata(
       metadata,
       base_path,
       overwrite = TRUE, # Always overwrite when collecting fresh metadata
@@ -452,4 +452,371 @@ collect_metadata <- function(
   }
 
   return(metadata)
+}
+
+#' Save metadata to DESCRIPTION file
+#'
+#' Saves metadata structure to DESCRIPTION file using appropriate fields.
+#' Handles both creating new metadata and updating existing metadata.
+#'
+#' @param metadata List containing metadata
+#' @param base_path Base path for the project
+#' @param overwrite Whether to overwrite existing metadata fields
+#' @param create Whether to create DESCRIPTION file if it doesn't exist
+#' @param verbose Whether to show messages
+#' @return NULL (invisibly)
+#' @export
+save_metadata <- function(
+  metadata,
+  base_path = NULL,
+  overwrite = TRUE,
+  create = TRUE,
+  verbose = TRUE
+) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+
+  if (!file.exists(desc_path)) {
+    if (create) {
+      # Create a minimal DESCRIPTION file
+      if (verbose) {
+        cli::cli_alert_info("Creating DESCRIPTION file")
+      }
+
+      # Initialize with minimal required fields
+      desc_content <- c(
+        "Package: placeholder",
+        "Title: Placeholder Title",
+        "Version: 0.0.1",
+        "Authors@R: person('First', 'Last', email = 'email@example.com', role = c('aut', 'cre'))",
+        "Description: Placeholder description.",
+        "License: MIT",
+        "Encoding: UTF-8"
+      )
+
+      writeLines(desc_content, desc_path)
+    } else {
+      cli::cli_abort("No DESCRIPTION file found at {.path {desc_path}}")
+    }
+  }
+
+  # Create desc object
+  d <- desc::desc(file = desc_path)
+
+  # Helper function to conditionally set fields
+  set_if_new <- function(field, value) {
+    if (!is.null(value)) {
+      existing <- d$get(field)[[1]]
+      if (overwrite || is.null(existing)) {
+        d$set(field, value)
+      }
+    }
+  }
+
+  # Set standard fields
+  if (!is.null(metadata$package)) {
+    set_if_new("Package", metadata$package$name)
+    set_if_new("Title", metadata$package$title)
+    set_if_new("Description", metadata$package$description)
+    set_if_new("Version", metadata$package$version)
+    set_if_new("Language", metadata$package$language)
+
+    # Build URLs from github_user if available
+    if (
+      !is.null(metadata$package$github_user) && !is.null(metadata$package$name)
+    ) {
+      # Store github_user as a custom field for easy access
+      set_if_new("github_user", metadata$package$github_user)
+
+      # Build and set URLs
+      github_url <- paste0(
+        "https://github.com/",
+        metadata$package$github_user,
+        "/",
+        metadata$package$name
+      )
+      package_url <- paste0(
+        "https://",
+        metadata$package$github_user,
+        ".github.io/",
+        metadata$package$name
+      )
+      d$set_urls(c(package_url, github_url))
+    }
+  }
+
+  # Set authors (only if overwrite or no existing authors)
+  existing_authors <- d$get_authors()
+  if (
+    !is.null(metadata$authors) &&
+      length(metadata$authors) > 0 &&
+      (overwrite || length(existing_authors) == 0)
+  ) {
+    # Convert to person objects
+    authors_list <- lapply(metadata$authors, function(author) {
+      person(
+        given = author$given,
+        family = author$family,
+        email = author$email,
+        role = if (!is.null(author$roles)) author$roles else c("aut"),
+        comment = if (!is.null(author$orcid)) c(ORCID = author$orcid) else NULL
+      )
+    })
+
+    # Combine into Authors@R field
+    authors_r <- do.call("c", authors_list)
+    d$set_authors(authors_r)
+  }
+
+  # Set license
+  set_if_new("License", metadata$license$id)
+
+  # Set custom fields with Config/ prefix
+  if (!is.null(metadata$publication)) {
+    if (!is.null(metadata$publication$keywords)) {
+      set_if_new(
+        "Config/Keywords",
+        paste(metadata$publication$keywords, collapse = ", ")
+      )
+    }
+    set_if_new("Config/Funder", metadata$publication$funder)
+    set_if_new("Config/GrantID", metadata$publication$grant_id)
+    if (!is.null(metadata$publication$communities)) {
+      set_if_new(
+        "Config/Communities",
+        paste(metadata$publication$communities, collapse = ", ")
+      )
+    }
+  }
+
+  # Coverage (store as JSON for complex structure)
+  if (!is.null(metadata$coverage)) {
+    if (!is.null(metadata$coverage$temporal)) {
+      set_if_new(
+        "Config/TemporalCoverage",
+        jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE)
+      )
+    }
+    if (!is.null(metadata$coverage$spatial)) {
+      set_if_new(
+        "Config/SpatialCoverage",
+        jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE)
+      )
+    }
+  }
+
+  # Related identifiers (store as JSON)
+  if (!is.null(metadata$related) && length(metadata$related) > 0) {
+    set_if_new(
+      "Config/RelatedIdentifiers",
+      jsonlite::toJSON(metadata$related, auto_unbox = TRUE)
+    )
+  }
+
+  # Handle any other custom fields generically
+  standard_fields <- c(
+    "package",
+    "authors",
+    "license",
+    "publication",
+    "coverage",
+    "related"
+  )
+  other_fields <- setdiff(names(metadata), standard_fields)
+
+  for (field in other_fields) {
+    if (!is.null(metadata[[field]])) {
+      # Convert field name to Config/ format
+      config_field <- paste0("Config/", tools::toTitleCase(field))
+
+      # Store as JSON if it's a complex structure, otherwise as string
+      if (is.list(metadata[[field]]) && !is.data.frame(metadata[[field]])) {
+        set_if_new(
+          config_field,
+          jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE)
+        )
+      } else if (
+        is.vector(metadata[[field]]) && length(metadata[[field]]) > 1
+      ) {
+        # Multiple values - join with commas
+        set_if_new(config_field, paste(metadata[[field]], collapse = ", "))
+      } else {
+        # Single value
+        set_if_new(config_field, as.character(metadata[[field]]))
+      }
+    }
+  }
+
+  # Write back to file
+  d$write(file = desc_path)
+
+  if (verbose) {
+    cli::cli_alert_success("Metadata saved to DESCRIPTION file")
+  }
+
+  invisible(NULL)
+}
+
+#' Get metadata from DESCRIPTION file
+#'
+#' Reads DESCRIPTION file and reconstructs metadata structure
+#'
+#' @param base_path Base path for the project
+#' @return List containing metadata
+#' @export
+get_metadata <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+
+  if (!file.exists(desc_path)) {
+    return(NULL)
+  }
+
+  # Read DESCRIPTION
+  d <- desc::desc(file = desc_path)
+
+  # Initialize metadata structure
+  metadata <- list()
+
+  # Helper to safely get field value
+  safe_get <- function(field) {
+    val <- d$get(field)
+    if (is.null(val) || length(val) == 0) NULL else val[[1]]
+  }
+
+  # Package metadata
+  metadata$package <- list(
+    name = safe_get("Package"),
+    title = safe_get("Title"),
+    description = safe_get("Description"),
+    version = safe_get("Version"),
+    language = safe_get("Language")
+  )
+
+  # Extract github_user from URL if present
+  urls <- d$get_urls()
+  if (length(urls) > 0) {
+    github_pattern <- "https://github.com/([^/]+)/"
+    if (grepl(github_pattern, urls[1])) {
+      metadata$package$github_user <- sub(
+        paste0(github_pattern, ".*"),
+        "\\1",
+        urls[1]
+      )
+    }
+  }
+
+  # Authors
+  authors_r <- d$get_authors()
+  if (length(authors_r) > 0) {
+    metadata$authors <- lapply(authors_r, function(author) {
+      list(
+        given = author$given,
+        family = author$family,
+        email = author$email,
+        orcid = author$comment["ORCID"],
+        affiliation = NULL, # Not stored in standard person object
+        roles = author$role
+      )
+    })
+  }
+
+  # License
+  license_id <- safe_get("License")
+  if (!is.null(license_id)) {
+    metadata$license <- list(id = license_id)
+
+    # Add standard license URLs
+    license_urls <- list(
+      "CC-BY-4.0" = "https://creativecommons.org/licenses/by/4.0/",
+      "CC BY 4.0" = "https://creativecommons.org/licenses/by/4.0/",
+      "CC0-1.0" = "https://creativecommons.org/publicdomain/zero/1.0/",
+      "MIT" = "https://opensource.org/licenses/MIT",
+      "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
+      "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0"
+    )
+
+    if (license_id %in% names(license_urls)) {
+      metadata$license$url <- license_urls[[license_id]]
+    }
+  }
+
+  # Publication metadata from custom fields
+  metadata$publication <- list()
+
+  keywords <- safe_get("Config/Keywords")
+  if (!is.null(keywords)) {
+    metadata$publication$keywords <- trimws(strsplit(keywords, ",")[[1]])
+  }
+
+  funder <- safe_get("Config/Funder")
+  if (!is.null(funder)) {
+    metadata$publication$funder <- funder
+  }
+
+  grant_id <- safe_get("Config/GrantID")
+  if (!is.null(grant_id)) {
+    metadata$publication$grant_id <- grant_id
+  }
+
+  communities <- safe_get("Config/Communities")
+  if (!is.null(communities)) {
+    metadata$publication$communities <- trimws(strsplit(communities, ",")[[1]])
+  }
+
+  # Helper function to safely parse JSON
+  safe_json_parse <- function(json_string) {
+    if (is.null(json_string) || json_string == "" || is.na(json_string)) {
+      return(NULL)
+    }
+    tryCatch(
+      {
+        jsonlite::fromJSON(json_string, simplifyVector = FALSE)
+      },
+      error = function(e) {
+        NULL
+      }
+    )
+  }
+
+  # Coverage from custom fields (parse JSON)
+  metadata$coverage <- list()
+
+  temporal <- safe_get("Config/TemporalCoverage")
+  parsed_temporal <- safe_json_parse(temporal)
+  if (!is.null(parsed_temporal)) {
+    metadata$coverage$temporal <- parsed_temporal
+  }
+
+  spatial <- safe_get("Config/SpatialCoverage")
+  parsed_spatial <- safe_json_parse(spatial)
+  if (!is.null(parsed_spatial)) {
+    metadata$coverage$spatial <- parsed_spatial
+  }
+
+  # Related identifiers (parse JSON)
+  related <- safe_get("Config/RelatedIdentifiers")
+  parsed_related <- safe_json_parse(related)
+  if (!is.null(parsed_related)) {
+    metadata$related <- parsed_related
+  }
+
+  # Datasets (parse JSON)
+  datasets <- safe_get("Config/Datasets")
+  parsed_datasets <- safe_json_parse(datasets)
+  if (!is.null(parsed_datasets)) {
+    metadata$datasets <- parsed_datasets
+  }
+
+  # Clean up empty elements
+  metadata <- lapply(metadata, function(x) {
+    if (is.list(x) && length(x) > 0) {
+      x[!vapply(x, is.null, logical(1))]
+    } else {
+      x
+    }
+  })
+
+  # Remove empty top-level elements
+  metadata[vapply(metadata, function(x) length(x) > 0, logical(1))]
 }

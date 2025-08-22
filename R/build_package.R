@@ -228,7 +228,7 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   }
 
   # Check for metadata
-  metadata <- get_metadata_from_desc(base_path)
+  metadata <- get_metadata(base_path)
   if (is.null(metadata)) {
     cli::cli_alert_warning("No metadata found")
     cli::cli_alert_info("Run {.fn collect_metadata} first to collect metadata")
@@ -404,7 +404,7 @@ build_site <- function(
 
   if (!file.exists(pkgdown_yml)) {
     # Load metadata for template data
-    metadata <- get_metadata_from_desc(base_path)
+    metadata <- get_metadata(base_path)
 
     if (!is.null(metadata)) {
       # Prepare authors data for Mustache iteration
