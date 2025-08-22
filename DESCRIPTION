@@ -32,21 +32,19 @@ Imports:
     fs,
     here,
     janitor,
-    jsonlite,
     readr,
+    readxl,
     roxygen2,
     tools,
     usethis,
-    whisker
-Suggests: 
+    whisker,
     cffr,
-    goodpractice,
-    knitr,
     pkgdown,
-    readxl,
     rmarkdown,
-    testthat (>= 3.2.1),
+    knitr,
     withr (>= 3.0.0)
+Suggests: 
+    testthat (>= 3.2.1),
 VignetteBuilder: 
     knitr
 Config/Needs/website: rmarkdown
