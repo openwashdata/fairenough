@@ -107,7 +107,7 @@ process <- function(
     dataset_names <- list(names(processed_files))
     # Create minimal metadata structure with just datasets
     metadata <- list(datasets = dataset_names)
-    write_metadata_to_desc(
+    save_metadata(
       metadata,
       base_path,
       overwrite = TRUE,
