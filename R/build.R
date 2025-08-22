@@ -53,7 +53,7 @@ build_package <- function(
 
   # Package validation and documentation with devtools
   if (verbose) {
-    cli::cli_alert_info("Running roxygen2 and validating package structure")
+    cli::cli_alert_info("Running devtools::document()")
   }
   tryCatch(
     {
@@ -64,6 +64,22 @@ build_package <- function(
     },
     error = function(e) {
       cli::cli_alert_warning("Package validation issues: {e$message}")
+    }
+  )
+
+  # Install package
+  if (verbose) {
+    cli::cli_alert_info("Running devtools::install()")
+  }
+  tryCatch(
+    {
+      devtools::install(base_path)
+      if (verbose) {
+        cli::cli_alert_success("Package installed")
+      }
+    },
+    error = function(e) {
+      cli::cli_alert_warning("Package installation issues: {e$message}")
     }
   )
 
