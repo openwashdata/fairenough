@@ -40,12 +40,15 @@ setup <- function(
   check_exists <- function(path = base_path, pattern = NULL) {
     # List .Rproj files in the specified path
     files <- list.files(path = path, pattern = pattern, full.names = TRUE)
-    
+
     # Return TRUE if any files exist, otherwise FALSE
     return(length(files) > 0)
   }
 
-  if (overwrite || (!file.exists(desc_path) || !check_exists(pattern = "\\.Rproj$"))) {
+  if (
+    overwrite ||
+      (!file.exists(desc_path) || !check_exists(pattern = "\\.Rproj$"))
+  ) {
     # Create basic package structure
     # run usethis::create_package with usethis.allow_nested_project = TRUE
     withr::with_options(
@@ -203,7 +206,7 @@ setup_gitignore <- function(
 ) {
   base_path <- get_base_path(base_path)
   raw_dir <- get_raw_dir(raw_dir)
-  
+
   # Prepare ignores list
   ignores <- c(
     paste0(raw_dir, "/"), # ignore raw data
@@ -213,22 +216,22 @@ setup_gitignore <- function(
     ".RData",
     ".Ruserdata"
   )
-  
+
   if (verbose) {
     cli::cli_alert_info("Setting up .gitignore")
   }
-  
+
   tryCatch(
     {
       active_path <- usethis::proj_get()
       # use_git_ignore's directory option uses path relative to active dir
       relative_path <- fs::path_rel(base_path, start = active_path)
-      
+
       usethis::use_git_ignore(
         directory = relative_path,
         ignores = ignores
       )
-      
+
       if (verbose) {
         cli::cli_alert_success("Added entries to .gitignore:")
         for (ignore in ignores) {

@@ -87,31 +87,35 @@ NULL
 
   # Extract text content if response is a list
   if (is.list(llm_responses)) {
-    llm_responses <- vapply(seq_along(llm_responses), function(i) {
-      x <- llm_responses[[i]]
+    llm_responses <- vapply(
+      seq_along(llm_responses),
+      function(i) {
+        x <- llm_responses[[i]]
 
-      if (is.character(x) && length(x) == 1) {
-        return(x)
-      }
-
-      if (is.list(x)) {
-        # Try common response fields
-        for (field in c("content", "text", "message", "response", "output")) {
-          if (!is.null(x[[field]])) return(x[[field]])
+        if (is.character(x) && length(x) == 1) {
+          return(x)
         }
 
-        # If unnamed list with single character element
-        if (length(x) == 1 && is.null(names(x)) && is.character(x[[1]])) {
-          return(x[[1]])
-        }
-      }
+        if (is.list(x)) {
+          # Try common response fields
+          for (field in c("content", "text", "message", "response", "output")) {
+            if (!is.null(x[[field]])) return(x[[field]])
+          }
 
-      cli::cli_alert_warning("Could not extract response for {col_names[i]}")
-      return(paste(
-        "(unable to extract) Description unavailable for",
-        col_names[i]
-      ))
-    }, character(1))
+          # If unnamed list with single character element
+          if (length(x) == 1 && is.null(names(x)) && is.character(x[[1]])) {
+            return(x[[1]])
+          }
+        }
+
+        cli::cli_alert_warning("Could not extract response for {col_names[i]}")
+        return(paste(
+          "(unable to extract) Description unavailable for",
+          col_names[i]
+        ))
+      },
+      character(1)
+    )
   }
 
   # Display all results at once for parallel processing
@@ -228,39 +232,47 @@ NULL
   sample_data,
   col_names
 ) {
-  vapply(seq_along(col_names), function(i) {
-    samples <- sample_data[[i]]
+  vapply(
+    seq_along(col_names),
+    function(i) {
+      samples <- sample_data[[i]]
 
-    if (samples$type == "continuous") {
-      # For continuous variables, add the range
-      if (is.na(samples$min) && is.na(samples$max)) {
-        paste0(descriptions[i], " (All NA)")
-      } else {
-        paste0(
-          descriptions[i],
-          " (Range: ",
-          samples$min,
-          " to ",
-          samples$max,
-          ")"
-        )
-      }
-    } else {
-      # For categorical/discrete variables, get first 3 examples
-      example_values <- head(samples$values, 3)
-      # Handle NA values
-      example_strings <- vapply(example_values, function(x) {
-        if (is.na(x)) {
-          return("NA")
+      if (samples$type == "continuous") {
+        # For continuous variables, add the range
+        if (is.na(samples$min) && is.na(samples$max)) {
+          paste0(descriptions[i], " (All NA)")
+        } else {
+          paste0(
+            descriptions[i],
+            " (Range: ",
+            samples$min,
+            " to ",
+            samples$max,
+            ")"
+          )
         }
-        as.character(x)
-      }, character(1))
-      examples_str <- paste(example_strings, collapse = ", ")
+      } else {
+        # For categorical/discrete variables, get first 3 examples
+        example_values <- head(samples$values, 3)
+        # Handle NA values
+        example_strings <- vapply(
+          example_values,
+          function(x) {
+            if (is.na(x)) {
+              return("NA")
+            }
+            as.character(x)
+          },
+          character(1)
+        )
+        examples_str <- paste(example_strings, collapse = ", ")
 
-      # Combine description with examples
-      paste0(descriptions[i], " (Examples: ", examples_str, ")")
-    }
-  }, character(1))
+        # Combine description with examples
+        paste0(descriptions[i], " (Examples: ", examples_str, ")")
+      }
+    },
+    character(1)
+  )
 }
 
 #' Generate data dictionary using LLM
@@ -353,12 +365,16 @@ gendict <- function(
       }
     } else {
       # Handle NA values in categorical samples
-      sample_values <- sapply(samples$values, function(x) {
-        if (is.na(x)) {
-          return("NA")
-        }
-        as.character(x)
-      }, character(1))
+      sample_values <- sapply(
+        samples$values,
+        function(x) {
+          if (is.na(x)) {
+            return("NA")
+          }
+          as.character(x)
+        },
+        character(1)
+      )
       sample_str <- paste(sample_values, collapse = ", ")
       if (samples$has_more) {
         sample_str <- paste0(sample_str, ", ...")
