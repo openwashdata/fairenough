@@ -1,7 +1,7 @@
 
 bibentry(bibtype = "Misc",
          key = "massari_etall",
-         title = "palmerpenguins: Fairenough Test with Palmer Penguins Dataset",
+         title = "palmerpenguins: Palmer Penguins",
          author = c(person(given = "Nicolo",
                            family = "Massari",
                            email = "nmassari@ethz.ch",
@@ -16,5 +16,5 @@ bibentry(bibtype = "Misc",
                            comment = c(ORCID = "0000-0002-2095-9724"))),
          doi = "10.32614/CRAN.package.palmerpenguins",
          url = "https://Global-Health-Engineering.github.io/palmerpenguins",
-         abstract = "This data package is a test for the fairenough package and use the Palmer Penguins Dataset.",
+         abstract = "The Palmer Penguins dataset contains penguins measurements",
          version = "0.0.1")

@@ -3,70 +3,12 @@ title: "fairenough_pipeline"
 format: html
 ---
 
-# fairenough
+# fairenough's pipeline
 
 ```{r}
-fairenough::setup(base_path="tests/penguins")
-```
-
-```{r}
-fairenough::process()
-```
-
-```{r}
-# Sys.setenv(OPENAI_API_KEY = "YOUR_API_TOKEN_HERE")
-# cat('OPENAI_API_KEY=YOUR_API_TOKEN_HERE\n', file = "~/.Renviron", append = TRUE)
-
-Nicolo <- list(given = "Nicolo", 
-               family = "Massari", 
-               roles = c("aut", "cre"),  
-               email = "nmassari@ethz.ch", 
-               orcid = "0009-0006-8421-930X",
-               affiliation="ETH Zurich")
-Lars <- list(given = "Lars", 
-             family = "Schöbitz", 
-             roles = c("aut", "ctb"), 
-             email = "lschoebitz@ethz.ch", 
-             orcid = "0000-0003-2196-5015", 
-             affiliation="ETH Zurich")
-Liz <- list(given = "Elizabeth", 
-            family = "Tilley", 
-            roles = c("aut", "fnd"), 
-            email = "tilleye@ethz.ch", 
-            orcid = "0000-0002-2095-9724", 
-            affiliation="ETH Zurich")
-
-fairenough::collect_metadata(interactive = FALSE,
-                             overwrite = TRUE,
-                             pkg_name = "palmerpenguins",
-                             title = "Fairenough Test with Palmer Penguins Dataset",
-                             description = "This data package is a test for the fairenough package and use the Palmer Penguins Dataset.",
-                             github_user = "Global-Health-Engineering",
-                             authors = list(Nicolo, Lars, Liz),
-                             license =  "CC-BY-4.0")
-
-chat <- ellmer::chat_openai(
-model = "gpt-4.1-nano",
-api_args = list(temperature=0.1,
-                top_p = 0.9)
-)
-
-fairenough::generate_dictionary(chat,
-                                overwrite = FALSE)
-```
-
-```{r}
-fairenough::generate_data_documentation()
-fairenough::create_citation()
-fairenough::generate_readme()
-fairenough::setup_website(install=FALSE)
-```
-
-# Pipeline
-```{r}
-roxygen2::roxygenise()
+roxygen2::roxygenise(clean = TRUE)
 devtools::load_all()
-fairenough::setup(base_path="tests/penguins")
+fairenough::setup(base_path="tests/penguins", overwrite = TRUE)
 fairenough::process()
 
 # Sys.setenv(OPENAI_API_KEY = "YOUR_API_TOKEN_HERE")
@@ -108,8 +50,9 @@ api_args = list(temperature=0.1,
 
 fairenough::generate_dictionary(chat,
                                 overwrite = FALSE)
-fairenough::generate_data_documentation()
-fairenough::create_citation(validate=TRUE)
-fairenough::generate_readme()
-fairenough::setup_website(install=FALSE)
+fairenough::build_roxygen()
+fairenough::build_citation()
+fairenough::build_package()
+fairenough::build_readme()
+fairenough::build_site(install=TRUE)
 ```

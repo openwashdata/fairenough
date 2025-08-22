@@ -70,7 +70,7 @@ get("penguins") |>
   gt::as_raw_html()
 ```
 
-<div id="hpwckrrkuk"
+<div id="rsyqwyuqwy"
 style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false" style="-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-family: system-ui, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;, &#39;Noto Color Emoji&#39;; display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 16px; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: auto; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3;" bgcolor="#FFFFFF">
@@ -285,7 +285,7 @@ female
 
 For an overview of the variable names, see the following table.
 
-<div id="pkygtyzvpa"
+<div id="eylprgweik"
 style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 
 <table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false" style="-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-family: system-ui, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;, &#39;Noto Color Emoji&#39;; display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 16px; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: auto; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3;" bgcolor="#FFFFFF">
@@ -388,7 +388,7 @@ numeric
 
 <td headers="description" class="gt_row gt_left" style="border-style: none; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left;" valign="middle" align="left">
 
-Length of the penguin’s bill measured in millimeters. (Range: 32.1 to
+Bill length of the penguin measured in millimeters. (Range: 32.1 to
 59.6)
 </td>
 
@@ -408,8 +408,7 @@ numeric
 
 <td headers="description" class="gt_row gt_left" style="border-style: none; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left;" valign="middle" align="left">
 
-Depth of the penguin’s bill measured in millimeters. (Range: 13.1 to
-21.5)
+Bill depth of the penguin measured in millimeters. (Range: 13.1 to 21.5)
 </td>
 
 </tr>
@@ -428,7 +427,7 @@ integer
 
 <td headers="description" class="gt_row gt_left" style="border-style: none; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; text-align: left;" valign="middle" align="left">
 
-Length of the penguin’s flipper measured in millimeters. (Range: 172 to
+Flipper length of the penguin measured in millimeters. (Range: 172 to
 231)
 </td>
 
@@ -507,14 +506,16 @@ Data are available as
 
     #> To cite package 'palmerpenguins' in publications use:
     #> 
-    #>   Massari N, Sch<c3><b6>bitz L, Tilley E (2025). _palmerpenguins: Fairenough Test with Palmer Penguins Dataset_. R package version
-    #>   0.0.1.
+    #>   Massari N, Schöbitz L, Tilley E (????). "palmerpenguins: Palmer Penguins." doi:10.32614/CRAN.package.palmerpenguins
+    #>   <https://doi.org/10.32614/CRAN.package.palmerpenguins>, <https://Global-Health-Engineering.github.io/palmerpenguins>.
     #> 
     #> A BibTeX entry for LaTeX users is
     #> 
-    #>   @Manual{,
-    #>     title = {palmerpenguins: Fairenough Test with Palmer Penguins Dataset},
-    #>     author = {Nicolo Massari and Lars Sch<c3><b6>bitz and Elizabeth Tilley},
-    #>     year = {2025},
-    #>     note = {R package version 0.0.1},
+    #>   @Misc{massari_etall,
+    #>     title = {palmerpenguins: Palmer Penguins},
+    #>     author = {Nicolo Massari and Lars Schöbitz and Elizabeth Tilley},
+    #>     doi = {10.32614/CRAN.package.palmerpenguins},
+    #>     url = {https://Global-Health-Engineering.github.io/palmerpenguins},
+    #>     abstract = {The Palmer Penguins dataset contains penguins measurements},
+    #>     version = {0.0.1},
     #>   }

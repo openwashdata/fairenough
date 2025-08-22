@@ -7,9 +7,9 @@
 #'   \item{rowid}{Unique identifier assigned to each penguin record. (Range: 1 to 344)}
 #'   \item{species}{Species classification of the penguin. (Examples: Adelie, Gentoo, Chinstrap)}
 #'   \item{island}{Island location where the penguin was observed. (Examples: Torgersen, Biscoe, Dream)}
-#'   \item{bill_length_mm}{Length of the penguin's bill measured in millimeters. (Range: 32.1 to 59.6)}
-#'   \item{bill_depth_mm}{Depth of the penguin's bill measured in millimeters. (Range: 13.1 to 21.5)}
-#'   \item{flipper_length_mm}{Length of the penguin's flipper measured in millimeters. (Range: 172 to 231)}
+#'   \item{bill_length_mm}{Bill length of the penguin measured in millimeters. (Range: 32.1 to 59.6)}
+#'   \item{bill_depth_mm}{Bill depth of the penguin measured in millimeters. (Range: 13.1 to 21.5)}
+#'   \item{flipper_length_mm}{Flipper length of the penguin measured in millimeters. (Range: 172 to 231)}
 #'   \item{body_mass_g}{Body mass of the penguin measured in grams. (Range: 2700 to 6300)}
 #'   \item{sex}{Biological sex of the penguin. (Examples: male, female, NA)}
 #'   \item{year}{Year when the penguin observation was recorded. (Examples: 2007, 2008, 2009)}
