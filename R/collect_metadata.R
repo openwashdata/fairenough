@@ -521,6 +521,9 @@ save_metadata <- function(
     set_if_new("Version", metadata$package$version)
     set_if_new("Language", metadata$package$language)
 
+    # Always set Date to current date for citation purposes
+    set_if_new("Date", Sys.Date())
+
     # Build URLs from github_user if available
     if (
       !is.null(metadata$package$github_user) && !is.null(metadata$package$name)
