@@ -1,6 +1,6 @@
 
 bibentry(bibtype = "Misc",
-         key = "massari_etall",
+         key = "massari_etall:2025",
          title = "palmerpenguins: Palmer Penguins",
          author = c(person(given = "Nicolo",
                            family = "Massari",
@@ -14,7 +14,8 @@ bibentry(bibtype = "Misc",
                            family = "Tilley",
                            email = "tilleye@ethz.ch",
                            comment = c(ORCID = "0000-0002-2095-9724"))),
+         year = "2025",
          doi = "10.32614/CRAN.package.palmerpenguins",
          url = "https://Global-Health-Engineering.github.io/palmerpenguins",
-         abstract = "The Palmer Penguins dataset contains penguins measurements",
+         abstract = "The Palmer Penguins dataset contains penguins measurements.",
          version = "0.0.1")

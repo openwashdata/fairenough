@@ -33,7 +33,7 @@ footer:
     copyright: openwashdata
 home:
   title: Palmer Penguins
-  description: The Palmer Penguins dataset contains penguins measurements
+  description: The Palmer Penguins dataset contains penguins measurements.
   sidebar:
     structure:
      - links

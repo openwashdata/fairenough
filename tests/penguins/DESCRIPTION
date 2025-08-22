@@ -9,13 +9,14 @@ Authors@R: c(
     person("Elizabeth", "Tilley", , "tilleye@ethz.ch", role = c("aut", "fnd"),
            comment = c(ORCID = "0000-0002-2095-9724"))
   )
-Description: The Palmer Penguins dataset contains penguins measurements
-License: MIT + file LICENSE
+Description: The Palmer Penguins dataset contains penguins measurements.
+License: CC BY 4.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Config/Datasets: ["penguins"]
 Language: en-GB
+Date: 2025-08-22
 github_user: Global-Health-Engineering
 URL: https://Global-Health-Engineering.github.io/palmerpenguins,
     https://github.com/Global-Health-Engineering/palmerpenguins
