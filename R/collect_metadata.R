@@ -823,3 +823,22 @@ get_metadata <- function(base_path = NULL) {
   # Remove empty top-level elements
   metadata[vapply(metadata, function(x) length(x) > 0, logical(1))]
 }
+
+#' Get key from DESCRIPTION file
+#'
+#' Reads and returns key from DESCRIPTION file
+#'
+#' @param key Optional key to retrieve specific data (e.g., "datasets")
+#' @param base_path Base path for the project
+#' @return Metadata list or specific key data if requested
+#' @export
+get_key <- function(key = NULL, base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  metadata <- get_metadata(base_path)
+
+  if (!is.null(key)) {
+    return(metadata[[key]])
+  }
+
+  return(metadata)
+}
