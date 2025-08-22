@@ -4,6 +4,8 @@
 #' Collects metadata for R data packages using interactive prompts.
 #' Supports partial pre-filling where provided values are used and
 #' missing required fields are prompted. Uses the general prompt.R utilities.
+#' By default, collects only essential metadata. Set extended=TRUE to collect
+#' additional optional metadata for publication and archiving.
 #'
 #' @param pkg_name Package name
 #' @param title Package title
@@ -13,15 +15,16 @@
 #' @param github_user GitHub username or organization
 #' @param authors List of author information
 #' @param license License identifier (e.g., "CC-BY-4.0")
-#' @param keywords Character vector of keywords
-#' @param funder Funding organization
-#' @param grant_id Grant identifier
-#' @param temporal_start Start date of data coverage
-#' @param temporal_end End date of data coverage
-#' @param spatial_description Geographic coverage description
-#' @param spatial_coordinates List with lat and lon
-#' @param related_identifiers List of related publications
-#' @param communities Character vector of Zenodo communities
+#' @param keywords Character vector of keywords (only prompted if extended=TRUE)
+#' @param funder Funding organization (only prompted if extended=TRUE)
+#' @param grant_id Grant identifier (only prompted if extended=TRUE)
+#' @param temporal_start Start date of data coverage (only prompted if extended=TRUE)
+#' @param temporal_end End date of data coverage (only prompted if extended=TRUE)
+#' @param spatial_description Geographic coverage description (only prompted if extended=TRUE)
+#' @param spatial_coordinates List with lat and lon (only prompted if extended=TRUE)
+#' @param related_identifiers List of related publications (only prompted if extended=TRUE)
+#' @param communities Character vector of Zenodo communities (only prompted if extended=TRUE)
+#' @param extended Whether to prompt for extended metadata fields (default: FALSE)
 #' @param interactive Whether to use interactive prompts (default: TRUE)
 #' @param save_to_desc Whether to save to DESCRIPTION file (default: TRUE)
 #' @param base_path Base path for the project
@@ -47,6 +50,7 @@ collect_metadata <- function(
   spatial_coordinates = NULL,
   related_identifiers = NULL,
   communities = NULL,
+  extended = FALSE,
   interactive = TRUE,
   save_to_desc = TRUE,
   base_path = NULL,
@@ -239,114 +243,120 @@ collect_metadata <- function(
     NULL
   }
 
-  # Publication Information - Optional fields
-  cli::cli_h2("Publication Information")
+  # Publication Information - Optional fields (only if extended)
+  if (extended) {
+    cli::cli_h2("Publication Information")
 
-  # Keywords
-  if (is.null(keywords) && interactive) {
-    keywords_input <- prompt_input("Keywords (comma-separated)")
-    if (!is.null(keywords_input) && keywords_input != "") {
-      keywords <- trimws(strsplit(keywords_input, ",")[[1]])
+    # Keywords
+    if (is.null(keywords) && interactive) {
+      keywords_input <- prompt_input("Keywords (comma-separated)")
+      if (!is.null(keywords_input) && keywords_input != "") {
+        keywords <- trimws(strsplit(keywords_input, ",")[[1]])
+      }
     }
-  }
 
-  funder <- prompt_input(
-    "Funding organization",
-    value = funder,
-    default = if (interactive) "ETH Domain ORD Programme" else NULL
-  )
-
-  grant_id <- prompt_input("Grant ID", value = grant_id)
-
-  # Communities
-  if (is.null(communities) && interactive) {
-    use_communities <- prompt_confirm(
-      "Add to Zenodo communities?",
-      default = TRUE
+    funder <- prompt_input(
+      "Funding organization",
+      value = funder,
+      default = if (interactive) "ETH Domain ORD Programme" else NULL
     )
-    if (use_communities) {
-      communities <- prompt_multi_select(
-        choices = c(
-          "Global Health Engineering" = "global-health-engineering",
-          "Environmental Science" = "environmental-science",
-          "Data Science" = "data-science",
-          "Open Science" = "open-science"
-        ),
-        title = "Select Zenodo communities",
-        allow_other = TRUE
+
+    grant_id <- prompt_input("Grant ID", value = grant_id)
+
+    # Communities
+    if (is.null(communities) && interactive) {
+      use_communities <- prompt_confirm(
+        "Add to Zenodo communities?",
+        default = TRUE
       )
-    }
-  }
-
-  # Coverage - Optional
-  cli::cli_h2("Data Coverage")
-
-  # Temporal coverage
-  if (interactive && (is.null(temporal_start) || is.null(temporal_end))) {
-    has_temporal <- prompt_confirm(
-      "Does the data have temporal coverage?",
-      default = TRUE
-    )
-    if (has_temporal) {
-      temporal_start <- prompt_input(
-        "Start date (YYYY or YYYY-MM-DD)",
-        value = temporal_start,
-        validator = validate_date,
-        validator_message = "Date must be YYYY or YYYY-MM-DD format"
-      )
-      temporal_end <- prompt_input(
-        "End date (YYYY or YYYY-MM-DD)",
-        value = temporal_end,
-        validator = validate_date,
-        validator_message = "Date must be YYYY or YYYY-MM-DD format"
-      )
-    }
-  }
-
-  # Spatial coverage
-  if (interactive && is.null(spatial_description)) {
-    has_spatial <- prompt_confirm(
-      "Does the data have geographic coverage?",
-      default = FALSE
-    )
-    if (has_spatial) {
-      spatial_description <- prompt_input("Geographic description")
-
-      has_coords <- prompt_confirm("Add coordinates?", default = FALSE)
-      if (has_coords && is.null(spatial_coordinates)) {
-        lat <- as.numeric(prompt_input("Latitude", required = TRUE))
-        lon <- as.numeric(prompt_input("Longitude", required = TRUE))
-        spatial_coordinates <- list(lat = lat, lon = lon)
+      if (use_communities) {
+        communities <- prompt_multi_select(
+          choices = c(
+            "Global Health Engineering" = "global-health-engineering",
+            "Environmental Science" = "environmental-science",
+            "Data Science" = "data-science",
+            "Open Science" = "open-science"
+          ),
+          title = "Select Zenodo communities",
+          allow_other = TRUE
+        )
       }
     }
   }
 
-  # Related identifiers
-  cli::cli_h2("Related Publications")
+  # Coverage - Optional (only if extended)
+  if (extended) {
+    cli::cli_h2("Data Coverage")
 
-  if (is.null(related_identifiers) && interactive) {
-    has_related <- prompt_confirm(
-      "Are there related publications?",
-      default = FALSE
-    )
-    if (has_related) {
-      related_identifiers <- list()
-      add_more <- TRUE
-      rel_num <- 1
+    # Temporal coverage
+    if (interactive && (is.null(temporal_start) || is.null(temporal_end))) {
+      has_temporal <- prompt_confirm(
+        "Does the data have temporal coverage?",
+        default = TRUE
+      )
+      if (has_temporal) {
+        temporal_start <- prompt_input(
+          "Start date (YYYY or YYYY-MM-DD)",
+          value = temporal_start,
+          validator = validate_date,
+          validator_message = "Date must be YYYY or YYYY-MM-DD format"
+        )
+        temporal_end <- prompt_input(
+          "End date (YYYY or YYYY-MM-DD)",
+          value = temporal_end,
+          validator = validate_date,
+          validator_message = "Date must be YYYY or YYYY-MM-DD format"
+        )
+      }
+    }
 
-      while (add_more) {
-        doi <- prompt_input(paste("  DOI", rel_num))
-        if (!is.null(doi) && doi != "") {
-          related_identifiers[[rel_num]] <- list(
-            scheme = "doi",
-            identifier = doi,
-            relation = "isDocumentedBy",
-            resource_type = "publication-article"
-          )
-          rel_num <- rel_num + 1
-          add_more <- prompt_confirm("  Add another?", default = FALSE)
-        } else {
-          add_more <- FALSE
+    # Spatial coverage
+    if (interactive && is.null(spatial_description)) {
+      has_spatial <- prompt_confirm(
+        "Does the data have geographic coverage?",
+        default = FALSE
+      )
+      if (has_spatial) {
+        spatial_description <- prompt_input("Geographic description")
+
+        has_coords <- prompt_confirm("Add coordinates?", default = FALSE)
+        if (has_coords && is.null(spatial_coordinates)) {
+          lat <- as.numeric(prompt_input("Latitude", required = TRUE))
+          lon <- as.numeric(prompt_input("Longitude", required = TRUE))
+          spatial_coordinates <- list(lat = lat, lon = lon)
+        }
+      }
+    }
+  }
+
+  # Related identifiers (only if extended)
+  if (extended) {
+    cli::cli_h2("Related Publications")
+
+    if (is.null(related_identifiers) && interactive) {
+      has_related <- prompt_confirm(
+        "Are there related publications?",
+        default = FALSE
+      )
+      if (has_related) {
+        related_identifiers <- list()
+        add_more <- TRUE
+        rel_num <- 1
+
+        while (add_more) {
+          doi <- prompt_input(paste("  DOI", rel_num))
+          if (!is.null(doi) && doi != "") {
+            related_identifiers[[rel_num]] <- list(
+              scheme = "doi",
+              identifier = doi,
+              relation = "isDocumentedBy",
+              resource_type = "publication-article"
+            )
+            rel_num <- rel_num + 1
+            add_more <- prompt_confirm("  Add another?", default = FALSE)
+          } else {
+            add_more <- FALSE
+          }
         }
       }
     }
