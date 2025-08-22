@@ -7,6 +7,7 @@
 #' @param gitignore Whether to add data_raw to .gitignore (default: TRUE)
 #' @param base_path Base path for the project (default: uses get_base_path())
 #' @param verbose Whether to show detailed messages (default: TRUE)
+#' @param overwrite Whether to overwrite existing files (default: FALSE)
 #' @return Invisibly returns a list with base_path and number of files moved
 #' @export
 #' @examples

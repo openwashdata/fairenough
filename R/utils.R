@@ -1,4 +1,5 @@
-#' Utility functions for fairenough
+#' @importFrom utils person
+NULL
 
 # Supported file extensions for data processing
 SUPPORTED_EXTENSIONS <- c("csv", "xlsx", "xls")
@@ -404,7 +405,7 @@ collect_dataset_info <- function(base_path = NULL) {
       cols = ncol(data),
       variables = list(
         names = names(data),
-        types = sapply(data, function(x) class(x)[1], USE.NAMES = FALSE)
+        types = vapply(data, function(x) class(x)[1], character(1), USE.NAMES = FALSE)
       )
     )
   }
@@ -769,12 +770,12 @@ get_metadata_from_desc <- function(base_path = NULL) {
   # Clean up empty elements
   metadata <- lapply(metadata, function(x) {
     if (is.list(x) && length(x) > 0) {
-      x[!sapply(x, is.null)]
+      x[!vapply(x, is.null, logical(1))]
     } else {
       x
     }
   })
 
   # Remove empty top-level elements
-  metadata[sapply(metadata, function(x) length(x) > 0)]
+  metadata[vapply(metadata, function(x) length(x) > 0, logical(1))]
 }

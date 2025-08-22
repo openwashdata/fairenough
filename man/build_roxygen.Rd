@@ -7,6 +7,8 @@
 build_roxygen(type = "dataset", base_path = NULL, verbose = TRUE)
 }
 \arguments{
+\item{type}{Type of documentation to generate (default: "dataset")}
+
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show messages}

@@ -209,6 +209,7 @@ validate_package <- function(
 #'
 #' Creates R documentation files for each dataset using the data dictionary.
 #'
+#' @param type Type of documentation to generate (default: "dataset")
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating success

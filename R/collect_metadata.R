@@ -376,7 +376,7 @@ collect_metadata <- function(
   # Remove NULL elements from nested lists
   metadata <- lapply(metadata, function(x) {
     if (is.list(x) && !is.data.frame(x)) {
-      x[!sapply(x, is.null)]
+      x[!vapply(x, is.null, logical(1))]
     } else {
       x
     }

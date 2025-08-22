@@ -20,6 +20,8 @@ setup(
 \item{base_path}{Base path for the project (default: uses get_base_path())}
 
 \item{verbose}{Whether to show detailed messages (default: TRUE)}
+
+\item{overwrite}{Whether to overwrite existing files (default: FALSE)}
 }
 \value{
 Invisibly returns a list with base_path and number of files moved

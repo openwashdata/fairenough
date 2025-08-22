@@ -3,6 +3,10 @@
 # A unified interface for usethis license functions with regex-based matching
 # =============================================================================
 
+#' @importFrom utils getFromNamespace
+#' @importFrom stats setNames
+NULL
+
 #' License Configuration
 #'
 #' Centralized configuration for all supported licenses.

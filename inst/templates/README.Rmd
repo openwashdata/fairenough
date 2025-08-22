@@ -91,7 +91,7 @@ if (length(datasets) > 0) {
 
 # Check optional packages
 optional_packages <- c("gt", "fontawesome")
-missing_packages <- optional_packages[!sapply(optional_packages, requireNamespace, quietly = TRUE)]
+missing_packages <- optional_packages[!vapply(optional_packages, requireNamespace, logical(1), quietly = TRUE)]
 ```
 
 ```{r helper-functions, include = FALSE}
@@ -156,7 +156,7 @@ get_dataset_dictionary <- function(dataset_name, dict_df) {  # Renamed parameter
 #' @param data The dataset
 #' @return Character string with type summary
 summarize_data_types <- function(data) {
-  type_summary <- sapply(data, function(x) class(x)[1]) |>
+  type_summary <- vapply(data, function(x) class(x)[1], character(1)) |>
     table() |>
     as.data.frame() |>
     setNames(c("Type", "Count"))

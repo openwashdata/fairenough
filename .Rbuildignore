@@ -15,4 +15,7 @@
 ^CRAN-SUBMISSION$
 ^dev$
 ^\.claude$
+^TODO\.md$
+^legacy$
+^tests/penguins$
 

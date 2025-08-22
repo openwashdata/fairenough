@@ -1,3 +1,7 @@
+#' @importFrom utils head
+#' @importFrom stats na.omit
+NULL
+
 # Helper function: Display progress and results in a clean format
 .gendict_display_progress <- function(
   col_names,
@@ -83,7 +87,7 @@
 
   # Extract text content if response is a list
   if (is.list(llm_responses)) {
-    llm_responses <- sapply(seq_along(llm_responses), function(i) {
+    llm_responses <- vapply(seq_along(llm_responses), function(i) {
       x <- llm_responses[[i]]
 
       if (is.character(x) && length(x) == 1) {
@@ -107,7 +111,7 @@
         "(unable to extract) Description unavailable for",
         col_names[i]
       ))
-    })
+    }, character(1))
   }
 
   # Display all results at once for parallel processing
@@ -224,7 +228,7 @@
   sample_data,
   col_names
 ) {
-  sapply(seq_along(col_names), function(i) {
+  vapply(seq_along(col_names), function(i) {
     samples <- sample_data[[i]]
 
     if (samples$type == "continuous") {
@@ -245,18 +249,18 @@
       # For categorical/discrete variables, get first 3 examples
       example_values <- head(samples$values, 3)
       # Handle NA values
-      example_strings <- sapply(example_values, function(x) {
+      example_strings <- vapply(example_values, function(x) {
         if (is.na(x)) {
           return("NA")
         }
         as.character(x)
-      })
+      }, character(1))
       examples_str <- paste(example_strings, collapse = ", ")
 
       # Combine description with examples
       paste0(descriptions[i], " (Examples: ", examples_str, ")")
     }
-  })
+  }, character(1))
 }
 
 #' Generate data dictionary using LLM
@@ -354,7 +358,7 @@ gendict <- function(
           return("NA")
         }
         as.character(x)
-      })
+      }, character(1))
       sample_str <- paste(sample_values, collapse = ", ")
       if (samples$has_more) {
         sample_str <- paste0(sample_str, ", ...")
