@@ -65,36 +65,64 @@ build()
 fairenough provides a complete pipeline for R data package creation,
 following these logical steps:
 
-**1. Intelligent Project Setup (`setup()`)** - R package structure
-initialization with `usethis` - Directory organization (data_raw,
-etc.) - .gitignore management
+**1. Intelligent Project Setup (`setup()`)**
 
-**2. Automated Data Processing (`process()`)** - Processes all raw data
-files automatically with `readr`, `readxl` - Built-in data cleaning and
-transformation - Validates data structure and formats
+- R package structure initialization with `usethis`
 
-**3. Interactive Metadata Collection (`collect()`)** - Guided prompts
-for package metadata (title, description, authors, etc.) using `cli` -
-Extended metadata options for comprehensive documentation - Saves
-directly to DESCRIPTION file with `desc`
+- Directory organization (data_raw, etc.)
 
-**4. LLM-Powered Documentation (`generate()`)** - Intelligent data
-dictionary generation using `elmer` chat/LLM integration - Variable
-descriptions created from dataset context + actual data samples - Smart
-documentation that understands your data’s meaning and structure
+- .gitignore management
 
-**5. Complete Package Infrastructure (`build()`)** - Roxygen
-documentation generation with `roxygen2` - Citation file creation with
-validation using `cffr` - README generation with `rmarkdown` - Package
-website building ready for deployment
+**2. Automated Data Processing (`process()`)**
 
-**6. One-Click Pipeline (`fairenough()`)** - Complete R data package
-creation with a single `fairenough(chat)` call - Automated workflow from
-tidy data to finished package
+- Processes all raw data files automatically with `readr`, `readxl`
 
-**7. Granular Control Options** - Individual wrapper functions:
-`setup()`, `process()`, `collect()`, `generate()`, `build()` - Flexible
-overwrite and verbosity controls - Step-by-step execution when needed
+- Built-in data cleaning and transformation
+
+- Validates data structure and formats
+
+**3. Interactive Metadata Collection (`collect()`)**
+
+- Guided prompts for package metadata (title, description, authors,
+  etc.) using `cli`
+
+- Extended metadata options for comprehensive documentation
+
+- Saves directly to DESCRIPTION file with `desc`
+
+**4. LLM-Powered Documentation (`generate()`)**
+
+- Intelligent data dictionary generation using `elmer` chat/LLM
+  integration
+
+- Variable descriptions created from dataset context + actual data
+  samples
+
+- Smart documentation that understands your data’s meaning and structure
+
+**5. Complete Package Infrastructure (`build()`)**
+
+- Roxygen documentation generation with `roxygen2`
+
+- Citation file creation with validation using `cffr` - README
+  generation with `rmarkdown`
+
+- Package website building ready for deployment
+
+**6. One-Click Pipeline (`fairenough()`)**
+
+- Complete R data package creation with a single `fairenough(chat)` call
+
+- Automated workflow from tidy data to finished package
+
+**7. Granular Control Options**
+
+- Individual wrapper functions: `setup()`, `process()`, `collect()`,
+  `generate()`, `build()`
+
+- Flexible overwrite and verbosity controls
+
+- Step-by-step execution when needed
 
 ## License
 
