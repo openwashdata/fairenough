@@ -158,7 +158,3 @@ new functions:
 - usethis
 - whisker
 - withr (\>= 3.0.0)
-
-### Suggests
-
-- testthat (\>= 3.2.1)
