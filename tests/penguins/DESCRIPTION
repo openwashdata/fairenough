@@ -16,7 +16,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Config/Datasets: ["penguins"]
 Language: en-GB
-Date: 2025-08-22
+Date: 2025-08-25
 github_user: Global-Health-Engineering
 URL: https://Global-Health-Engineering.github.io/palmerpenguins,
     https://github.com/Global-Health-Engineering/palmerpenguins

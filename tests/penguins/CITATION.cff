@@ -50,7 +50,7 @@ preferred-citation:
 repository: https://CRAN.R-project.org/package=palmerpenguins
 repository-code: https://github.com/Global-Health-Engineering/palmerpenguins
 url: https://Global-Health-Engineering.github.io/palmerpenguins
-date-released: '2025-08-22'
+date-released: '2025-08-25'
 contact:
 - family-names: Massari
   given-names: Nicolo

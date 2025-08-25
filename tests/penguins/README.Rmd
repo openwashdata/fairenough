@@ -278,7 +278,7 @@ if (!is.null(dictionary) && is.data.frame(dictionary)) {
 library(`r desc::desc_get_field("Package")`)
 ```
 
-```{r display-datasets, echo=FALSE, results='asis', message=TRUE, warning=TRUE}
+```{r display-datasets, echo=FALSE, results='asis', message=FALSE, warning=FALSE}
 # Main loop to display all datasets
 if (length(datasets) > 0) {
   for (dataset_name in datasets) {
