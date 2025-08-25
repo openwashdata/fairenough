@@ -139,12 +139,18 @@ following these logical steps:
 
 Welcome!
 
-**Philosophy** - Conventional commits!
-<https://www.conventionalcommits.org/>. - Feature functions must
-maintain architectural consistency. This means that aspects like
-supported formats and path handling should be uniform across all
-functions. For more details, refer to [R/utils.R](R/utils.R). - To test
-new functions:
+**Philosophy**
+
+- Conventional commits! <https://www.conventionalcommits.org/>.
+
+- Feature functions must maintain architectural consistency. This means
+  that aspects like supported formats and path handling should be
+  uniform across all functions. For more details, refer to
+  [R/utils.R](R/utils.R).
+
+- To test new functions:
+
+<!-- -->
 
     roxygen2::roxygenise()
     devtools::load_all()
