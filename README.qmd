@@ -31,13 +31,7 @@ chat <- elmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 
 fairenough(chat)
 ```
 
-This automatically:
-- Sets up your R package structure
-- Processes all CSV/Excel files in the directory
-- Collects package metadata through interactive prompts
-- Builds documentation, citation files, README, and website
-- Generates intelligent data documentation using LLMs
-- Prepares your package for publication
+This automatically: - Sets up your R package structure - Processes all CSV/Excel files in the directory - Collects package metadata through interactive prompts - Builds documentation, citation files, README, and website - Generates intelligent data documentation using LLMs - Prepares your package for publication
 
 ### Granular Control
 
@@ -68,38 +62,58 @@ build()
 fairenough provides a complete pipeline for R data package creation, following these logical steps:
 
 **1. Intelligent Project Setup (`setup()`)**
+
 - R package structure initialization with `usethis`
+
 - Directory organization (data_raw, etc.)
+
 - .gitignore management
 
 **2. Automated Data Processing (`process()`)**
+
 - Processes all raw data files automatically with `readr`, `readxl`
+
 - Built-in data cleaning and transformation
+
 - Validates data structure and formats
 
 **3. Interactive Metadata Collection (`collect()`)**
+
 - Guided prompts for package metadata (title, description, authors, etc.) using `cli`
+
 - Extended metadata options for comprehensive documentation
+
 - Saves directly to DESCRIPTION file with `desc`
 
 **4. LLM-Powered Documentation (`generate()`)**
+
 - Intelligent data dictionary generation using `elmer` chat/LLM integration
+
 - Variable descriptions created from dataset context + actual data samples
+
 - Smart documentation that understands your data's meaning and structure
 
 **5. Complete Package Infrastructure (`build()`)**
+
 - Roxygen documentation generation with `roxygen2`
-- Citation file creation with validation using `cffr`
-- README generation with `rmarkdown`
+
+- Citation file creation with validation using `cffr` - README generation with `rmarkdown`
+
 - Package website building ready for deployment
 
 **6. One-Click Pipeline (`fairenough()`)**
+
 - Complete R data package creation with a single `fairenough(chat)` call
+
 - Automated workflow from tidy data to finished package
 
 **7. Granular Control Options**
+
 - Individual wrapper functions: `setup()`, `process()`, `collect()`, `generate()`, `build()`
-- Flexible overwrite and verbosity controls - Step-by-step execution when needed
+
+- Flexible overwrite and verbosity controls
+
+- Step-by-step execution when needed
 
 ## License
 
@@ -113,14 +127,13 @@ fairenough provides a complete pipeline for R data package creation, following t
 
 Welcome!
 
-**Philosophy** 
-- Conventional commits! <https://www.conventionalcommits.org/>. 
-- Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to [R/utils.R](R/utils.R).
-- To test new functions:
+**Philosophy** - Conventional commits! <https://www.conventionalcommits.org/>. - Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to [R/utils.R](R/utils.R). - To test new functions:
+
 ```         
 roxygen2::roxygenise()
 devtools::load_all()
 ```
+
 -   Due to their utility outside of {fairenough}, [`gendict.R`](R/gendict.R), [`build_license.R`](R/build_license.R) and [`promptit.R`](R/promptit.R) have been kept general and not tied to the package's architecture.
 
 ## Dependencies
