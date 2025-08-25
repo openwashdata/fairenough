@@ -122,13 +122,47 @@
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
 <p>fairenough provides a complete pipeline for R data package creation, following these logical steps:</p>
-<p><strong>1. Intelligent Project Setup (<code><a href="reference/setup.html">setup()</a></code>)</strong> - R package structure initialization with <code>usethis</code> - Directory organization (data_raw, etc.) - .gitignore management</p>
-<p><strong>2. Automated Data Processing (<code><a href="reference/process.html">process()</a></code>)</strong> - Processes all raw data files automatically with <code>readr</code>, <code>readxl</code> - Built-in data cleaning and transformation - Validates data structure and formats</p>
-<p><strong>3. Interactive Metadata Collection (<code><a href="reference/collect.html">collect()</a></code>)</strong> - Guided prompts for package metadata (title, description, authors, etc.) using <code>cli</code> - Extended metadata options for comprehensive documentation - Saves directly to DESCRIPTION file with <code>desc</code></p>
-<p><strong>4. LLM-Powered Documentation (<code><a href="reference/generate.html">generate()</a></code>)</strong> - Intelligent data dictionary generation using <code>elmer</code> chat/LLM integration - Variable descriptions created from dataset context + actual data samples - Smart documentation that understands your data’s meaning and structure</p>
-<p><strong>5. Complete Package Infrastructure (<code><a href="reference/build.html">build()</a></code>)</strong> - Roxygen documentation generation with <code>roxygen2</code> - Citation file creation with validation using <code>cffr</code> - README generation with <code>rmarkdown</code> - Package website building ready for deployment</p>
-<p><strong>6. One-Click Pipeline (<code><a href="reference/fairenough.html">fairenough()</a></code>)</strong> - Complete R data package creation with a single <code>fairenough(chat)</code> call - Automated workflow from tidy data to finished package</p>
-<p><strong>7. Granular Control Options</strong> - Individual wrapper functions: <code><a href="reference/setup.html">setup()</a></code>, <code><a href="reference/process.html">process()</a></code>, <code><a href="reference/collect.html">collect()</a></code>, <code><a href="reference/generate.html">generate()</a></code>, <code><a href="reference/build.html">build()</a></code> - Flexible overwrite and verbosity controls - Step-by-step execution when needed</p>
+<p><strong>1. Intelligent Project Setup (<code><a href="reference/setup.html">setup()</a></code>)</strong></p>
+<ul>
+<li><p>R package structure initialization with <code>usethis</code></p></li>
+<li><p>Directory organization (data_raw, etc.)</p></li>
+<li><p>.gitignore management</p></li>
+</ul>
+<p><strong>2. Automated Data Processing (<code><a href="reference/process.html">process()</a></code>)</strong></p>
+<ul>
+<li><p>Processes all raw data files automatically with <code>readr</code>, <code>readxl</code></p></li>
+<li><p>Built-in data cleaning and transformation</p></li>
+<li><p>Validates data structure and formats</p></li>
+</ul>
+<p><strong>3. Interactive Metadata Collection (<code><a href="reference/collect.html">collect()</a></code>)</strong></p>
+<ul>
+<li><p>Guided prompts for package metadata (title, description, authors, etc.) using <code>cli</code></p></li>
+<li><p>Extended metadata options for comprehensive documentation</p></li>
+<li><p>Saves directly to DESCRIPTION file with <code>desc</code></p></li>
+</ul>
+<p><strong>4. LLM-Powered Documentation (<code><a href="reference/generate.html">generate()</a></code>)</strong></p>
+<ul>
+<li><p>Intelligent data dictionary generation using <code>elmer</code> chat/LLM integration</p></li>
+<li><p>Variable descriptions created from dataset context + actual data samples</p></li>
+<li><p>Smart documentation that understands your data’s meaning and structure</p></li>
+</ul>
+<p><strong>5. Complete Package Infrastructure (<code><a href="reference/build.html">build()</a></code>)</strong></p>
+<ul>
+<li><p>Roxygen documentation generation with <code>roxygen2</code></p></li>
+<li><p>Citation file creation with validation using <code>cffr</code> - README generation with <code>rmarkdown</code></p></li>
+<li><p>Package website building ready for deployment</p></li>
+</ul>
+<p><strong>6. One-Click Pipeline (<code><a href="reference/fairenough.html">fairenough()</a></code>)</strong></p>
+<ul>
+<li><p>Complete R data package creation with a single <code>fairenough(chat)</code> call</p></li>
+<li><p>Automated workflow from tidy data to finished package</p></li>
+</ul>
+<p><strong>7. Granular Control Options</strong></p>
+<ul>
+<li><p>Individual wrapper functions: <code><a href="reference/setup.html">setup()</a></code>, <code><a href="reference/process.html">process()</a></code>, <code><a href="reference/collect.html">collect()</a></code>, <code><a href="reference/generate.html">generate()</a></code>, <code><a href="reference/build.html">build()</a></code></p></li>
+<li><p>Flexible overwrite and verbosity controls</p></li>
+<li><p>Step-by-step execution when needed</p></li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -186,13 +220,6 @@
 <li>usethis</li>
 <li>whisker</li>
 <li>withr (&gt;= 3.0.0)</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="suggests">Suggests<a class="anchor" aria-label="anchor" href="#suggests"></a>
-</h3>
-<ul>
-<li>testthat (&gt;= 3.2.1)</li>
 </ul>
 </div>
 </div>
