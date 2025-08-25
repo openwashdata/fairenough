@@ -1,47 +1,59 @@
-Package: washr
-Title: Publication Toolkit for Water, Sanitation and Hygiene (WASH) Data
-Version: 1.0.1
-Date: 2024-11-01
+Package: fairenough
+Title: Automated R Data Package Creation with AI-Powered Documentation
+Version: 0.1.0
 Authors@R: c(
+    person("Nicolo", "Massari", , "nmassari@ethz.ch", role = c("aut", "cre"),
+            comment = c(ORCID = "0009-0006-8421-930X")),
     person("Mian", "Zhong", , "mzhong@ethz.ch", role = "aut",
            comment = c(ORCID = "0009-0009-4546-7214")),
     person("Margaux", "Götschmann", , "margauxg@ethz.ch", role = "aut",
            comment = c(ORCID = "0009-0002-2567-3343")),
-    person("Colin", "Walder", , "cwalder@ethz.ch", role = c("aut", "cre"),
+    person("Colin", "Walder", , "cwalder@ethz.ch", role = "aut",
            comment = c(ORCID = "0009-0006-0969-1954")),
     person("Lars", "Schöbitz", , "lschoebitz@ethz.ch", role = "aut",
            comment = c(ORCID = "0000-0003-2196-5015")),
     person("Global Health Engineering, ETH Zurich", role = "cph")
   )
-Description: A toolkit to set up an R data package in a consistent
-    structure. Automates tasks like tidy data export, data dictionary
-    documentation, README and website creation, and citation management.
-License: GPL (>= 3)
-URL: https://openwashdata.github.io/washr/
-BugReports: https://github.com/openwashdata/washr/issues
+Description: An intelligent toolkit for automated R data package creation.
+    Evolved from washr, fairenough minimizes manual intervention by automating
+    data processing, AI-powered dictionary generation, documentation creation,
+    and publication workflows. Features chainable functions and a unified
+    pipeline from raw data to published package.
+License: MIT + file LICENSE
+Depends: R (>= 4.1.0)
+URL: https://github.com/openwashdata/fairenough
+BugReports: https://github.com/openwashdata/fairenough/issues
 Imports:
-    cffr (>= 1.0.1),
-    dataspice,
-    desc (>= 1.4.3),
-    devtools (>= 2.4.5),
+    cli,
+    desc,
+    devtools,
     dplyr,
-    googlesheets4,
-    jsonlite,
-    lubridate (>= 1.7.0),
-    pkgdown (>= 2.0.7),
+    fs,
+    here,
+    janitor,
     readr,
-    rlang (>= 1.1.3),
-    tibble,
+    readxl,
+    roxygen2,
     tools,
-    usethis (>= 2.2.3),
-    utils (>= 4.3.3),
+    usethis,
+    whisker,
+    cffr,
+    pkgdown,
+    rmarkdown,
+    knitr,
+    withr (>= 3.0.0),
+    ellmer, 
+    glue, 
+    jsonlite, 
+    tibble, 
+    spelling, 
+    rstudioapi, 
+    goodpractice,
+    gt, 
+    fontawesome,
     stringr
 Suggests: 
-    knitr,
-    remotes,
-    rmarkdown,
     testthat (>= 3.2.1),
-    withr (>= 3.0.0)
 VignetteBuilder: 
     knitr
 Config/Needs/website: rmarkdown

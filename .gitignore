@@ -5,3 +5,12 @@
 .DS_Store
 .quarto
 inst/doc
+CLAUDE.md
+tests/*
+!tests/testthat
+!tests/penguins
+tests/penguins/docs
+TODO.md
+legacy
+.claude
+/.quarto/

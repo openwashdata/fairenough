@@ -1,28 +1,60 @@
+url: https://{{package.github_user}}.github.io/{{package.name}}/
 
-url: https://github.com/openwashdata/{{{name}}}
 template:
   bootstrap: 5
+  light-switch: yes
+  bslib:
+    font_scale: 1.0
+    base_font:
+      google: "Jost"
+    code_font:
+      google: "Overpass Mono"
+    heading_font:
+      google: "Abhaya Libre"
+  theme: arrow-light
+  theme-dark: arrow-dark
   includes:
     in_header: |
       <script defer data-domain="openwashdata.github.io" src="https://plausible.io/js/script.js"></script>
-
+navbar:
+  type: light
+  structure:
+    left: [home, reference]
+    right: [search, github, lightswitch]
+  components:
+    organisation:
+      text: openwashdata
+      href: https://openwashdata.org
+footer:
+  structure:
+    left: built_with
+    right: developed_by
+  components:
+    copyright: openwashdata
 home:
-  links:
-    - icon: github
-      text: GitHub repository
-      href: https://github.com/openwashdata/{{{name}}}
+  title: {{package.title}}
+  description: {{package.description}}
   sidebar:
-    structure: [links, citation, authors, dev, custom]
+    structure:
+     - links
+     - citation
+     - authors
+     - dev
+     - custom
     components:
       custom:
         title: Funding
-        text: This project was funded by the [Open Research Data Program of the ETH Board](https://ethrat.ch/en/eth-domain/open-research-data/).
-
+        text: This project was funded by the [Open Research Data Program of the ETH
+         Board](https://ethrat.ch/en/eth-domain/open-research-data/).
 authors:
   footer:
-    roles: [cre, fnd]
-    text: "Crafted by"
+    roles: cre
+    text: Crafted by
   sidebar:
-    roles: [cre, aut, ctb]
-    before: "So *who* does the work?"
-    after: "Thanks all!"
+    roles:
+     - cre
+     - aut
+     - ctb
+     - fnd
+    before: Supported by
+    after: Thanks all!
