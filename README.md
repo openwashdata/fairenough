@@ -1,10 +1,4 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # fairenough
-
-<!-- badges: start -->
-
-<!-- badges: end -->
 
 Automated R data package creation with AI-powered documentation.
 
@@ -65,6 +59,7 @@ Welcome!
 roxygen2::roxygenise()
 devtools::load_all()
 ```
-- Due to their utility outside of {fairenough}, `gendict.R` and `collect_metadata.R` have been kept general and not tied to the package's architecture.
+- Due to their utility outside of {fairenough}, `gendict.R`, `build_license.R` and `promptit.R` have been kept general and not tied to the package's architecture.
 
 ## Dependencies
+Described in [DESCRIPTION](./DESCRIPTION)

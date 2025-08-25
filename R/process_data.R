@@ -1,3 +1,48 @@
+#' Process data wrapper
+#'
+#' Wrapper function that processes all data files in the raw data directory
+#' with clear step messaging.
+#'
+#' @param raw_dir Directory containing raw data files (default: "data_raw")
+#' @param auto_clean Whether to automatically clean data (default: TRUE)
+#' @param overwrite Whether to overwrite existing files (default: TRUE)
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages (default: TRUE)
+#' @return Invisibly returns a list of processed files
+#' @export
+process <- function(
+  raw_dir = NULL,
+  auto_clean = TRUE,
+  overwrite = TRUE,
+  base_path = NULL,
+  verbose = TRUE
+) {
+  base_path <- get_base_path(base_path)
+
+  if (verbose) {
+    cli::cli_h1("Processing all data files")
+  }
+
+  # Process all data files
+  if (verbose) {
+    cli::cli_h2("Step 1: Processing all data files")
+  }
+
+  result <- process_data(
+    raw_dir = raw_dir,
+    auto_clean = auto_clean,
+    overwrite = overwrite,
+    base_path = base_path,
+    verbose = verbose
+  )
+
+  if (verbose) {
+    cli::cli_alert_success("Data processing completed!")
+  }
+
+  invisible(result)
+}
+
 #' Process all data files
 #'
 #' High-level function to read, clean, and export all data files.
@@ -13,15 +58,15 @@
 #' @examples
 #' \dontrun{
 #' # Basic processing
-#' process()
+#' process_data()
 #'
 #' # Skip auto-cleaning
-#' process(auto_clean = FALSE)
+#' process_data(auto_clean = FALSE)
 #'
 #' # Preserve existing files
-#' process(overwrite = FALSE)
+#' process_data(overwrite = FALSE)
 #' }
-process <- function(
+process_data <- function(
   raw_dir = NULL,
   auto_clean = TRUE,
   overwrite = TRUE,
@@ -31,10 +76,6 @@ process <- function(
   base_path <- get_base_path(base_path)
   raw_dir <- get_raw_dir(raw_dir)
   raw_path <- file.path(base_path, raw_dir)
-
-  if (verbose) {
-    cli::cli_h1("Processing data files")
-  }
 
   # Check if data_raw directory exists
   if (!fs::dir_exists(raw_path)) {

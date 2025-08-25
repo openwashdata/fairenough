@@ -1,3 +1,49 @@
+#' Setup wrapper
+#'
+#' Wrapper function that initializes a fairenough data package project
+#' with clear step messaging.
+#'
+#' @param raw_dir Name of the raw data directory (default: "data_raw")
+#' @param gitignore Whether to add data_raw to .gitignore (default: TRUE)
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages (default: TRUE)
+#' @param overwrite Whether to overwrite existing files (default: FALSE)
+#' @return Invisibly returns a list with setup results
+#' @export
+setup <- function(
+  raw_dir = "data_raw",
+  gitignore = TRUE,
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = FALSE
+) {
+  base_path <- get_base_path(base_path)
+
+  if (verbose) {
+    cli::cli_h1("Setting up fairenough project")
+  }
+
+  # Initialize project structure
+  if (verbose) {
+    cli::cli_h2("Step 1: Initializing project structure")
+  }
+
+  result <- setup_package(
+    raw_dir = raw_dir,
+    gitignore = gitignore,
+    base_path = base_path,
+    verbose = verbose,
+    overwrite = overwrite
+  )
+
+  if (verbose) {
+    cli::cli_alert_success("Project setup completed!")
+  }
+
+  invisible(result)
+}
+
+
 #' Setup fairenough project structure
 #'
 #' High-level function to initialize a data package project.
@@ -13,15 +59,15 @@
 #' @examples
 #' \dontrun{
 #' # Basic setup
-#' setup()
+#' setup_package()
 #'
 #' # Custom data directory
-#' setup(raw_dir = "raw")
+#' setup_package(raw_dir = "raw")
 #'
 #' # Quiet mode
-#' setup(verbose = FALSE)
+#' setup_package(verbose = FALSE)
 #' }
-setup <- function(
+setup_package <- function(
   raw_dir = "data_raw",
   gitignore = TRUE,
   base_path = NULL,
@@ -30,10 +76,6 @@ setup <- function(
 ) {
   base_path <- get_base_path(base_path)
   raw_dir <- get_raw_dir(raw_dir)
-
-  if (verbose) {
-    cli::cli_h1("Setting up fairenough project")
-  }
 
   desc_path <- file.path(base_path, "DESCRIPTION")
 

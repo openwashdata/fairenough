@@ -1,3 +1,53 @@
+#' Collect metadata wrapper
+#'
+#' Wrapper function that collects comprehensive metadata for R data packages
+#' with clear step messaging.
+#'
+#' @param extended Whether to prompt for extended metadata fields (default: FALSE)
+#' @param interactive Whether to use interactive prompts (default: TRUE)
+#' @param save_to_desc Whether to save to DESCRIPTION file (default: TRUE)
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages (default: TRUE)
+#' @param overwrite Whether to overwrite existing metadata (default: FALSE)
+#' @param ... Additional arguments passed to collect_metadata
+#' @return List containing all metadata organized by category
+#' @export
+collect <- function(
+  extended = FALSE,
+  interactive = TRUE,
+  save_to_desc = TRUE,
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = FALSE,
+  ...
+) {
+  base_path <- get_base_path(base_path)
+
+  if (verbose) {
+    cli::cli_h1("Collecting package metadata")
+  }
+
+  # Collect comprehensive metadata
+  if (verbose) {
+    cli::cli_h2("Step 1: Collecting comprehensive metadata")
+  }
+
+  result <- collect_metadata(
+    extended = extended,
+    interactive = interactive,
+    save_to_desc = save_to_desc,
+    base_path = base_path,
+    overwrite = overwrite,
+    ...
+  )
+
+  if (verbose) {
+    cli::cli_alert_success("Metadata collection completed!")
+  }
+
+  invisible(result)
+}
+
 #' Collect comprehensive metadata interactively
 #'
 #' @description
@@ -87,10 +137,8 @@ collect_metadata <- function(
     }
   }
 
-  cli::cli_h1("Collecting metadata for R data package")
-
   # Package Information - Required fields
-  cli::cli_h2("Package Information")
+  cli::cli_h3("Package Information")
 
   pkg_name <- prompt_input(
     "Package name",
@@ -138,7 +186,7 @@ collect_metadata <- function(
   )
 
   # Authors - Complex handling
-  cli::cli_h2("Authors")
+  cli::cli_h3("Authors")
 
   if (is.null(authors) || length(authors) == 0) {
     authors <- list()
@@ -194,7 +242,7 @@ collect_metadata <- function(
   }
 
   # License
-  cli::cli_h2("License")
+  cli::cli_h3("License")
 
   # Generate license options from LICENSE_CONFIG
   license_choices <- get_available_licenses("both")
@@ -245,7 +293,7 @@ collect_metadata <- function(
 
   # Publication Information - Optional fields (only if extended)
   if (extended) {
-    cli::cli_h2("Publication Information")
+    cli::cli_h3("Publication Information")
 
     # Keywords
     if (is.null(keywords) && interactive) {
@@ -286,7 +334,7 @@ collect_metadata <- function(
 
   # Coverage - Optional (only if extended)
   if (extended) {
-    cli::cli_h2("Data Coverage")
+    cli::cli_h3("Data Coverage")
 
     # Temporal coverage
     if (interactive && (is.null(temporal_start) || is.null(temporal_end))) {
@@ -331,7 +379,7 @@ collect_metadata <- function(
 
   # Related identifiers (only if extended)
   if (extended) {
-    cli::cli_h2("Related Publications")
+    cli::cli_h3("Related Publications")
 
     if (is.null(related_identifiers) && interactive) {
       has_related <- prompt_confirm(
@@ -429,7 +477,7 @@ collect_metadata <- function(
   if (interactive) {
     show_summary <- prompt_confirm("\nShow metadata summary?", default = TRUE)
     if (show_summary) {
-      cli::cli_h2("Metadata Summary")
+      cli::cli_h3("Metadata Summary")
       cli::cli_text("Title: {metadata$package$title}")
       cli::cli_text("Authors: {length(metadata$authors)}")
       cli::cli_text("License: {metadata$license$id}")

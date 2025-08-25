@@ -1,3 +1,51 @@
+#' Generation of documentation for datasets
+#'
+#' Wrapper function that generates a data dictionary for all data files
+#' in the package with clear step messaging.
+#'
+#' @param chat Optional chat object for LLM-based generation
+#' @param context Optional context for LLM generation
+#' @param overwrite Whether to overwrite existing dictionary (default: FALSE)
+#' @param base_path Base path for the project
+#' @param verbose Whether to show detailed messages (default: TRUE)
+#' @param ... Additional arguments passed to gendict
+#' @return Data frame containing the dictionary
+#' @export
+generate <- function(
+  chat = NULL,
+  context = NULL,
+  overwrite = FALSE,
+  base_path = NULL,
+  verbose = TRUE,
+  ...
+) {
+  base_path <- get_base_path(base_path)
+
+  if (verbose) {
+    cli::cli_h1("Generating data dictionary")
+  }
+
+  # Generate data dictionary
+  if (verbose) {
+    cli::cli_h2("Step 1: Generating data dictionary")
+  }
+
+  result <- generate_dictionary(
+    chat = chat,
+    context = context,
+    overwrite = overwrite,
+    base_path = base_path,
+    verbose = verbose,
+    ...
+  )
+
+  if (verbose) {
+    cli::cli_alert_success("Data dictionary generation completed!")
+  }
+
+  invisible(result)
+}
+
 #' Generate data dictionary
 #'
 #' Creates a data dictionary for all data files in the package.
