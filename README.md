@@ -146,7 +146,7 @@ Welcome!
 - Feature functions must maintain architectural consistency. This means
   that aspects like supported formats and path handling should be
   uniform across all functions. For more details, refer to
-  [R/utils.R](R/utils.R).
+  [R/utils.R](https://github.com/openwashdata/fairenough/blob/main/R/utils.R).
 
 - To test new functions:
 
@@ -156,6 +156,8 @@ Welcome!
     devtools::load_all()
 
 - Due to their utility outside of {fairenough},
-  [`gendict.R`](R/gendict.R), [`build_license.R`](R/build_license.R) and
-  [`promptit.R`](R/promptit.R) have been kept general and not tied to
-  the package’s architecture.
+  [`gendict.R`](https://github.com/openwashdata/fairenough/blob/main/R/gendict.R),
+  [`build_license.R`](https://github.com/openwashdata/fairenough/blob/main/R/build_license.R)
+  and
+  [`promptit.R`](https://github.com/openwashdata/fairenough/blob/main/R/promptit.R)
+  have been kept general and not tied to the package’s architecture.
