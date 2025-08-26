@@ -159,9 +159,3 @@ Welcome!
   [`gendict.R`](R/gendict.R), [`build_license.R`](R/build_license.R) and
   [`promptit.R`](R/promptit.R) have been kept general and not tied to
   the package’s architecture.
-
-## Dependencies
-
-``` r
-install.packages(c("cffr", "cli", "desc", "devtools", "dplyr", "ellmer", "fontawesome", "fs", "glue", "goodpractice", "gt", "here", "janitor", "jsonlite", "knitr", "pkgdown", "readr", "readxl", "rmarkdown", "roxygen2", "rstudioapi", "spelling", "stringr", "tibble", "tools", "usethis", "whisker", "withr (>= 3.0.0)"))
-```
