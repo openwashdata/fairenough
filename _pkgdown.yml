@@ -1,0 +1,60 @@
+url: https://openwashdata.github.io/fairenough
+
+template:
+  bootstrap: 5
+  light-switch: yes
+  bslib:
+    font_scale: 1.0
+    base_font:
+      google: "Jost"
+    code_font:
+      google: "Overpass Mono"
+    heading_font:
+      google: "Abhaya Libre"
+  theme: arrow-light
+  theme-dark: arrow-dark
+  includes:
+    in_header: |
+      <script defer data-domain="https://openwashdata.github.io/fairenough" src="https://plausible.io/js/script.js"></script>
+navbar:
+  type: light
+  structure:
+    left: [home, reference]
+    right: [search, github, lightswitch]
+  components:
+    organisation:
+      text: openwashdata
+      href: https://openwashdata.org
+footer:
+  structure:
+    left: built_with
+    right: developed_by
+  components:
+    copyright: openwashdata
+home:
+  title: fairenough
+  description: Convert tidy data into R packages with documentation websites and intelligent AI descriptions.
+  sidebar:
+    structure:
+     - links
+     - citation
+     - authors
+     - dev
+     - custom
+    components:
+      custom:
+        title: Funding
+        text: Funded by [Open Research Data Program of the ETH
+         Board](https://ethrat.ch/en/eth-domain/open-research-data/) and the [Global Health Engineering group at ETH Zurich](https://ghe.ethz.ch/).
+authors:
+  footer:
+    roles: cre
+    text: Crafted by
+  sidebar:
+    roles:
+     - cre
+     - aut
+     - ctb
+     - fnd
+    before: Supported by
+    after: Thanks all!

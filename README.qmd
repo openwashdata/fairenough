@@ -61,59 +61,59 @@ build()
 
 fairenough provides a complete pipeline for R data package creation, following these logical steps:
 
-**1. Intelligent Project Setup (`setup()`)**
+**`fairenough()` - One-Click Pipeline**
 
-- R package structure initialization with `usethis`
+-   Complete R data package creation with a single `fairenough(chat)` call
 
-- Directory organization (data_raw, etc.)
+-   Automated workflow from tidy data to finished package
 
-- .gitignore management
+-   Args: Supports all flags that can be passed to the individual wrapper functions
 
-**2. Automated Data Processing (`process()`)**
+**Granular Control Options**
 
-- Processes all raw data files automatically with `readr`, `readxl`
+-   Individual wrapper functions: `setup()`, `process()`, `collect()`, `generate()`, `build()`
 
-- Built-in data cleaning and transformation
+-   Global support for args: `overwrite = TRUE` and `verbose = TRUE`
 
-- Validates data structure and formats
+**1. `setup()` - R Project Setup**
 
-**3. Interactive Metadata Collection (`collect()`)**
+-   R package structure initialization with `usethis`
 
-- Guided prompts for package metadata (title, description, authors, etc.) using `cli`
+-   Directory and files organization (data_raw, .gitignore, etc.)
 
-- Extended metadata options for comprehensive documentation
+**2. `process()` - Automated Data Processing**
 
-- Saves directly to DESCRIPTION file with `desc`
+-   Processes all your tidy data with `readr`, `readxl`
 
-**4. LLM-Powered Documentation (`generate()`)**
+-   Validates data structure and formats
 
-- Intelligent data dictionary generation using `elmer` chat/LLM integration
+-   Arg: `auto_clean = TRUE` for automated minimal data cleaning and tidying
 
-- Variable descriptions created from dataset context + actual data samples
+**3. `collect()` - Interactive Metadata Collection**
 
-- Smart documentation that understands your data's meaning and structure
+-   Guided prompts for package metadata (title, description, authors, etc.) using `cli`
 
-**5. Complete Package Infrastructure (`build()`)**
+-   Saves directly to DESCRIPTION file with `desc`
 
-- Roxygen documentation generation with `roxygen2`
+-   Arg: `extended = TRUE` for comprehensive documentation
 
-- Citation file creation with validation using `cffr` - README generation with `rmarkdown`
+**4. `generate()` - LLM-Powered Documentation**
 
-- Package website building ready for deployment
+-   Data dictionary generation using `elmer` chat/LLM integration
 
-**6. One-Click Pipeline (`fairenough()`)**
+-   Variable descriptions uses the package's description as context + actual data samples
 
-- Complete R data package creation with a single `fairenough(chat)` call
+-   Arg: `contex = "YOUR DATASETS CONTEXT"`
 
-- Automated workflow from tidy data to finished package
+**5. `build()` - Complete Package Infrastructure**
 
-**7. Granular Control Options**
+-   Roxygen documentation generation with `roxygen2`
 
-- Individual wrapper functions: `setup()`, `process()`, `collect()`, `generate()`, `build()`
+-   Citation file creation with validation using `cffr`
 
-- Flexible overwrite and verbosity controls
+-   README generation with `rmarkdown`
 
-- Step-by-step execution when needed
+-   Package website building ready for deployment
 
 ## License
 
@@ -127,7 +127,13 @@ fairenough provides a complete pipeline for R data package creation, following t
 
 Welcome!
 
-**Philosophy** - Conventional commits! <https://www.conventionalcommits.org/>. - Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to [R/utils.R](R/utils.R). - To test new functions:
+**Philosophy**
+
+-   Conventional commits! <https://www.conventionalcommits.org/>.
+
+-   Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to [R/utils.R](R/utils.R).
+
+-   To test new functions:
 
 ```         
 roxygen2::roxygenise()
@@ -135,29 +141,3 @@ devtools::load_all()
 ```
 
 -   Due to their utility outside of {fairenough}, [`gendict.R`](R/gendict.R), [`build_license.R`](R/build_license.R) and [`promptit.R`](R/promptit.R) have been kept general and not tied to the package's architecture.
-
-## Dependencies
-
-```{r}
-#| echo: false
-#| results: asis
-#| message: false
-#| warning: false
-library(desc)
-library(dplyr)
-
-# Read DESCRIPTION file
-d <- desc_get("DESCRIPTION")
-
-# Get imports
-imports <- desc_get_field("Imports") |>
-  strsplit(",\\s*") |>
-  unlist() |>
-  trimws() |>
-  sort()
-
-cat("### Imports\n")
-for (pkg in imports) {
-  if (pkg != "") cat("-", pkg, "\n")
-}
-```
