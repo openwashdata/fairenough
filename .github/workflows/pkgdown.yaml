@@ -1,5 +1,5 @@
+# Optimized pkgdown workflow with aggressive caching and performance improvements
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
     branches: [main, master]
@@ -32,10 +32,14 @@ jobs:
         with:
           use-public-rspm: true
 
+      # Optimized dependency setup with cache settings
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
+          cache: always  # Cache even if workflow fails
+          cache-version: 2  # Increment if you need to invalidate cache
+          dependencies: '"hard"'  # Only install required dependencies for faster builds
 
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
@@ -43,7 +47,7 @@ jobs:
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        uses: JamesIves/github-pages-deploy-action@v4.6.0  # Updated to latest version
         with:
           clean: false
           branch: gh-pages
