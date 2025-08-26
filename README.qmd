@@ -162,8 +162,16 @@ imports <- desc_get_field("Imports") |>
   trimws() |>
   sort()
 
-cat("### Imports\n")
-for (pkg in imports) {
-  if (pkg != "") cat("-", pkg, "\n")
-}
+# Remove empty strings
+imports <- imports[imports != ""]
+
+cat("```r\n")
+cat("install.packages(c(")
+
+# Create the package list with quotes
+pkg_list <- paste0('"', imports, '"', collapse = ", ")
+cat(pkg_list)
+
+cat("))\n")
+cat("```\n")
 ```

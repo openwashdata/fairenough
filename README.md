@@ -162,33 +162,6 @@ Welcome!
 
 ## Dependencies
 
-### Imports
-
-- cffr
-- cli
-- desc
-- devtools
-- dplyr
-- ellmer
-- fontawesome
-- fs
-- glue
-- goodpractice
-- gt
-- here
-- janitor
-- jsonlite
-- knitr
-- pkgdown
-- readr
-- readxl
-- rmarkdown
-- roxygen2
-- rstudioapi
-- spelling
-- stringr
-- tibble
-- tools
-- usethis
-- whisker
-- withr (\>= 3.0.0)
+``` r
+install.packages(c("cffr", "cli", "desc", "devtools", "dplyr", "ellmer", "fontawesome", "fs", "glue", "goodpractice", "gt", "here", "janitor", "jsonlite", "knitr", "pkgdown", "readr", "readxl", "rmarkdown", "roxygen2", "rstudioapi", "spelling", "stringr", "tibble", "tools", "usethis", "whisker", "withr (>= 3.0.0)"))
+```
