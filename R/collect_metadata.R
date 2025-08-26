@@ -163,6 +163,9 @@ collect_metadata <- function(
         affiliation <- prompt_input("  Affiliation", default = "ETH Zurich")
 
         # Use multi-select for roles
+        # First author gets "aut" and "cre" by default, others get only "aut"
+        default_roles <- if (author_num == 1) c("aut", "cre") else c("aut")
+        
         roles <- prompt_multi_select(
           choices = c(
             "Author (wrote the package)" = "aut",
@@ -172,7 +175,7 @@ collect_metadata <- function(
             "Thesis advisor (supervised the work)" = "ths"
           ),
           title = "Select author roles",
-          default = c("aut", "cre"),
+          default = default_roles,
           min_choices = 1
         )
 
@@ -187,6 +190,23 @@ collect_metadata <- function(
 
         author_num <- author_num + 1
         add_more <- prompt_confirm("\nAdd another author?", default = FALSE)
+      }
+    }
+  }
+
+  # Ensure at least one author has the "cre" (creator/maintainer) role
+  if (!is.null(authors) && length(authors) > 0) {
+    has_maintainer <- any(sapply(authors, function(author) {
+      "cre" %in% author$roles
+    }))
+    
+    if (!has_maintainer) {
+      # Automatically assign "cre" role to the first author
+      if (length(authors) > 0) {
+        authors[[1]]$roles <- unique(c(authors[[1]]$roles, "cre"))
+        if (interactive) {
+          cli::cli_alert_info("Added 'creator/maintainer' role to first author (required for R packages)")
+        }
       }
     }
   }
