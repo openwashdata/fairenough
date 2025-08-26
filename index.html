@@ -4,68 +4,60 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Automated R Data Package Creation with AI-Powered Documentation • fairenough</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Automated R Data Package Creation with AI-Powered Documentation">
-<meta property="og:description" content="An intelligent toolkit for automated R data package creation. Evolved from washr, fairenough minimizes manual intervention by automating data processing, AI-powered dictionary generation, documentation creation, and publication workflows. Features chainable functions and a unified pipeline from raw data to published package.">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>fairenough • fairenough</title>
+<script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/Jost-0.4.10/font.css" rel="stylesheet">
+<link href="deps/Overpass_Mono-0.4.10/font.css" rel="stylesheet">
+<link href="deps/Abhaya_Libre-0.4.10/font.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="fairenough">
+<meta name="description" content="Convert tidy data into R packages with documentation websites and intelligent AI descriptions.">
+<meta property="og:description" content="Convert tidy data into R packages with documentation websites and intelligent AI descriptions.">
+<script defer data-domain="https://openwashdata.github.io/fairenough" src="https://plausible.io/js/script.js"></script>
 </head>
-<body data-spy="scroll" data-target="#toc">
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <div class="container template-home">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">fairenough</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
-      </span>
-    </div>
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="articles/fairenough.html">Get started</a>
-</li>
-<li>
-  <a href="reference/index.html">Reference</a>
-</li>
+    <a class="navbar-brand me-2" href="index.html">fairenough</a>
+
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
       </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="https://github.com/openwashdata/fairenough/" class="external-link">
-    <span class="fab fa-github fa-lg"></span>
-
-  </a>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/openwashdata/fairenough/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
 </li>
       </ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
-
-
-
-      </header><div class="row">
-  <div class="contents col-md-9">
-<div class="section level1">
+</nav><div class="container template-home">
+<div class="row">
+  <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="fairenough">fairenough<a class="anchor" aria-label="anchor" href="#fairenough"></a>
 </h1></div>
 <p>Convert tidy data into R packages with documentation websites and intelligent AI descriptions.</p>
@@ -122,46 +114,46 @@
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
 <p>fairenough provides a complete pipeline for R data package creation, following these logical steps:</p>
-<p><strong>1. Intelligent Project Setup (<code><a href="reference/setup.html">setup()</a></code>)</strong></p>
-<ul>
-<li><p>R package structure initialization with <code>usethis</code></p></li>
-<li><p>Directory organization (data_raw, etc.)</p></li>
-<li><p>.gitignore management</p></li>
-</ul>
-<p><strong>2. Automated Data Processing (<code><a href="reference/process.html">process()</a></code>)</strong></p>
-<ul>
-<li><p>Processes all raw data files automatically with <code>readr</code>, <code>readxl</code></p></li>
-<li><p>Built-in data cleaning and transformation</p></li>
-<li><p>Validates data structure and formats</p></li>
-</ul>
-<p><strong>3. Interactive Metadata Collection (<code><a href="reference/collect.html">collect()</a></code>)</strong></p>
-<ul>
-<li><p>Guided prompts for package metadata (title, description, authors, etc.) using <code>cli</code></p></li>
-<li><p>Extended metadata options for comprehensive documentation</p></li>
-<li><p>Saves directly to DESCRIPTION file with <code>desc</code></p></li>
-</ul>
-<p><strong>4. LLM-Powered Documentation (<code><a href="reference/generate.html">generate()</a></code>)</strong></p>
-<ul>
-<li><p>Intelligent data dictionary generation using <code>elmer</code> chat/LLM integration</p></li>
-<li><p>Variable descriptions created from dataset context + actual data samples</p></li>
-<li><p>Smart documentation that understands your data’s meaning and structure</p></li>
-</ul>
-<p><strong>5. Complete Package Infrastructure (<code><a href="reference/build.html">build()</a></code>)</strong></p>
-<ul>
-<li><p>Roxygen documentation generation with <code>roxygen2</code></p></li>
-<li><p>Citation file creation with validation using <code>cffr</code> - README generation with <code>rmarkdown</code></p></li>
-<li><p>Package website building ready for deployment</p></li>
-</ul>
-<p><strong>6. One-Click Pipeline (<code><a href="reference/fairenough.html">fairenough()</a></code>)</strong></p>
+<p><strong><code><a href="reference/fairenough.html">fairenough()</a></code> - One-Click Pipeline</strong></p>
 <ul>
 <li><p>Complete R data package creation with a single <code>fairenough(chat)</code> call</p></li>
 <li><p>Automated workflow from tidy data to finished package</p></li>
+<li><p>Args: Supports all flags that can be passed to the individual wrapper functions</p></li>
 </ul>
-<p><strong>7. Granular Control Options</strong></p>
+<p><strong>Granular Control Options</strong></p>
 <ul>
 <li><p>Individual wrapper functions: <code><a href="reference/setup.html">setup()</a></code>, <code><a href="reference/process.html">process()</a></code>, <code><a href="reference/collect.html">collect()</a></code>, <code><a href="reference/generate.html">generate()</a></code>, <code><a href="reference/build.html">build()</a></code></p></li>
-<li><p>Flexible overwrite and verbosity controls</p></li>
-<li><p>Step-by-step execution when needed</p></li>
+<li><p>Global support for args: <code>overwrite = TRUE</code> and <code>verbose = TRUE</code></p></li>
+</ul>
+<p><strong>1. <code><a href="reference/setup.html">setup()</a></code> - R Project Setup</strong></p>
+<ul>
+<li><p>R package structure initialization with <code>usethis</code></p></li>
+<li><p>Directory and files organization (data_raw, .gitignore, etc.)</p></li>
+</ul>
+<p><strong>2. <code><a href="reference/process.html">process()</a></code> - Automated Data Processing</strong></p>
+<ul>
+<li><p>Processes all your tidy data with <code>readr</code>, <code>readxl</code></p></li>
+<li><p>Validates data structure and formats</p></li>
+<li><p>Arg: <code>auto_clean = TRUE</code> for automated minimal data cleaning and tidying</p></li>
+</ul>
+<p><strong>3. <code><a href="reference/collect.html">collect()</a></code> - Interactive Metadata Collection</strong></p>
+<ul>
+<li><p>Guided prompts for package metadata (title, description, authors, etc.) using <code>cli</code></p></li>
+<li><p>Saves directly to DESCRIPTION file with <code>desc</code></p></li>
+<li><p>Arg: <code>extended = TRUE</code> for comprehensive documentation</p></li>
+</ul>
+<p><strong>4. <code><a href="reference/generate.html">generate()</a></code> - LLM-Powered Documentation</strong></p>
+<ul>
+<li><p>Data dictionary generation using <code>elmer</code> chat/LLM integration</p></li>
+<li><p>Variable descriptions uses the package’s description as context + actual data samples</p></li>
+<li><p>Arg: <code>contex = "YOUR DATASETS CONTEXT"</code></p></li>
+</ul>
+<p><strong>5. <code><a href="reference/build.html">build()</a></code> - Complete Package Infrastructure</strong></p>
+<ul>
+<li><p>Roxygen documentation generation with <code>roxygen2</code></p></li>
+<li><p>Citation file creation with validation using <code>cffr</code></p></li>
+<li><p>README generation with <code>rmarkdown</code></p></li>
+<li><p>Package website building ready for deployment</p></li>
 </ul>
 </div>
 <div class="section level2">
@@ -178,71 +170,26 @@
 <h2 id="contributions">Contributions<a class="anchor" aria-label="anchor" href="#contributions"></a>
 </h2>
 <p>Welcome!</p>
-<p><strong>Philosophy</strong> - Conventional commits! <a href="https://www.conventionalcommits.org/" class="external-link uri">https://www.conventionalcommits.org/</a>. - Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to <a href="R/utils.R">R/utils.R</a>. - To test new functions:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenise</span>()</span>
+<p><strong>Philosophy</strong></p>
+<ul>
+<li><p>Conventional commits! <a href="https://www.conventionalcommits.org/" class="external-link uri">https://www.conventionalcommits.org/</a>.</p></li>
+<li><p>Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to <a href="R/utils.R">R/utils.R</a>.</p></li>
+<li><p>To test new functions:</p></li>
+</ul>
+<!-- --><div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenise</span>()</span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span></code></pre></div>
 <ul>
 <li>Due to their utility outside of {fairenough}, <a href="R/gendict.R"><code>gendict.R</code></a>, <a href="R/build_license.R"><code>build_license.R</code></a> and <a href="R/promptit.R"><code>promptit.R</code></a> have been kept general and not tied to the package’s architecture.</li>
 </ul>
 </div>
-<div class="section level2">
-<h2 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
-</h2>
-<div class="section level3">
-<h3 id="imports">Imports<a class="anchor" aria-label="anchor" href="#imports"></a>
-</h3>
-<ul>
-<li>cffr</li>
-<li>cli</li>
-<li>desc</li>
-<li>devtools</li>
-<li>dplyr</li>
-<li>ellmer</li>
-<li>fontawesome</li>
-<li>fs</li>
-<li>glue</li>
-<li>goodpractice</li>
-<li>gt</li>
-<li>here</li>
-<li>janitor</li>
-<li>jsonlite</li>
-<li>knitr</li>
-<li>pkgdown</li>
-<li>readr</li>
-<li>readxl</li>
-<li>rmarkdown</li>
-<li>roxygen2</li>
-<li>rstudioapi</li>
-<li>spelling</li>
-<li>stringr</li>
-<li>tibble</li>
-<li>tools</li>
-<li>usethis</li>
-<li>whisker</li>
-<li>withr (&gt;= 3.0.0)</li>
-</ul>
 </div>
-</div>
-</div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="links">
+  </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/openwashdata/fairenough/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/openwashdata/fairenough/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
-
-<div class="license">
-<h2 data-toc-skip>License</h2>
-<ul class="list-unstyled">
-<li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
-</ul>
-</div>
-
 
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
@@ -254,34 +201,40 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
+<li>Supported by</li>
 <li>Nicolo Massari <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0006-8421-930X" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>Mian Zhong <br><small class="roles"> Author </small> <a href="https://orcid.org/0009-0009-4546-7214" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>Margaux Götschmann <br><small class="roles"> Author </small> <a href="https://orcid.org/0009-0002-2567-3343" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>Colin Walder <br><small class="roles"> Author </small> <a href="https://orcid.org/0009-0006-0969-1954" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>Lars Schöbitz <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0003-2196-5015" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Thanks all!</li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
 
 
-  </div>
+<div class="funding">
+<h2 data-toc-skip>Funding</h2>
+<ul class="list-unstyled">
+<li><p>Funded by <a href="https://ethrat.ch/en/eth-domain/open-research-data/" class="external-link">Open Research Data Program of the ETH Board</a> and the <a href="https://ghe.ethz.ch/" class="external-link">Global Health Engineering group at ETH Zurich</a>.</p></li>
+</ul>
+</div>
+
+  </aside>
 </div>
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by Nicolo Massari, Mian Zhong, Margaux Götschmann, Colin Walder, Lars Schöbitz.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+<div class="pkgdown-footer-right">
+  <p>Crafted by Nicolo Massari.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
-
 
 
 
