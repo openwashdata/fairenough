@@ -1,0 +1,42 @@
+[project]
+name = "fairenough"
+r_version = "4.5.1"
+
+repositories = [
+    { alias = "CRAN", url = "https://cloud.r-project.org" }
+]
+
+dependencies = [
+    "cli",
+    "desc",
+    "devtools",
+    "dplyr",
+    "fs",
+    "here",
+    "janitor",
+    "readr",
+    "readxl",
+    "roxygen2",
+    "tools",
+    "usethis",
+    "whisker",
+    "cffr",
+    "pkgdown",
+    "rmarkdown",
+    "knitr",
+    "withr",
+    "ellmer", 
+    "glue", 
+    "jsonlite", 
+    "tibble", 
+    "spelling", 
+    "rstudioapi", 
+    "goodpractice",
+    "gt", 
+    "fontawesome",
+    "stringr"
+]
+
+dev_dependencies = [
+"testthat"
+]

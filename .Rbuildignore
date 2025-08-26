@@ -18,4 +18,6 @@
 ^TODO\.md$
 ^legacy$
 ^tests/penguins$
-
+^rv/
+^rproject\.toml$
+^rv\.lock$
