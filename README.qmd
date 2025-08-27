@@ -103,7 +103,7 @@ fairenough provides a complete pipeline for R data package creation, following t
 
 -   Variable descriptions uses the package's description as context + actual data samples
 
--   Arg: `contex = "YOUR DATASETS CONTEXT"`
+-   Arg: `contex = "DESCRIBE YOUR DATA"`
 
 **5. `build()` - Complete Package Infrastructure**
 
