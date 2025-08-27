@@ -714,17 +714,12 @@ get_metadata <- function(base_path = NULL) {
     language = safe_get("Language")
   )
 
-  # Extract github_user from URL if present
-  urls <- d$get_urls()
-  if (length(urls) > 0) {
-    github_pattern <- "https://github.com/([^/]+)/"
-    if (grepl(github_pattern, urls[1])) {
-      metadata$package$github_user <- sub(
-        paste0(github_pattern, ".*"),
-        "\\1",
-        urls[1]
-      )
-    }
+  # Extract github_user from custom field
+  github_user <- safe_get("github_user")
+  if (!is.null(github_user)) {
+    metadata$package$github_user <- github_user
+  } else {
+    cli::cli_alert_warning("No 'github_user' field found in DESCRIPTION. Website URL may be incomplete.")
   }
 
   # Authors

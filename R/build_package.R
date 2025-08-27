@@ -446,11 +446,38 @@ build_site <- function(
       metadata <- list()
     }
 
+    # Flatten metadata structure for template substitution
+    template_data <- list()
+    if (!is.null(metadata$package)) {
+      # Flatten package fields to top level for template
+      template_data$package <- metadata$package
+      # Add flattened versions for backward compatibility
+      if (!is.null(metadata$package$name)) {
+        template_data$package.name <- metadata$package$name
+      }
+      if (!is.null(metadata$package$github_user)) {
+        template_data$package.github_user <- metadata$package$github_user
+      }
+      if (!is.null(metadata$package$title)) {
+        template_data$package.title <- metadata$package$title
+      }
+      if (!is.null(metadata$package$description)) {
+        template_data$package.description <- metadata$package$description
+      }
+    }
+    # Keep other metadata sections as-is
+    if (!is.null(metadata$authors)) {
+      template_data$authors <- metadata$authors
+    }
+    if (!is.null(metadata$license)) {
+      template_data$license <- metadata$license
+    }
+
     # Use our own template function that respects base_path
     use_template(
       template = "_pkgdown.yml",
       save_as = "_pkgdown.yml",
-      data = metadata,
+      data = template_data,
       base_path = base_path,
       package = "fairenough",
       verbose = verbose
@@ -465,20 +492,12 @@ build_site <- function(
   tryCatch(
     {
       # pkgdown::build_site() needs to know the package path
-      if (verbose) {
-        pkgdown::build_site(
-          pkg = base_path,
-          preview = preview,
-          install = install
-        )
-      } else {
-        suppressMessages(pkgdown::build_site(
-          pkg = base_path,
-          preview = preview,
-          install = install
-        ))
-      }
-      if (verbose) cli::cli_alert_success("Website built in {.path docs/}")
+      devtools::build_site(
+        base_path,
+        preview = preview,
+        install = install,
+        quiet = !verbose
+      )
     },
     error = function(e) {
       cli::cli_alert_warning("Could not build website: {e$message}")
@@ -512,7 +531,7 @@ build_site <- function(
   check_result <- tryCatch(
     {
       devtools::check(
-        pkg = base_path,
+        base_path,
         quiet = !verbose,
         args = "--no-manual"
       )
