@@ -15,3 +15,8 @@ legacy
 /.quarto/
 docs/
 rv/
+data_raw/
+*.bk*
+*.DS_Store
+.RData
+.Ruserdata
