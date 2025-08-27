@@ -46,7 +46,7 @@ generate_dictionary <- function(
   }
 
   # Collect variable information using the utility function
-  datasets_info <- collect_dataset_info(base_path)
+  datasets_info <- .collect_dataset_info(base_path)
 
   if (is.null(datasets_info)) {
     cli::cli_alert_warning("No .rda files found in {.path data/}")
@@ -175,4 +175,55 @@ generate_dictionary <- function(
   }
 
   return(invisible(dictionary))
+}
+
+#' Collect dataset information from .rda files
+#'
+#' Scans data directory for .rda files and collects variable information
+#'
+#' @param base_path Base path for the project
+#' @return Data frame with dataset information
+.collect_dataset_info <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+
+  # Check data directory
+  data_dir <- file.path(base_path, "data")
+  if (!fs::dir_exists(data_dir)) {
+    return(NULL)
+  }
+
+  # Find all .rda files
+  rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
+
+  if (length(rda_files) == 0) {
+    return(NULL)
+  }
+
+  # Collect dataset information
+  datasets <- list()
+
+  for (rda_file in rda_files) {
+    # Load data
+    temp_env <- new.env()
+    load(rda_file, envir = temp_env)
+    data_name <- ls(envir = temp_env)[1]
+    data <- get(data_name, envir = temp_env)
+
+    # Create dataset info
+    datasets[[data_name]] <- list(
+      rows = nrow(data),
+      cols = ncol(data),
+      variables = list(
+        names = names(data),
+        types = vapply(
+          data,
+          function(x) class(x)[1],
+          character(1),
+          USE.NAMES = FALSE
+        )
+      )
+    )
+  }
+
+  return(datasets)
 }

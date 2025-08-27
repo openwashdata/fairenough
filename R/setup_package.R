@@ -61,14 +61,14 @@ setup_package <- function(
   }
 
   # Create all necessary directories
-  dirs_created <- create_directories(
+  dirs_created <- .create_directories(
     dirs = c(raw_dir, "data", "inst/extdata"),
     base_path = base_path,
     verbose = verbose
   )
 
   # Move data files to data_raw
-  files_moved <- move_data_files(
+  files_moved <- .move_data_files(
     raw_dir = raw_dir,
     base_path = base_path,
     verbose = verbose
@@ -76,7 +76,7 @@ setup_package <- function(
 
   # Setup gitignore if requested
   if (gitignore) {
-    setup_gitignore(
+    .setup_gitignore(
       raw_dir = raw_dir,
       base_path = base_path,
       verbose = verbose
@@ -105,8 +105,7 @@ setup_package <- function(
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Character vector of created directories
-#' @export
-create_directories <- function(
+.create_directories <- function(
   dirs = c("data_raw", "data", "inst/extdata"),
   base_path = NULL,
   verbose = TRUE
@@ -138,8 +137,7 @@ create_directories <- function(
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Character vector of moved files
-#' @export
-move_data_files <- function(
+.move_data_files <- function(
   raw_dir = "data_raw",
   base_path = NULL,
   verbose = TRUE
@@ -194,8 +192,7 @@ move_data_files <- function(
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating success
-#' @export
-setup_gitignore <- function(
+.setup_gitignore <- function(
   raw_dir = NULL,
   base_path = NULL,
   verbose = TRUE

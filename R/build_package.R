@@ -100,8 +100,7 @@ build_package <- function(
 #' @param spell_check Whether to run spell check (default: TRUE)
 #' @param good_practice Whether to run good practice checks (default: FALSE, as it's slow)
 #' @return List with validation results
-#' @export
-validate_package <- function(
+.validate_package <- function(
   base_path = NULL,
   verbose = TRUE,
   spell_check = TRUE,
@@ -119,7 +118,7 @@ validate_package <- function(
   if (verbose) {
     cli::cli_alert_info("Running R CMD check")
   }
-  results$check <- run_checks(base_path = base_path, verbose = verbose)
+  results$check <- .run_checks(base_path = base_path, verbose = verbose)
 
   # 2. Spell check (if requested)
   if (spell_check) {
@@ -497,8 +496,7 @@ build_site <- function(
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating if checks passed
-#' @export
-run_checks <- function(base_path = NULL, verbose = TRUE) {
+.run_checks <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
 
   if (!requireNamespace("devtools", quietly = TRUE)) {
