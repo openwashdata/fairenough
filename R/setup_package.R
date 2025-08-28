@@ -47,8 +47,14 @@ setup_package <- function(
   ) {
     # Create basic package structure
     # run usethis::create_package with usethis.allow_nested_project = TRUE
+    # When overwrite=TRUE, suppress prompts by setting usethis.quiet = TRUE
+    options_list <- list(usethis.allow_nested_project = TRUE)
+    if (overwrite) {
+      options_list$usethis.quiet <- TRUE
+    }
+    
     withr::with_options(
-      list(usethis.allow_nested_project = TRUE),
+      options_list,
       usethis::create_package(
         path = base_path,
         fields = list(),

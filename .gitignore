@@ -9,7 +9,7 @@ CLAUDE.md
 tests/*
 !tests/testthat
 !tests/palmerpenguins
-TODO.md
+TODO/
 legacy
 .claude
 /.quarto/

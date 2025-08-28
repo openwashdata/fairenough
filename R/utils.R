@@ -318,3 +318,197 @@ use_template <- function(
 
   return(invisible(output_path))
 }
+
+#' State tracking functions for fairenough pipeline steps
+#' 
+#' These functions manage completion state tracking using DESCRIPTION Config/ fields.
+#' This allows fairenough to intelligently skip completed steps unless overwrite=TRUE.
+#'
+
+#' Mark a step as completed in DESCRIPTION
+#' @param step Step name (e.g., "setup", "process", "collect", "generate", "build")
+#' @param base_path Base path for the project
+#' @export
+mark_step_completed <- function(step, base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  
+  if (!file.exists(desc_path)) {
+    return(invisible(NULL))
+  }
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    field_name <- paste0("Config/Fairenough", tools::toTitleCase(step))
+    d$set(field_name, as.character(Sys.time()))
+    d$write(file = desc_path)
+  }, error = function(e) {
+    # Silently fail if we can't write state - don't break the user's workflow
+    invisible(NULL)
+  })
+}
+
+#' Check if setup step is completed
+#' @param base_path Base path for the project
+#' @return Logical indicating if setup is completed
+#' @export
+is_setup_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  
+  if (!file.exists(desc_path)) {
+    return(FALSE)
+  }
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    setup_time <- d$get("Config/FairenoughSetup")[[1]]
+    
+    # Also verify actual files exist
+    rproj_files <- list.files(base_path, pattern = "\\.Rproj$", full.names = TRUE)
+    rproj_exists <- length(rproj_files) > 0
+    
+    # Both completion marker and files must exist
+    !is.null(setup_time) && setup_time != "" && rproj_exists
+  }, error = function(e) {
+    FALSE
+  })
+}
+
+#' Check if data processing step is completed  
+#' @param base_path Base path for the project
+#' @return Logical indicating if processing is completed
+#' @export
+is_processing_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  
+  if (!file.exists(desc_path)) {
+    return(FALSE)
+  }
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    process_time <- d$get("Config/FairenoughProcess")[[1]]
+    
+    # Also verify .rda files exist in data directory
+    data_dir <- file.path(base_path, "data")
+    if (!dir.exists(data_dir)) {
+      return(FALSE)
+    }
+    
+    rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
+    files_exist <- length(rda_files) > 0
+    
+    # Both completion marker and files must exist
+    !is.null(process_time) && process_time != "" && files_exist
+  }, error = function(e) {
+    FALSE
+  })
+}
+
+#' Check if metadata collection is completed
+#' @param base_path Base path for the project  
+#' @return Logical indicating if metadata collection is completed
+#' @export
+is_metadata_collected <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  
+  if (!file.exists(desc_path)) {
+    return(FALSE)
+  }
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    collect_time <- d$get("Config/FairenoughCollect")[[1]]
+    
+    # Also verify metadata exists using existing logic from collect_metadata.R
+    existing_meta <- tryCatch(
+      get_metadata(base_path),
+      error = function(e) NULL
+    )
+    
+    metadata_exists <- !is.null(existing_meta) && 
+      !is.null(existing_meta$package) && 
+      !is.null(existing_meta$package$title)
+    
+    # Both completion marker and meaningful metadata must exist  
+    !is.null(collect_time) && collect_time != "" && metadata_exists
+  }, error = function(e) {
+    FALSE
+  })
+}
+
+#' Check if dictionary generation is completed
+#' @param base_path Base path for the project
+#' @return Logical indicating if dictionary generation is completed  
+#' @export
+is_dictionary_generated <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  
+  if (!file.exists(desc_path)) {
+    return(FALSE)
+  }
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    generate_time <- d$get("Config/FairenoughGenerate")[[1]]
+    
+    # Check completion marker AND verify descriptions are actually filled
+    completion_marked <- !is.null(generate_time) && generate_time != ""
+    
+    # Also check if dictionary file exists and has descriptions
+    dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+    if (!file.exists(dict_path)) {
+      return(FALSE)
+    }
+    
+    # Load dictionary and check if descriptions are filled
+    dict <- utils::read.csv(dict_path)
+    descriptions_filled <- !all(is.na(dict$description) | dict$description == "")
+    
+    # Both completion marker and actual descriptions must exist
+    completion_marked && descriptions_filled
+  }, error = function(e) {
+    FALSE
+  })
+}
+
+#' Check if build step is completed
+#' @param base_path Base path for the project
+#' @return Logical indicating if build is completed
+#' @export  
+is_build_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  
+  if (!file.exists(desc_path)) {
+    return(FALSE)
+  }
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    build_time <- d$get("Config/FairenoughBuild")[[1]]
+    
+    # Also verify key build artifacts exist
+    r_dir <- file.path(base_path, "R")
+    man_dir <- file.path(base_path, "man") 
+    readme_file <- file.path(base_path, "README.md")
+    citation_file <- file.path(base_path, "inst", "CITATION")
+    
+    # Check if core build artifacts exist
+    r_files_exist <- dir.exists(r_dir) && length(list.files(r_dir, pattern = "\\.R$")) > 0
+    man_files_exist <- dir.exists(man_dir) && length(list.files(man_dir, pattern = "\\.Rd$")) > 0
+    readme_exists <- file.exists(readme_file)
+    citation_exists <- file.exists(citation_file)
+    
+    build_artifacts_exist <- r_files_exist && man_files_exist && readme_exists && citation_exists
+    
+    # Both completion marker and artifacts must exist
+    !is.null(build_time) && build_time != "" && build_artifacts_exist
+  }, error = function(e) {
+    FALSE
+  })
+}

@@ -11,7 +11,7 @@
 ^dev$
 \.claude
 CLAUDE\.md
-TODO\.md
+TODO
 legacy
 tests/penguins
 rv/
