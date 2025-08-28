@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{format_checklist_results}
 \alias{format_checklist_results}
-\title{Validation system for fairenough pipeline steps}
+\title{Process checklist into structured results}
 \usage{
 format_checklist_results(checklist)
 }
@@ -13,9 +13,5 @@ format_checklist_results(checklist)
 Formatted checklist results
 }
 \description{
-These functions validate actual completion status using comprehensive checklists.
-Each validation returns detailed results about what's complete and what's missing.
-}
-\details{
 Process checklist into structured results
 }

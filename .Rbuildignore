@@ -13,7 +13,7 @@
 CLAUDE\.md
 TODO
 legacy
-tests/penguins
+tests/palmerpenguins
 rv/
 rproject\.toml
 rv\.lock
