@@ -26,7 +26,8 @@ collect_metadata(
   interactive = TRUE,
   save_to_desc = TRUE,
   base_path = NULL,
-  overwrite = FALSE
+  overwrite = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ collect_metadata(
 \item{base_path}{Base path for the project}
 
 \item{overwrite}{Whether to overwrite existing metadata (default: FALSE)}
+
+\item{verbose}{Whether to show detailed messages (default: TRUE)}
 }
 \value{
 List containing all metadata organized by category

@@ -20,12 +20,16 @@ setup <- function(
   base_path <- get_base_path(base_path)
 
   # Check if setup is already completed
-  if (!overwrite && is_setup_completed(base_path)) {
-    if (verbose) {
-      cli::cli_alert_info("Setup already completed, skipping...")
-      cli::cli_alert_info("Use {.code overwrite = TRUE} to force setup")
+  if (!overwrite) {
+    validation <- validate_setup_completed(base_path)
+    
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Setup already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force setup")
+      }
+      return(invisible(list(base_path = base_path, skipped = TRUE, validation = validation)))
     }
-    return(invisible(list(base_path = base_path, skipped = TRUE)))
   }
 
   if (verbose) {
@@ -45,8 +49,11 @@ setup <- function(
     overwrite = overwrite
   )
 
-  # Mark step as completed
-  mark_step_completed("setup", base_path)
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_setup_completed(base_path)
+    show_checklist(final_validation, "Setup completed", verbose)
+  }
 
   if (verbose) {
     cli::cli_alert_success("Project setup completed!")
@@ -77,12 +84,16 @@ process <- function(
   base_path <- get_base_path(base_path)
 
   # Check if processing is already completed
-  if (!overwrite && is_processing_completed(base_path)) {
-    if (verbose) {
-      cli::cli_alert_info("Data processing already completed, skipping...")
-      cli::cli_alert_info("Use {.code overwrite = TRUE} to force processing")
+  if (!overwrite) {
+    validation <- validate_processing_completed(base_path)
+    
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Data processing already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force processing")
+      }
+      return(invisible(list(skipped = TRUE, validation = validation)))
     }
-    return(invisible(list(skipped = TRUE)))
   }
 
   if (verbose) {
@@ -102,9 +113,10 @@ process <- function(
     verbose = verbose
   )
 
-  # Only mark completed if processing actually succeeded
-  if (!is.null(result) && length(result) > 0) {
-    mark_step_completed("process", base_path)
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_processing_completed(base_path)
+    show_checklist(final_validation, "Data processing completed", verbose)
   }
 
   if (verbose) {
@@ -140,14 +152,18 @@ collect <- function(
   base_path <- get_base_path(base_path)
 
   # Check if metadata collection is already completed
-  if (!overwrite && is_metadata_collected(base_path)) {
-    if (verbose) {
-      cli::cli_alert_info("Metadata collection already completed, skipping...")
-      cli::cli_alert_info("Use {.code overwrite = TRUE} to force collection")
+  if (!overwrite) {
+    validation <- validate_metadata_collected(base_path)
+    
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Metadata collection already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force collection")
+      }
+      # Return existing metadata
+      existing_meta <- get_metadata(base_path)
+      return(invisible(existing_meta))
     }
-    # Return existing metadata
-    existing_meta <- get_metadata(base_path)
-    return(invisible(existing_meta))
   }
 
   if (verbose) {
@@ -168,9 +184,10 @@ collect <- function(
     ...
   )
 
-  # Mark step as completed if metadata was collected successfully
-  if (!is.null(result) && !is.null(result$package) && !is.null(result$package$title)) {
-    mark_step_completed("collect", base_path)
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_metadata_collected(base_path)
+    show_checklist(final_validation, "Metadata collection completed", verbose)
   }
 
   if (verbose) {
@@ -204,18 +221,22 @@ generate <- function(
   base_path <- get_base_path(base_path)
 
   # Check if dictionary generation is already completed (descriptions exist)
-  if (!overwrite && is_dictionary_generated(base_path)) {
-    if (verbose) {
-      cli::cli_alert_info("Dictionary generation already completed, skipping...")
-      cli::cli_alert_info("Use {.code overwrite = TRUE} to force generation")
+  if (!overwrite) {
+    validation <- validate_dictionary_completed(base_path)
+    
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Dictionary generation already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force generation")
+      }
+      # Return existing dictionary if it exists
+      dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+      if (file.exists(dict_path)) {
+        existing_dict <- utils::read.csv(dict_path)
+        return(invisible(existing_dict))
+      }
+      return(invisible(NULL))
     }
-    # Return existing dictionary if it exists
-    dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
-    if (file.exists(dict_path)) {
-      existing_dict <- utils::read.csv(dict_path)
-      return(invisible(existing_dict))
-    }
-    return(invisible(NULL))
   }
 
   if (verbose) {
@@ -236,20 +257,10 @@ generate <- function(
     ...
   )
 
-  # Check if descriptions are now filled and mark as completed
-  if (!is.null(result)) {
-    # Check if descriptions are actually filled (not NA/empty)
-    descriptions_filled <- !all(is.na(result$description) | result$description == "")
-    
-    if (descriptions_filled) {
-      mark_step_completed("generate", base_path)
-      if (verbose) {
-        cli::cli_alert_info("Dictionary marked as completed (descriptions exist)")
-      }
-    } else if (verbose) {
-      cli::cli_alert_info("Dictionary structure created but not marked complete (descriptions empty)")
-      cli::cli_alert_info("Fill descriptions manually or run again with chat object")
-    }
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_dictionary_completed(base_path)
+    show_checklist(final_validation, "Dictionary generation completed", verbose)
   }
 
   if (verbose) {
@@ -283,12 +294,16 @@ build <- function(
   base_path <- get_base_path(base_path)
 
   # Check if build is already completed
-  if (!overwrite && is_build_completed(base_path)) {
-    if (verbose) {
-      cli::cli_alert_info("Build already completed, skipping...")
-      cli::cli_alert_info("Use {.code overwrite = TRUE} to force build")
+  if (!overwrite) {
+    validation <- validate_build_completed(base_path)
+    
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Build already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force build")
+      }
+      return(invisible(list(skipped = TRUE, validation = validation)))
     }
-    return(invisible(list(skipped = TRUE)))
   }
 
   if (verbose) {
@@ -349,14 +364,10 @@ build <- function(
     install = TRUE
   )
 
-  # Mark step as completed - check that key components were built successfully
-  key_files_exist <- 
-    file.exists(file.path(base_path, "README.md")) &&
-    file.exists(file.path(base_path, "inst", "CITATION")) &&
-    dir.exists(file.path(base_path, "man"))
-  
-  if (key_files_exist) {
-    mark_step_completed("build", base_path)
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_build_completed(base_path)
+    show_checklist(final_validation, "Build completed", verbose)
   }
 
   if (verbose) {

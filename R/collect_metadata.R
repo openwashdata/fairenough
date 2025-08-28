@@ -29,6 +29,7 @@
 #' @param save_to_desc Whether to save to DESCRIPTION file (default: TRUE)
 #' @param base_path Base path for the project
 #' @param overwrite Whether to overwrite existing metadata (default: FALSE)
+#' @param verbose Whether to show detailed messages (default: TRUE)
 #'
 #' @return List containing all metadata organized by category
 #' @export
@@ -54,7 +55,8 @@ collect_metadata <- function(
   interactive = TRUE,
   save_to_desc = TRUE,
   base_path = NULL,
-  overwrite = FALSE
+  overwrite = FALSE,
+  verbose = TRUE
 ) {
   # Get base path if needed
   if (!is.null(base_path)) {
@@ -73,15 +75,27 @@ collect_metadata <- function(
       )
 
       if (!is.null(existing_meta)) {
-        if (interactive) {
-          cli::cli_alert_info("Metadata already exists in DESCRIPTION")
-          if (
-            !prompt_confirm("Do you want to overwrite it?", default = FALSE)
-          ) {
+        # Check if existing metadata is meaningful (not placeholder content)
+        has_meaningful_content <- (!is.null(existing_meta$package$title) && 
+                                 !grepl("Placeholder|What the Package Does", existing_meta$package$title, ignore.case = TRUE)) ||
+                                (!is.null(existing_meta$package$description) && 
+                                 !grepl("Placeholder|What the package does", existing_meta$package$description, ignore.case = TRUE)) ||
+                                (!is.null(existing_meta$authors) && length(existing_meta$authors) > 0 &&
+                                 !any(sapply(existing_meta$authors, function(author) {
+                                   grepl("First|Last", paste(author$given, author$family), ignore.case = TRUE)
+                                 })))
+        
+        if (has_meaningful_content) {
+          if (interactive) {
+            cli::cli_alert_info("Metadata already exists in DESCRIPTION")
+            if (
+              !prompt_confirm("Do you want to overwrite it?", default = FALSE)
+            ) {
+              return(existing_meta)
+            }
+          } else {
             return(existing_meta)
           }
-        } else {
-          return(existing_meta)
         }
       }
     }
@@ -443,19 +457,16 @@ collect_metadata <- function(
 
   cli::cli_alert_success("Metadata collection complete!")
 
-  # Show summary
-  if (interactive) {
-    show_summary <- prompt_confirm("\nShow metadata summary?", default = TRUE)
-    if (show_summary) {
-      cli::cli_h3("Metadata Summary")
-      cli::cli_text("Title: {metadata$package$title}")
-      cli::cli_text("Authors: {length(metadata$authors)}")
-      cli::cli_text("License: {metadata$license$id}")
-      if (!is.null(metadata$publication$keywords)) {
-        cli::cli_text(
-          "Keywords: {paste(metadata$publication$keywords, collapse = ', ')}"
-        )
-      }
+  # Always show summary
+  if (verbose) {
+    cli::cli_h3("Metadata Summary")
+    cli::cli_text("Title: {metadata$package$title}")
+    cli::cli_text("Authors: {length(metadata$authors)}")
+    cli::cli_text("License: {metadata$license$id}")
+    if (!is.null(metadata$publication$keywords)) {
+      cli::cli_text(
+        "Keywords: {paste(metadata$publication$keywords, collapse = ', ')}"
+      )
     }
   }
 
