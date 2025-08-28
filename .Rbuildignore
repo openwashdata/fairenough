@@ -17,3 +17,5 @@ tests/palmerpenguins
 rv/
 rproject\.toml
 rv\.lock
+CITATION.cff
+README.qmd
