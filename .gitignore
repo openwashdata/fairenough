@@ -21,3 +21,4 @@ data_raw/
 .RData
 .Ruserdata
 README.html
+.Rprofile
