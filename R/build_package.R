@@ -326,48 +326,87 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   return(invisible(TRUE))
 }
 
-#' Build README from inst/templates/README.Rmd
+#' Build README from inst/templates/README.qmd
 #'
-#' Build README.md from the README.Rmd template, incorporating package metadata.
+#' Build README.md from the README.qmd template, incorporating package metadata.
 #'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
-#' @param overwrite Whether to overwrite README.Rmd found at base_path
+#' @param overwrite Whether to overwrite README.qmd found at base_path
 #' @return Path to generated README
 #' @export
-build_readme <- function(base_path = NULL, verbose = TRUE, overwrite = TRUE) {
+build_readme <- function(
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = TRUE,
+  quarto = FALSE
+) {
   base_path <- get_base_path(base_path)
+  quarto_installed <- system("quarto --version", ignore.stderr = TRUE) == 0
+  cli::cli_alert_info("Is Quarto installed: {quarto_installed}")
 
-  # Create README.Rmd from template if it doesn't exist
-  readme_rmd <- file.path(base_path, "README.Rmd")
-  template_path <- system.file(
-    "templates",
-    "README.Rmd",
-    package = "fairenough"
-  )
-  fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
-
-  # Check if rmarkdown is available
-  if (requireNamespace("rmarkdown", quietly = TRUE)) {
-    tryCatch(
-      {
-        # Render README with proper working directory
-        readme_md <- file.path(base_path, "README.md")
-        rmarkdown::render(
-          readme_rmd,
-          output_format = "github_document",
-          output_file = readme_md,
-          quiet = !verbose
-        )
-        if (verbose) cli::cli_alert_success("Generated README.md")
-      },
-      error = function(e) {
-        cli::cli_alert_warning("Could not render README: {e$message}")
-      }
+  if (quarto && quarto_installed) {
+    # Create README.qmd from template if it doesn't exist
+    readme_qmd <- file.path(base_path, "README.qmd")
+    template_path <- system.file(
+      "templates",
+      "README.qmd",
+      package = "fairenough"
     )
+    fs::file_copy(template_path, readme_qmd, overwrite = overwrite)
+
+    # Check if quarto is available
+    if (requireNamespace("quarto", quietly = TRUE)) {
+      tryCatch(
+        {
+          # Render README with quarto
+          quarto::quarto_render(
+            readme_qmd,
+            output_format = "gfm",
+            quiet = !verbose
+          )
+          if (verbose) cli::cli_alert_success("Generated README.md")
+        },
+        error = function(e) {
+          cli::cli_alert_warning("Could not render README: {e$message}")
+        }
+      )
+    } else {
+      cli::cli_alert_warning("Package {.pkg quarto} not installed")
+      cli::cli_alert_info("Install it with: install.packages('quarto')")
+    }
   } else {
-    cli::cli_alert_warning("Package {.pkg rmarkdown} not installed")
-    cli::cli_alert_info("Install it with: install.packages('rmarkdown')")
+    # Create README.Rmd from template if it doesn't exist
+    readme_rmd <- file.path(base_path, "README.Rmd")
+    template_path <- system.file(
+      "templates",
+      "README.Rmd",
+      package = "fairenough"
+    )
+    fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
+
+    # Check if rmarkdown is available
+    if (requireNamespace("rmarkdown", quietly = TRUE)) {
+      tryCatch(
+        {
+          # Render README with proper working directory
+          readme_md <- file.path(base_path, "README.md")
+          rmarkdown::render(
+            readme_rmd,
+            output_format = "github_document",
+            output_file = readme_md,
+            quiet = !verbose
+          )
+          if (verbose) cli::cli_alert_success("Generated README.md")
+        },
+        error = function(e) {
+          cli::cli_alert_warning("Could not render README: {e$message}")
+        }
+      )
+    } else {
+      cli::cli_alert_warning("Package {.pkg rmarkdown} not installed")
+      cli::cli_alert_info("Install it with: install.packages('rmarkdown')")
+    }
   }
 
   return(invisible(file.path(base_path, "README.md")))

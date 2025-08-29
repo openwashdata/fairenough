@@ -22,13 +22,17 @@ setup <- function(
   # Check if setup is already completed
   if (!overwrite) {
     validation <- validate_setup_completed(base_path)
-    
+
     if (validation$all_required_passed) {
       if (verbose) {
         show_checklist(validation, "Setup already completed", verbose)
         cli::cli_alert_info("Use {.code overwrite = TRUE} to force setup")
       }
-      return(invisible(list(base_path = base_path, skipped = TRUE, validation = validation)))
+      return(invisible(list(
+        base_path = base_path,
+        skipped = TRUE,
+        validation = validation
+      )))
     }
   }
 
@@ -86,7 +90,7 @@ process <- function(
   # Check if processing is already completed
   if (!overwrite) {
     validation <- validate_processing_completed(base_path)
-    
+
     if (validation$all_required_passed) {
       if (verbose) {
         show_checklist(validation, "Data processing already completed", verbose)
@@ -154,10 +158,14 @@ collect <- function(
   # Check if metadata collection is already completed
   if (!overwrite) {
     validation <- validate_metadata_collected(base_path)
-    
+
     if (validation$all_required_passed) {
       if (verbose) {
-        show_checklist(validation, "Metadata collection already completed", verbose)
+        show_checklist(
+          validation,
+          "Metadata collection already completed",
+          verbose
+        )
         cli::cli_alert_info("Use {.code overwrite = TRUE} to force collection")
       }
       # Return existing metadata
@@ -223,10 +231,14 @@ generate <- function(
   # Check if dictionary generation is already completed (descriptions exist)
   if (!overwrite) {
     validation <- validate_dictionary_completed(base_path)
-    
+
     if (validation$all_required_passed) {
       if (verbose) {
-        show_checklist(validation, "Dictionary generation already completed", verbose)
+        show_checklist(
+          validation,
+          "Dictionary generation already completed",
+          verbose
+        )
         cli::cli_alert_info("Use {.code overwrite = TRUE} to force generation")
       }
       # Return existing dictionary if it exists
@@ -281,6 +293,7 @@ generate <- function(
 #' @param overwrite Whether to overwrite existing files (default: TRUE)
 #' @param validate Whether to validate the CITATION file (default: TRUE)
 #' @param preview Whether to preview the site after building (default: TRUE)
+#' @param quarto Whether to use Quarto to build readme (default: FALSE)
 #' @return List with results from each build step
 #' @export
 build <- function(
@@ -289,14 +302,15 @@ build <- function(
   overwrite = TRUE,
   good_practice = FALSE,
   validate = TRUE,
-  preview = TRUE
+  preview = TRUE,
+  quarto = FALSE
 ) {
   base_path <- get_base_path(base_path)
 
   # Check if build is already completed
   if (!overwrite) {
     validation <- validate_build_completed(base_path)
-    
+
     if (validation$all_required_passed) {
       if (verbose) {
         show_checklist(validation, "Build already completed", verbose)
@@ -350,7 +364,8 @@ build <- function(
   results$readme <- build_readme(
     base_path = base_path,
     verbose = verbose,
-    overwrite = overwrite
+    overwrite = overwrite,
+    quarto = quarto
   )
 
   # 5. Build site
@@ -409,7 +424,7 @@ fairenough <- function(
 
   # Run complete pipeline with smart overwrite behavior
   # Each step checks its own completion state and skips if already done (unless overwrite=TRUE)
-  
+
   results$setup <- setup(
     verbose = verbose,
     overwrite = overwrite,

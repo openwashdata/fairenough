@@ -3,7 +3,8 @@ name = "fairenough"
 r_version = "4.5.1"
 
 repositories = [
-    { alias = "CRAN", url = "https://cloud.r-project.org" }
+    { alias = "CRAN", url = "https://cloud.r-project.org" },
+    {alias = "QUARTO", url = "https://quarto-dev.r-universe.dev"}
 ]
 
 dependencies = [
@@ -23,6 +24,7 @@ dependencies = [
     "cffr",
     "pkgdown",
     "rmarkdown",
+    "quarto",
     "knitr",
     "withr",
     "ellmer", 

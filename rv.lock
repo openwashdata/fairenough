@@ -1012,6 +1012,22 @@ dependencies = [
 ]
 
 [[packages]]
+name = "quarto"
+version = "1.4.4"
+source = { repository = "https://cloud.r-project.org/" }
+force_source = false
+dependencies = [
+    "cli",
+    "jsonlite",
+    "later",
+    "processx",
+    "rlang",
+    "rmarkdown",
+    "rstudioapi",
+    "yaml",
+]
+
+[[packages]]
 name = "ragg"
 version = "1.4.0"
 source = { repository = "https://cloud.r-project.org/" }
@@ -1173,7 +1189,7 @@ dependencies = [
 
 [[packages]]
 name = "rprojroot"
-version = "2.1.0"
+version = "2.1.1"
 source = { repository = "https://cloud.r-project.org/" }
 force_source = false
 dependencies = []
