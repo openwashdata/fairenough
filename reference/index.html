@@ -82,7 +82,7 @@
           <code><a href="build_readme.html">build_readme()</a></code>
 
         </dt>
-        <dd>Build README from inst/templates/README.Rmd</dd>
+        <dd>Build README from inst/templates/README.qmd</dd>
       </dl><dl><dt>
 
           <code><a href="build_roxygen.html">build_roxygen()</a></code>
@@ -97,10 +97,16 @@
         <dd>Build website with pkgdown</dd>
       </dl><dl><dt>
 
-          <code><a href="clean_data.html">clean_data()</a></code>
+          <code><a href="check_description_exists.html">check_description_exists()</a></code>
 
         </dt>
-        <dd>Clean data with standard transformations</dd>
+        <dd>Validation system for fairenough pipeline steps</dd>
+      </dl><dl><dt>
+
+          <code><a href="checklist_summary.html">checklist_summary()</a></code>
+
+        </dt>
+        <dd>Get summary string for validation results</dd>
       </dl><dl><dt>
 
           <code><a href="collect.html">collect()</a></code>
@@ -109,40 +115,64 @@
         <dd>Collect metadata wrapper</dd>
       </dl><dl><dt>
 
-          <code><a href="collect_dataset_info.html">collect_dataset_info()</a></code>
-
-        </dt>
-        <dd>Collect dataset information from .rda files</dd>
-      </dl><dl><dt>
-
           <code><a href="collect_metadata.html">collect_metadata()</a></code>
 
         </dt>
         <dd>Collect comprehensive metadata interactively</dd>
       </dl><dl><dt>
 
-          <code><a href="create_directories.html">create_directories()</a></code>
+          <code><a href="dot-collect_dataset_info.html">.collect_dataset_info()</a></code>
+
+        </dt>
+        <dd>Collect dataset information from .rda files</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-create_directories.html">.create_directories()</a></code>
 
         </dt>
         <dd>Create project directories</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-export_csv.html">.export_csv()</a></code>
+
+        </dt>
+        <dd>Export data as CSV file</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-export_rda.html">.export_rda()</a></code>
+
+        </dt>
+        <dd>Export data as RDA file</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-move_data_files.html">.move_data_files()</a></code>
+
+        </dt>
+        <dd>Move data files to raw data directory</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-run_checks.html">.run_checks()</a></code>
+
+        </dt>
+        <dd>Run package checks</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-setup_gitignore.html">.setup_gitignore()</a></code>
+
+        </dt>
+        <dd>Setup gitignore for data directory and R files</dd>
+      </dl><dl><dt>
+
+          <code><a href="dot-validate_package.html">.validate_package()</a></code>
+
+        </dt>
+        <dd>Validate package with modern tools</dd>
       </dl><dl><dt>
 
           <code><a href="ensure_directory.html">ensure_directory()</a></code>
 
         </dt>
         <dd>Ensure directory exists with messaging</dd>
-      </dl><dl><dt>
-
-          <code><a href="export_csv.html">export_csv()</a></code>
-
-        </dt>
-        <dd>Export data as CSV file</dd>
-      </dl><dl><dt>
-
-          <code><a href="export_rda.html">export_rda()</a></code>
-
-        </dt>
-        <dd>Export data as RDA file</dd>
       </dl><dl><dt>
 
           <code><a href="fairenough.html">fairenough()</a></code>
@@ -155,6 +185,12 @@
 
         </dt>
         <dd>Filter files by supported extensions</dd>
+      </dl><dl><dt>
+
+          <code><a href="format_checklist_results.html">format_checklist_results()</a></code>
+
+        </dt>
+        <dd>Process checklist into structured results</dd>
       </dl><dl><dt>
 
           <code><a href="gendict.html">gendict()</a></code>
@@ -229,16 +265,16 @@
         <dd>Match License to License Config</dd>
       </dl><dl><dt>
 
-          <code><a href="move_data_files.html">move_data_files()</a></code>
-
-        </dt>
-        <dd>Move data files to raw data directory</dd>
-      </dl><dl><dt>
-
           <code><a href="process.html">process()</a></code>
 
         </dt>
         <dd>Process data wrapper</dd>
+      </dl><dl><dt>
+
+          <code><a href="process_clean.html">process_clean()</a></code>
+
+        </dt>
+        <dd>Clean data with standard transformations</dd>
       </dl><dl><dt>
 
           <code><a href="process_data.html">process_data()</a></code>
@@ -277,12 +313,6 @@
         <dd>Read data from various sources</dd>
       </dl><dl><dt>
 
-          <code><a href="run_checks.html">run_checks()</a></code>
-
-        </dt>
-        <dd>Run package checks</dd>
-      </dl><dl><dt>
-
           <code><a href="save_metadata.html">save_metadata()</a></code>
 
         </dt>
@@ -295,22 +325,16 @@
         <dd>Setup wrapper</dd>
       </dl><dl><dt>
 
-          <code><a href="setup_gitignore.html">setup_gitignore()</a></code>
-
-        </dt>
-        <dd>Setup gitignore for data directory and R files</dd>
-      </dl><dl><dt>
-
           <code><a href="setup_package.html">setup_package()</a></code>
 
         </dt>
         <dd>Setup fairenough project structure</dd>
       </dl><dl><dt>
 
-          <code><a href="update_metadata.html">update_metadata()</a></code>
+          <code><a href="show_checklist.html">show_checklist()</a></code>
 
         </dt>
-        <dd>Update metadata in DESCRIPTION file</dd>
+        <dd>Display formatted checklist to user</dd>
       </dl><dl><dt>
 
           <code><a href="use_template.html">use_template()</a></code>
@@ -331,10 +355,10 @@
         <dd>Validate file path</dd>
       </dl><dl><dt>
 
-          <code><a href="validate_package.html">validate_package()</a></code>
+          <code><a href="validate_setup_completed.html">validate_setup_completed()</a></code>
 
         </dt>
-        <dd>Validate package with modern tools</dd>
+        <dd>Validate setup completion status</dd>
       </dl><dl><dt>
 
           <code><a href="validators.html">validate_email()</a></code> <code><a href="validators.html">validate_package_name()</a></code> <code><a href="validators.html">validate_orcid()</a></code> <code><a href="validators.html">validate_date()</a></code> <code><a href="validators.html">validate_url()</a></code>

@@ -60,127 +60,198 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="fairenough">fairenough<a class="anchor" aria-label="anchor" href="#fairenough"></a>
 </h1></div>
-<p>Convert tidy data into R packages with documentation websites and intelligent AI descriptions.</p>
+<!-- Badges will go here: CI status, CRAN status, coverage, etc. -->
+<!-- ![R-CMD-check](badge-placeholder) [![CRAN status](badge-placeholder)](link) [![Codecov](badge-placeholder)](link) -->
+<p>Convert tidy data into R packages with documentation websites and intelligent AI descriptions. <strong>fairenough</strong> prepares your data for publication in one click.</p>
+<p><strong>See it in action:</strong> <a href="https://openwashdata.github.io/palmerpenguins/" class="external-link">View example output →</a></p>
+<div class="section level2">
+<h2 id="why-fairenough">Why fairenough?<a class="anchor" aria-label="anchor" href="#why-fairenough"></a>
+</h2>
+<p>Creating R data packages traditionally requires extensive manual work:</p>
+<ul>
+<li><p>Writing data documentation by hand</p></li>
+<li><p>Setting up package structure and files</p></li>
+<li><p>Configuring websites and citations</p></li>
+<li><p>Managing dependencies and validation</p></li>
+</ul>
+<p><strong>fairenough automates this entire workflow</strong> and optionally allows for AI-powered documentation generation.</p>
+<!-- Demo GIF placeholder: Show the transformation from CSV files to complete package -->
+<!-- ![fairenough demo](demo.gif) -->
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p><strong>Prerequisites:</strong> R ≥ 4.1.0 and an API key for your preferred LLM provider</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"openwashdata/fairenough"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="section level3">
-<h3 id="one-click-pipeline">One-Click Pipeline<a class="anchor" aria-label="anchor" href="#one-click-pipeline"></a>
-</h3>
-<p>For the simplest experience, move your datasets in an empty directory, then run the main <code><a href="reference/fairenough.html">fairenough()</a></code> function:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/openwashdata/fairenough" class="external-link">fairenough</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Set up your LLM chat object</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>OPENAI_API_KEY <span class="op">=</span> <span class="st">"YOUR_API_TOKEN_HERE"</span><span class="op">)</span></span>
+<span><span class="co"># 1. Set up your LLM chat object (see options below)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>OPENAI_API_KEY <span class="op">=</span> <span class="st">"your-api-key"</span><span class="op">)</span></span>
 <span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">elmer</span><span class="fu">::</span><span class="fu">chat_openai</span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o-mini"</span>, api_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>temperature <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Run the complete pipeline with one command</span></span>
+<span><span class="co"># 2. Place your CSV/Excel files in an empty directory and run</span></span>
 <span><span class="fu"><a href="reference/fairenough.html">fairenough</a></span><span class="op">(</span><span class="va">chat</span><span class="op">)</span></span></code></pre></div>
-<p>This automatically: - Sets up your R package structure - Processes all CSV/Excel files in the directory - Collects package metadata through interactive prompts - Builds documentation, citation files, README, and website - Generates intelligent data documentation using LLMs - Prepares your package for publication</p>
-</div>
+<p><strong>That’s it!</strong> You’ll get a complete R package with:</p>
+<ul>
+<li><p>Documented datasets and variables</p></li>
+<li><p>Professional package website</p></li>
+<li><p>Citation files and README</p></li>
+<li><p>Proper R package structure</p></li>
+</ul>
 <div class="section level3">
-<h3 id="granular-control">Granular Control<a class="anchor" aria-label="anchor" href="#granular-control"></a>
+<h3 id="llm-provider-options">LLM Provider Options<a class="anchor" aria-label="anchor" href="#llm-provider-options"></a>
 </h3>
-<p>For step-by-step control, use individual wrapper functions:</p>
+<p>fairenough works with any <a href="https://ellmer.tidyverse.org/" class="external-link">ellmer</a> chat object. Popular options:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/openwashdata/fairenough" class="external-link">fairenough</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># OpenAI (recommended for quality)</span></span>
+<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">elmer</span><span class="fu">::</span><span class="fu">chat_openai</span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o-mini"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Step 1: Initialize project structure</span></span>
+<span><span class="co"># Anthropic Claude (excellent for R code)</span></span>
+<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">elmer</span><span class="fu">::</span><span class="fu">chat_anthropic</span><span class="op">(</span>model <span class="op">=</span> <span class="st">"claude-3-5-sonnet-20241022"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Google Gemini (generous free tier)</span></span>
+<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">elmer</span><span class="fu">::</span><span class="fu">chat_google_gemini</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Local models via Ollama (private, free)</span></span>
+<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">elmer</span><span class="fu">::</span><span class="fu">chat_ollama</span><span class="op">(</span>model <span class="op">=</span> <span class="st">"llama3.1"</span><span class="op">)</span></span></code></pre></div>
+<p><a href="https://ellmer.tidyverse.org/reference/index.html" class="external-link">See all supported providers →</a></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="step-by-step-usage">Step-by-Step Usage<a class="anchor" aria-label="anchor" href="#step-by-step-usage"></a>
+</h2>
+<p>For more control over the process, use individual functions:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Step 1: Initialize R package structure</span></span>
 <span><span class="fu"><a href="reference/setup.html">setup</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Step 2: Process your data files</span></span>
-<span><span class="fu"><a href="reference/process.html">process</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># Step 2: Process your data files  </span></span>
+<span><span class="fu"><a href="reference/process.html">process</a></span><span class="op">(</span>auto_clean <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># Optional: basic data cleaning</span></span>
 <span></span>
-<span><span class="co"># Step 3: Collect package metadata</span></span>
-<span><span class="fu"><a href="reference/collect.html">collect</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># Step 3: Collect package metadata interactively</span></span>
+<span><span class="fu"><a href="reference/collect.html">collect</a></span><span class="op">(</span>extended <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>    <span class="co"># Optional: comprehensive documentation</span></span>
 <span></span>
-<span><span class="co"># Step 4: Generate LLM-powered documentation</span></span>
-<span><span class="va">chat</span> <span class="op">&lt;-</span> <span class="fu">elmer</span><span class="fu">::</span><span class="fu">chat_openai</span><span class="op">(</span>model <span class="op">=</span> <span class="st">"gpt-4o-mini"</span>, api_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>temperature <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/generate.html">generate</a></span><span class="op">(</span><span class="va">chat</span><span class="op">)</span></span>
+<span><span class="co"># Step 4: Generate AI-powered documentation</span></span>
+<span><span class="fu"><a href="reference/generate.html">generate</a></span><span class="op">(</span><span class="va">chat</span>, context <span class="op">=</span> <span class="st">"DESCRIBE YOUR DATA"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Step 5: Build all package components</span></span>
-<span><span class="fu"><a href="reference/build.html">build</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
+<span><span class="co"># Step 5: Build complete package</span></span>
+<span><span class="fu"><a href="reference/build.html">build</a></span><span class="op">(</span>overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>     <span class="co"># Optional: update existing files</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
-<p>fairenough provides a complete pipeline for R data package creation, following these logical steps:</p>
-<p><strong><code><a href="reference/fairenough.html">fairenough()</a></code> - One-Click Pipeline</strong></p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Purpose</th>
+<th>Key Options</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code><a href="reference/fairenough.html">fairenough()</a></code></td>
+<td><strong>Complete pipeline</strong></td>
+<td>Accepts all wrapper function arguments</td>
+</tr>
+<tr class="even">
+<td><code><a href="reference/setup.html">setup()</a></code></td>
+<td>Initialize R package structure</td>
+<td>Creates directories, .gitignore, etc.</td>
+</tr>
+<tr class="odd">
+<td><code><a href="reference/process.html">process()</a></code></td>
+<td>Validate and process data files</td>
+<td>
+<code>auto_clean = TRUE</code> for basic tidying</td>
+</tr>
+<tr class="even">
+<td><code><a href="reference/collect.html">collect()</a></code></td>
+<td>Interactive metadata collection</td>
+<td>
+<code>extended = TRUE</code> for detailed docs</td>
+</tr>
+<tr class="odd">
+<td><code><a href="reference/generate.html">generate()</a></code></td>
+<td>AI-powered documentation</td>
+<td>
+<code>context = "..."</code> for custom descriptions</td>
+</tr>
+<tr class="even">
+<td><code><a href="reference/build.html">build()</a></code></td>
+<td>Build package infrastructure</td>
+<td>
+<code>overwrite = TRUE</code> to update existing</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Global options:</strong> All functions support <code>verbose = TRUE</code> and <code>overwrite = TRUE</code></p>
+<p><strong>Supported formats:</strong> CSV, Excel (.xlsx, .xls), with automatic format detection and validation</p>
+</div>
+<div class="section level2">
+<h2 id="example-output">Example Output<a class="anchor" aria-label="anchor" href="#example-output"></a>
+</h2>
+<p>fairenough transforms this:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>my<span class="sc">-</span>data<span class="sc">/</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>└── penguins.csv</span></code></pre></div>
+<p>Into this complete R package:</p>
 <ul>
-<li><p>Complete R data package creation with a single <code>fairenough(chat)</code> call</p></li>
-<li><p>Automated workflow from tidy data to finished package</p></li>
-<li><p>Args: Supports all flags that can be passed to the individual wrapper functions</p></li>
+<li><p><strong>Documentation:</strong> AI-generated variable descriptions and data dictionaries</p></li>
+<li><p><strong>Website:</strong> Professional <a href="https://openwashdata.github.io/palmerpenguins/" class="external-link">pkgdown site</a> ready for deployment</p></li>
+<li><p><strong>Citations:</strong> Properly formatted citation files with DOI support</p></li>
+<li><p><strong>Validation:</strong> Data structure checks and format consistency</p></li>
+<li><p><strong>Integration:</strong> Full R package that others can install and use</p></li>
 </ul>
-<p><strong>Granular Control Options</strong></p>
+</div>
+<div class="section level2">
+<h2 id="getting-help">Getting Help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
+</h2>
 <ul>
-<li><p>Individual wrapper functions: <code><a href="reference/setup.html">setup()</a></code>, <code><a href="reference/process.html">process()</a></code>, <code><a href="reference/collect.html">collect()</a></code>, <code><a href="reference/generate.html">generate()</a></code>, <code><a href="reference/build.html">build()</a></code></p></li>
-<li><p>Global support for args: <code>overwrite = TRUE</code> and <code>verbose = TRUE</code></p></li>
+<li><p><strong>Issues &amp; bugs:</strong> <a href="https://github.com/openwashdata/fairenough/issues" class="external-link">GitHub Issues</a></p></li>
+<li><p><strong>Questions:</strong> <a href="https://github.com/openwashdata/fairenough/discussions" class="external-link">GitHub Discussions</a></p></li>
 </ul>
-<p><strong>1. <code><a href="reference/setup.html">setup()</a></code> - R Project Setup</strong></p>
-<ul>
-<li><p>R package structure initialization with <code>usethis</code></p></li>
-<li><p>Directory and files organization (data_raw, .gitignore, etc.)</p></li>
-</ul>
-<p><strong>2. <code><a href="reference/process.html">process()</a></code> - Automated Data Processing</strong></p>
-<ul>
-<li><p>Processes all your tidy data with <code>readr</code>, <code>readxl</code></p></li>
-<li><p>Validates data structure and formats</p></li>
-<li><p>Arg: <code>auto_clean = TRUE</code> for automated minimal data cleaning and tidying</p></li>
-</ul>
-<p><strong>3. <code><a href="reference/collect.html">collect()</a></code> - Interactive Metadata Collection</strong></p>
-<ul>
-<li><p>Guided prompts for package metadata (title, description, authors, etc.) using <code>cli</code></p></li>
-<li><p>Saves directly to DESCRIPTION file with <code>desc</code></p></li>
-<li><p>Arg: <code>extended = TRUE</code> for comprehensive documentation</p></li>
-</ul>
-<p><strong>4. <code><a href="reference/generate.html">generate()</a></code> - LLM-Powered Documentation</strong></p>
-<ul>
-<li><p>Data dictionary generation using <code>elmer</code> chat/LLM integration</p></li>
-<li><p>Variable descriptions uses the package’s description as context + actual data samples</p></li>
-<li><p>Arg: <code>contex = "YOUR DATASETS CONTEXT"</code></p></li>
-</ul>
-<p><strong>5. <code><a href="reference/build.html">build()</a></code> - Complete Package Infrastructure</strong></p>
-<ul>
-<li><p>Roxygen documentation generation with <code>roxygen2</code></p></li>
-<li><p>Citation file creation with validation using <code>cffr</code></p></li>
-<li><p>README generation with <code>rmarkdown</code></p></li>
-<li><p>Package website building ready for deployment</p></li>
-</ul>
+</div>
+<div class="section level2">
+<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h2>
+<p>We welcome contributions! Please see our <a href="CONTRIBUTING.html">contributing guidelines</a> and note that this project follows <a href="https://www.conventionalcommits.org/" class="external-link">conventional commits</a>.</p>
+<p><strong>Development workflow:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Test new functions</span></span>
+<span><span class="fu">roxygen2</span><span class="fu">::</span><span class="fu"><a href="https://roxygen2.r-lib.org/reference/roxygenize.html" class="external-link">roxygenise</a></span><span class="op">(</span>clean <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">load_all</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Architecture:</strong> Feature functions maintain consistency in supported formats and path handling. See <a href="https://github.com/openwashdata/fairenough/blob/main/R/utils.R" class="external-link">R/utils.R</a> for implementation details.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
 <p><a href="LICENSE.html">MIT</a></p>
-</div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h2>
-<p><em>Horst AM, Hill AP, Gorman KB (2020). palmerpenguins: Palmer Archipelago (Antarctica) penguin data. R package version 0.1.0. <a href="https://allisonhorst.github.io/palmerpenguins/" class="external-link uri">https://allisonhorst.github.io/palmerpenguins/</a>. doi: <a href="10.5281/zenodo.3960218">10.5281/zenodo.3960218</a>.</em></p>
-</div>
-<div class="section level2">
-<h2 id="contributions">Contributions<a class="anchor" aria-label="anchor" href="#contributions"></a>
-</h2>
-<p>Welcome!</p>
-<p><strong>Philosophy</strong></p>
-<ul>
-<li><p>Conventional commits! <a href="https://www.conventionalcommits.org/" class="external-link uri">https://www.conventionalcommits.org/</a>.</p></li>
-<li><p>Feature functions must maintain architectural consistency. This means that aspects like supported formats and path handling should be uniform across all functions. For more details, refer to <a href="https://github.com/openwashdata/fairenough/blob/main/R/utils.R" class="external-link">R/utils.R</a>.</p></li>
-<li><p>To test new functions:</p></li>
-</ul>
-<!-- --><div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>roxygen2<span class="sc">::</span><span class="fu">roxygenise</span>()</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span></code></pre></div>
-<ul>
-<li>Due to their utility outside of {fairenough}, <a href="https://github.com/openwashdata/fairenough/blob/main/R/gendict.R" class="external-link"><code>gendict.R</code></a>, <a href="https://github.com/openwashdata/fairenough/blob/main/R/build_license.R" class="external-link"><code>build_license.R</code></a> and <a href="https://github.com/openwashdata/fairenough/blob/main/R/promptit.R" class="external-link"><code>promptit.R</code></a> have been kept general and not tied to the package’s architecture.</li>
-</ul>
+<hr>
+<p><strong>Citation:</strong> If you use fairenough in your research, please cite with:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## To cite package 'fairenough' in publications use:</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="do">##   Massari N, Zhong M, Götschmann M, Walder C, Schöbitz L (2025). "fairenough: fairenough." &lt;https://github.com/openwashdata/fairenough&gt;.</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="do">## A BibTeX entry for LaTeX users is</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="do">## </span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="do">##   @Misc{massari_etall:2025,</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="do">##     title = {fairenough: fairenough},</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="do">##     author = {Nicolo Massari and Mian Zhong and Margaux Götschmann and Colin Walder and Lars Schöbitz},</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="do">##     year = {2025},</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="do">##     url = {https://github.com/openwashdata/fairenough},</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="do">##     abstract = {Convert tidy data into R packages with documentation websites and intelligent AI descriptions.},</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="do">##     version = {0.1.0},</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="do">##   }</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
