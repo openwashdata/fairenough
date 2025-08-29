@@ -18,4 +18,5 @@ rv/
 rproject\.toml
 rv\.lock
 CITATION.cff
-^README\.qmd$
+^README\.Rmd$
+^README\.html$

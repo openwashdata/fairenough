@@ -1,16 +1,16 @@
+---
+pagetitle: "fairenough"
+format: gfm
+---
 
 # fairenough
 
 <!-- Badges will go here: CI status, CRAN status, coverage, etc. -->
-
 <!-- ![R-CMD-check](badge-placeholder) [![CRAN status](badge-placeholder)](link) [![Codecov](badge-placeholder)](link) -->
 
-Convert tidy data into R packages with documentation websites and
-intelligent AI descriptions. **fairenough** prepares your data for
-publication in one click.
+Convert tidy data into R packages with documentation websites and intelligent AI descriptions. **fairenough** prepares your data for publication in one click.
 
-**See it in action:** [View example output
-→](https://openwashdata.github.io/palmerpenguins/)
+**See it in action:** [View example output →](https://openwashdata.github.io/palmerpenguins/)
 
 ## Why fairenough?
 
@@ -18,32 +18,29 @@ Creating R data packages traditionally requires extensive manual work:
 
 - Writing data documentation by hand
 
-- Setting up package structure and files
+- Setting up package structure and files  
 
 - Configuring websites and citations
 
 - Managing dependencies and validation
 
-**fairenough automates this entire workflow** and optionally allows for
-AI-powered documentation generation.
+**fairenough automates this entire workflow** and optionally allows for AI-powered documentation generation.
 
 <!-- Demo GIF placeholder: Show the transformation from CSV files to complete package -->
-
 <!-- ![fairenough demo](demo.gif) -->
 
 ## Installation
 
-**Prerequisites:** R ≥ 4.1.0 and an API key for your preferred LLM
-provider
+**Prerequisites:** R ≥ 4.1.0 and an API key for your preferred LLM provider
 
-``` r
+```r
 # Install from GitHub
 devtools::install_github("openwashdata/fairenough")
 ```
 
 ## Quick Start
 
-``` r
+```r
 library(fairenough)
 
 # 1. Set up your LLM chat object (see options below)
@@ -54,7 +51,7 @@ chat <- elmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 
 fairenough(chat)
 ```
 
-**That’s it!** You’ll get a complete R package with:
+**That's it!** You'll get a complete R package with:
 
 - Documented datasets and variables
 
@@ -66,10 +63,9 @@ fairenough(chat)
 
 ### LLM Provider Options
 
-fairenough works with any [ellmer](https://ellmer.tidyverse.org/) chat
-object. Popular options:
+fairenough works with any [ellmer](https://ellmer.tidyverse.org/) chat object. Popular options:
 
-``` r
+```r
 # OpenAI (recommended for quality)
 chat <- elmer::chat_openai(model = "gpt-4o-mini")
 
@@ -83,14 +79,13 @@ chat <- elmer::chat_google_gemini()
 chat <- elmer::chat_ollama(model = "llama3.1")
 ```
 
-[See all supported providers
-→](https://ellmer.tidyverse.org/reference/index.html)
+[See all supported providers →](https://ellmer.tidyverse.org/reference/index.html)
 
 ## Step-by-Step Usage
 
 For more control over the process, use individual functions:
 
-``` r
+```r
 # Step 1: Initialize R package structure
 setup()
 
@@ -110,7 +105,7 @@ build(overwrite = TRUE)     # Optional: update existing files
 ## Features
 
 | Function | Purpose | Key Options |
-|----|----|----|
+|----------|---------|-------------|
 | `fairenough()` | **Complete pipeline** | Accepts all wrapper function arguments |
 | `setup()` | Initialize R package structure | Creates directories, .gitignore, etc. |
 | `process()` | Validate and process data files | `auto_clean = TRUE` for basic tidying |
@@ -118,27 +113,23 @@ build(overwrite = TRUE)     # Optional: update existing files
 | `generate()` | AI-powered documentation | `context = "..."` for custom descriptions |
 | `build()` | Build package infrastructure | `overwrite = TRUE` to update existing |
 
-**Global options:** All functions support `verbose = TRUE` and
-`overwrite = TRUE`
+**Global options:** All functions support `verbose = TRUE` and `overwrite = TRUE`
 
-**Supported formats:** CSV, Excel (.xlsx, .xls), with automatic format
-detection and validation
+**Supported formats:** CSV, Excel (.xlsx, .xls), with automatic format detection and validation
 
 ## Example Output
 
 fairenough transforms this:
-
-    my-data/
-    └── penguins.csv
+```
+my-data/
+└── penguins.csv
+```
 
 Into this complete R package:
 
-- **Documentation:** AI-generated variable descriptions and data
-  dictionaries
+- **Documentation:** AI-generated variable descriptions and data dictionaries
 
-- **Website:** Professional [pkgdown
-  site](https://openwashdata.github.io/palmerpenguins/) ready for
-  deployment
+- **Website:** Professional [pkgdown site](https://openwashdata.github.io/palmerpenguins/) ready for deployment  
 
 - **Citations:** Properly formatted citation files with DOI support
 
@@ -148,50 +139,34 @@ Into this complete R package:
 
 ## Getting Help
 
-- **Issues & bugs:** [GitHub
-  Issues](https://github.com/openwashdata/fairenough/issues)
+- **Issues & bugs:** [GitHub Issues](https://github.com/openwashdata/fairenough/issues)
 
-- **Questions:** [GitHub
-  Discussions](https://github.com/openwashdata/fairenough/discussions)
+- **Questions:** [GitHub Discussions](https://github.com/openwashdata/fairenough/discussions)  
 
 ## Contributing
 
-We welcome contributions! Please see our [contributing
-guidelines](CONTRIBUTING.md) and note that this project follows
-[conventional commits](https://www.conventionalcommits.org/).
+We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) and note that this project follows [conventional commits](https://www.conventionalcommits.org/).
 
 **Development workflow:**
-
-``` r
+```r
 # Test new functions
 roxygen2::roxygenise(clean = TRUE)
 devtools::load_all()
 ```
 
-**Architecture:** Feature functions maintain consistency in supported
-formats and path handling. See
-[R/utils.R](https://github.com/openwashdata/fairenough/blob/main/R/utils.R)
-for implementation details.
+**Architecture:** Feature functions maintain consistency in supported formats and path handling. See [R/utils.R](https://github.com/openwashdata/fairenough/blob/main/R/utils.R) for implementation details.
 
 ## License
 
 [MIT](LICENSE.md)
 
-------------------------------------------------------------------------
+---
 
 **Citation:** If you use fairenough in your research, please cite with:
-
-    ## To cite package 'fairenough' in publications use:
-    ## 
-    ##   Massari N, Zhong M, Götschmann M, Walder C, Schöbitz L (2025). "fairenough: fairenough." <https://github.com/openwashdata/fairenough>.
-    ## 
-    ## A BibTeX entry for LaTeX users is
-    ## 
-    ##   @Misc{massari_etall:2025,
-    ##     title = {fairenough: fairenough},
-    ##     author = {Nicolo Massari and Mian Zhong and Margaux Götschmann and Colin Walder and Lars Schöbitz},
-    ##     year = {2025},
-    ##     url = {https://github.com/openwashdata/fairenough},
-    ##     abstract = {Convert tidy data into R packages with documentation websites and intelligent AI descriptions.},
-    ##     version = {0.1.0},
-    ##   }
+```{r citation, echo=FALSE, message=FALSE, warning=FALSE}
+tryCatch({
+  citation(desc::desc_get_field("Package"))
+}, error = function(e) {
+  cat("Citation information not available\n")
+})
+```

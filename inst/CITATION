@@ -1,6 +1,6 @@
 
 bibentry(bibtype = "Misc",
-         key = "massari_etall",
+         key = "massari_etall:2025",
          title = "fairenough: fairenough",
          author = c(person(given = "Nicolo",
                            family = "Massari",
@@ -22,6 +22,7 @@ bibentry(bibtype = "Misc",
                            family = "Schöbitz",
                            email = "lschoebitz@ethz.ch",
                            comment = c(ORCID = "0000-0003-2196-5015"))),
+         year = "2025",
          url = "https://github.com/openwashdata/fairenough",
          abstract = "Convert tidy data into R packages with documentation websites and intelligent AI descriptions.",
          version = "0.1.0")
