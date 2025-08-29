@@ -10,7 +10,8 @@ build(
   overwrite = TRUE,
   good_practice = FALSE,
   validate = TRUE,
-  preview = TRUE
+  preview = TRUE,
+  quarto = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ build(
 \item{validate}{Whether to validate the CITATION file (default: TRUE)}
 
 \item{preview}{Whether to preview the site after building (default: TRUE)}
+
+\item{quarto}{Whether to use Quarto to build readme (default: FALSE)}
 }
 \value{
 List with results from each build step

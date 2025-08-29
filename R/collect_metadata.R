@@ -29,6 +29,7 @@
 #' @param save_to_desc Whether to save to DESCRIPTION file (default: TRUE)
 #' @param base_path Base path for the project
 #' @param overwrite Whether to overwrite existing metadata (default: FALSE)
+#' @param verbose Whether to show detailed messages (default: TRUE)
 #'
 #' @return List containing all metadata organized by category
 #' @export
@@ -54,7 +55,8 @@ collect_metadata <- function(
   interactive = TRUE,
   save_to_desc = TRUE,
   base_path = NULL,
-  overwrite = FALSE
+  overwrite = FALSE,
+  verbose = TRUE
 ) {
   # Get base path if needed
   if (!is.null(base_path)) {
@@ -73,15 +75,27 @@ collect_metadata <- function(
       )
 
       if (!is.null(existing_meta)) {
-        if (interactive) {
-          cli::cli_alert_info("Metadata already exists in DESCRIPTION")
-          if (
-            !prompt_confirm("Do you want to overwrite it?", default = FALSE)
-          ) {
+        # Check if existing metadata is meaningful (not placeholder content)
+        has_meaningful_content <- (!is.null(existing_meta$package$title) && 
+                                 !grepl("Placeholder|What the Package Does", existing_meta$package$title, ignore.case = TRUE)) ||
+                                (!is.null(existing_meta$package$description) && 
+                                 !grepl("Placeholder|What the package does", existing_meta$package$description, ignore.case = TRUE)) ||
+                                (!is.null(existing_meta$authors) && length(existing_meta$authors) > 0 &&
+                                 !any(sapply(existing_meta$authors, function(author) {
+                                   grepl("First|Last", paste(author$given, author$family), ignore.case = TRUE)
+                                 })))
+        
+        if (has_meaningful_content) {
+          if (interactive) {
+            cli::cli_alert_info("Metadata already exists in DESCRIPTION")
+            if (
+              !prompt_confirm("Do you want to overwrite it?", default = FALSE)
+            ) {
+              return(existing_meta)
+            }
+          } else {
             return(existing_meta)
           }
-        } else {
-          return(existing_meta)
         }
       }
     }
@@ -163,6 +177,9 @@ collect_metadata <- function(
         affiliation <- prompt_input("  Affiliation", default = "ETH Zurich")
 
         # Use multi-select for roles
+        # First author gets "aut" and "cre" by default, others get only "aut"
+        default_roles <- if (author_num == 1) c("aut", "cre") else c("aut")
+        
         roles <- prompt_multi_select(
           choices = c(
             "Author (wrote the package)" = "aut",
@@ -172,7 +189,7 @@ collect_metadata <- function(
             "Thesis advisor (supervised the work)" = "ths"
           ),
           title = "Select author roles",
-          default = c("aut", "cre"),
+          default = default_roles,
           min_choices = 1
         )
 
@@ -187,6 +204,23 @@ collect_metadata <- function(
 
         author_num <- author_num + 1
         add_more <- prompt_confirm("\nAdd another author?", default = FALSE)
+      }
+    }
+  }
+
+  # Ensure at least one author has the "cre" (creator/maintainer) role
+  if (!is.null(authors) && length(authors) > 0) {
+    has_maintainer <- any(sapply(authors, function(author) {
+      "cre" %in% author$roles
+    }))
+    
+    if (!has_maintainer) {
+      # Automatically assign "cre" role to the first author
+      if (length(authors) > 0) {
+        authors[[1]]$roles <- unique(c(authors[[1]]$roles, "cre"))
+        if (interactive) {
+          cli::cli_alert_info("Added 'creator/maintainer' role to first author (required for R packages)")
+        }
       }
     }
   }
@@ -423,19 +457,16 @@ collect_metadata <- function(
 
   cli::cli_alert_success("Metadata collection complete!")
 
-  # Show summary
-  if (interactive) {
-    show_summary <- prompt_confirm("\nShow metadata summary?", default = TRUE)
-    if (show_summary) {
-      cli::cli_h3("Metadata Summary")
-      cli::cli_text("Title: {metadata$package$title}")
-      cli::cli_text("Authors: {length(metadata$authors)}")
-      cli::cli_text("License: {metadata$license$id}")
-      if (!is.null(metadata$publication$keywords)) {
-        cli::cli_text(
-          "Keywords: {paste(metadata$publication$keywords, collapse = ', ')}"
-        )
-      }
+  # Always show summary
+  if (verbose) {
+    cli::cli_h3("Metadata Summary")
+    cli::cli_text("Title: {metadata$package$title}")
+    cli::cli_text("Authors: {length(metadata$authors)}")
+    cli::cli_text("License: {metadata$license$id}")
+    if (!is.null(metadata$publication$keywords)) {
+      cli::cli_text(
+        "Keywords: {paste(metadata$publication$keywords, collapse = ', ')}"
+      )
     }
   }
 
@@ -694,17 +725,12 @@ get_metadata <- function(base_path = NULL) {
     language = safe_get("Language")
   )
 
-  # Extract github_user from URL if present
-  urls <- d$get_urls()
-  if (length(urls) > 0) {
-    github_pattern <- "https://github.com/([^/]+)/"
-    if (grepl(github_pattern, urls[1])) {
-      metadata$package$github_user <- sub(
-        paste0(github_pattern, ".*"),
-        "\\1",
-        urls[1]
-      )
-    }
+  # Extract github_user from custom field
+  github_user <- safe_get("github_user")
+  if (!is.null(github_user)) {
+    metadata$package$github_user <- github_user
+  } else {
+    cli::cli_alert_warning("No 'github_user' field found in DESCRIPTION. Website URL may be incomplete.")
   }
 
   # Authors

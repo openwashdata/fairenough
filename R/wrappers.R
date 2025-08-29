@@ -19,6 +19,23 @@ setup <- function(
 ) {
   base_path <- get_base_path(base_path)
 
+  # Check if setup is already completed
+  if (!overwrite) {
+    validation <- validate_setup_completed(base_path)
+
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Setup already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force setup")
+      }
+      return(invisible(list(
+        base_path = base_path,
+        skipped = TRUE,
+        validation = validation
+      )))
+    }
+  }
+
   if (verbose) {
     cli::cli_h1("Setting up fairenough project")
   }
@@ -35,6 +52,12 @@ setup <- function(
     verbose = verbose,
     overwrite = overwrite
   )
+
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_setup_completed(base_path)
+    show_checklist(final_validation, "Setup completed", verbose)
+  }
 
   if (verbose) {
     cli::cli_alert_success("Project setup completed!")
@@ -64,6 +87,19 @@ process <- function(
 ) {
   base_path <- get_base_path(base_path)
 
+  # Check if processing is already completed
+  if (!overwrite) {
+    validation <- validate_processing_completed(base_path)
+
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Data processing already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force processing")
+      }
+      return(invisible(list(skipped = TRUE, validation = validation)))
+    }
+  }
+
   if (verbose) {
     cli::cli_h1("Processing all data files")
   }
@@ -80,6 +116,12 @@ process <- function(
     base_path = base_path,
     verbose = verbose
   )
+
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_processing_completed(base_path)
+    show_checklist(final_validation, "Data processing completed", verbose)
+  }
 
   if (verbose) {
     cli::cli_alert_success("Data processing completed!")
@@ -113,6 +155,25 @@ collect <- function(
 ) {
   base_path <- get_base_path(base_path)
 
+  # Check if metadata collection is already completed
+  if (!overwrite) {
+    validation <- validate_metadata_collected(base_path)
+
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(
+          validation,
+          "Metadata collection already completed",
+          verbose
+        )
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force collection")
+      }
+      # Return existing metadata
+      existing_meta <- get_metadata(base_path)
+      return(invisible(existing_meta))
+    }
+  }
+
   if (verbose) {
     cli::cli_h1("Collecting package metadata")
   }
@@ -130,6 +191,12 @@ collect <- function(
     overwrite = overwrite,
     ...
   )
+
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_metadata_collected(base_path)
+    show_checklist(final_validation, "Metadata collection completed", verbose)
+  }
 
   if (verbose) {
     cli::cli_alert_success("Metadata collection completed!")
@@ -161,6 +228,29 @@ generate <- function(
 ) {
   base_path <- get_base_path(base_path)
 
+  # Check if dictionary generation is already completed (descriptions exist)
+  if (!overwrite) {
+    validation <- validate_dictionary_completed(base_path)
+
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(
+          validation,
+          "Dictionary generation already completed",
+          verbose
+        )
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force generation")
+      }
+      # Return existing dictionary if it exists
+      dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+      if (file.exists(dict_path)) {
+        existing_dict <- utils::read.csv(dict_path)
+        return(invisible(existing_dict))
+      }
+      return(invisible(NULL))
+    }
+  }
+
   if (verbose) {
     cli::cli_h1("Generating data dictionary")
   }
@@ -178,6 +268,12 @@ generate <- function(
     verbose = verbose,
     ...
   )
+
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_dictionary_completed(base_path)
+    show_checklist(final_validation, "Dictionary generation completed", verbose)
+  }
 
   if (verbose) {
     cli::cli_alert_success("Data dictionary generation completed!")
@@ -197,6 +293,7 @@ generate <- function(
 #' @param overwrite Whether to overwrite existing files (default: TRUE)
 #' @param validate Whether to validate the CITATION file (default: TRUE)
 #' @param preview Whether to preview the site after building (default: TRUE)
+#' @param quarto Whether to use Quarto to build readme (default: FALSE)
 #' @return List with results from each build step
 #' @export
 build <- function(
@@ -205,9 +302,23 @@ build <- function(
   overwrite = TRUE,
   good_practice = FALSE,
   validate = TRUE,
-  preview = TRUE
+  preview = TRUE,
+  quarto = FALSE
 ) {
   base_path <- get_base_path(base_path)
+
+  # Check if build is already completed
+  if (!overwrite) {
+    validation <- validate_build_completed(base_path)
+
+    if (validation$all_required_passed) {
+      if (verbose) {
+        show_checklist(validation, "Build already completed", verbose)
+        cli::cli_alert_info("Use {.code overwrite = TRUE} to force build")
+      }
+      return(invisible(list(skipped = TRUE, validation = validation)))
+    }
+  }
 
   if (verbose) {
     cli::cli_h1("Building all package components")
@@ -253,7 +364,8 @@ build <- function(
   results$readme <- build_readme(
     base_path = base_path,
     verbose = verbose,
-    overwrite = overwrite
+    overwrite = overwrite,
+    quarto = quarto
   )
 
   # 5. Build site
@@ -266,6 +378,12 @@ build <- function(
     preview = preview,
     install = TRUE
   )
+
+  # Show final validation
+  if (verbose) {
+    final_validation <- validate_build_completed(base_path)
+    show_checklist(final_validation, "Build completed", verbose)
+  }
 
   if (verbose) {
     cli::cli_alert_success("All build steps completed!")
@@ -304,7 +422,9 @@ fairenough <- function(
 
   results <- list()
 
-  # Run complete pipeline
+  # Run complete pipeline with smart overwrite behavior
+  # Each step checks its own completion state and skips if already done (unless overwrite=TRUE)
+
   results$setup <- setup(
     verbose = verbose,
     overwrite = overwrite,

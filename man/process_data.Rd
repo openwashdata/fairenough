@@ -15,7 +15,7 @@ process_data(
 \arguments{
 \item{raw_dir}{Directory containing raw data files (default: "data_raw")}
 
-\item{auto_clean}{Whether to automatically clean data (default: TRUE)}
+\item{auto_clean}{Whether to run clean_data (default: TRUE)}
 
 \item{overwrite}{Whether to overwrite existing files (default: TRUE)}
 

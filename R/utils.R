@@ -319,82 +319,555 @@ use_template <- function(
   return(invisible(output_path))
 }
 
-#' Update metadata in DESCRIPTION file
+#' Validation system for fairenough pipeline steps
+#' 
+#' These functions validate actual completion status using comprehensive checklists.
+#' Each validation returns detailed results about what's complete and what's missing.
 #'
-#' Simple wrapper around write_metadata_to_desc for updating a single key.
-#' Creates a metadata structure with just the specified key and writes it.
-#'
-#' @param key Top-level key (e.g., "datasets", "package")
-#' @param data Data to add/update for the key
-#' @param base_path Base path for the project
-#' @param verbose Whether to show messages
-#' @return NULL (invisibly)
-#' @export
-update_metadata <- function(key, data, base_path = NULL, verbose = TRUE) {
-  # Create metadata structure with just this key
-  metadata <- list()
-  metadata[[key]] <- data
 
-  # Write to DESCRIPTION (without overwriting other fields)
-  write_metadata_to_desc(
-    metadata,
-    base_path,
-    overwrite = FALSE,
-    create = TRUE,
-    verbose = verbose
-  )
-
-  invisible(NULL)
+# Simple validation helper functions for setup
+check_description_exists <- function(base_path) {
+  file.exists(file.path(base_path, "DESCRIPTION"))
 }
 
-#' Collect dataset information from .rda files
-#'
-#' Scans data directory for .rda files and collects variable information
-#'
-#' @param base_path Base path for the project
-#' @return Data frame with dataset information
-#' @export
-collect_dataset_info <- function(base_path = NULL) {
-  base_path <- get_base_path(base_path)
+check_rproj_exists <- function(base_path) {
+  length(list.files(base_path, pattern = "\\.Rproj$")) > 0
+}
 
-  # Check data directory
+check_dirs_exist <- function(base_path) {
+  required_dirs <- c("data", "data_raw", "inst/extdata")
+  all(dir.exists(file.path(base_path, required_dirs)))
+}
+
+check_gitignore_configured <- function(base_path) {
+  gitignore_path <- file.path(base_path, ".gitignore")
+  if (!file.exists(gitignore_path)) return(FALSE)
+  
+  gitignore_content <- readLines(gitignore_path)
+  required_entries <- c("data_raw/", ".Rhistory", ".RData")
+  all(sapply(required_entries, function(entry) any(grepl(entry, gitignore_content, fixed = TRUE))))
+}
+
+# Validation helpers for data processing
+check_raw_data_files <- function(base_path) {
+  raw_dir <- file.path(base_path, get_raw_dir())
+  if (!dir.exists(raw_dir)) return(FALSE)
+  
+  all_files <- list.files(raw_dir, full.names = TRUE)
+  data_files <- filter_supported_files(all_files)
+  length(data_files) > 0
+}
+
+check_rda_files <- function(base_path) {
   data_dir <- file.path(base_path, "data")
-  if (!fs::dir_exists(data_dir)) {
-    return(NULL)
-  }
+  if (!dir.exists(data_dir)) return(FALSE)
+  
+  rda_files <- list.files(data_dir, pattern = "\\.rda$")
+  length(rda_files) > 0
+}
 
-  # Find all .rda files
+check_csv_files <- function(base_path) {
+  extdata_dir <- file.path(base_path, "inst", "extdata")
+  if (!dir.exists(extdata_dir)) return(FALSE)
+  
+  csv_files <- list.files(extdata_dir, pattern = "\\.csv$")
+  length(csv_files) > 0
+}
+
+check_file_consistency <- function(base_path) {
+  raw_dir <- file.path(base_path, get_raw_dir())
+  data_dir <- file.path(base_path, "data")
+  extdata_dir <- file.path(base_path, "inst", "extdata")
+  
+  if (!all(dir.exists(c(raw_dir, data_dir, extdata_dir)))) return(FALSE)
+  
+  raw_files <- filter_supported_files(list.files(raw_dir, full.names = TRUE))
+  if (length(raw_files) == 0) return(TRUE) # No raw files yet
+  
+  rda_files <- list.files(data_dir, pattern = "\\.rda$")
+  # Exclude dictionary.csv from consistency check
+  csv_files <- list.files(extdata_dir, pattern = "\\.csv$")
+  csv_files <- csv_files[csv_files != "dictionary.csv"]
+  
+  raw_names <- tools::file_path_sans_ext(basename(raw_files))
+  rda_names <- tools::file_path_sans_ext(rda_files)
+  csv_names <- tools::file_path_sans_ext(csv_files)
+  
+  length(raw_names) == length(rda_names) && 
+  length(raw_names) == length(csv_names) &&
+  all(sort(raw_names) == sort(rda_names)) &&
+  all(sort(raw_names) == sort(csv_names))
+}
+
+# Validation helpers for metadata
+check_package_name <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(FALSE)
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    pkg_name <- d$get("Package")[[1]]
+    !is.null(pkg_name) && pkg_name != "placeholder" && nchar(pkg_name) > 0
+  }, error = function(e) FALSE)
+}
+
+check_package_title <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(FALSE)
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    title <- d$get("Title")[[1]]
+    !is.null(title) && !grepl("Placeholder|What the Package Does", title, ignore.case = TRUE) && nchar(title) > 0
+  }, error = function(e) FALSE)
+}
+
+check_package_description <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(FALSE)
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    description <- d$get("Description")[[1]]
+    !is.null(description) && !grepl("Placeholder|What the package does", description, ignore.case = TRUE) && nchar(description) > 0
+  }, error = function(e) FALSE)
+}
+
+check_package_authors <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(FALSE)
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    authors <- d$get_authors()
+    
+    if (length(authors) == 0) return(FALSE)
+    
+    has_maintainer <- any(sapply(authors, function(author) "cre" %in% author$role))
+    meaningful_authors <- any(sapply(authors, function(author) {
+      !is.null(author$given) && !is.null(author$family) &&
+      !grepl("First|Last", paste(author$given, author$family), ignore.case = TRUE)
+    }))
+    
+    has_maintainer && meaningful_authors
+  }, error = function(e) FALSE)
+}
+
+check_package_license <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(FALSE)
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    license <- d$get("License")[[1]]
+    !is.null(license) && !grepl("use_.*_license|pick a license", license, ignore.case = TRUE) && nchar(license) > 0
+  }, error = function(e) FALSE)
+}
+
+check_package_urls <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(FALSE)
+  
+  tryCatch({
+    d <- desc::desc(file = desc_path)
+    urls <- d$get_urls()
+    
+    github_user <- tryCatch(d$get("github_user")[[1]], error = function(e) NULL)
+    if (is.null(github_user) || github_user == "") return(TRUE) # URLs optional if no github_user
+    
+    length(urls) > 0
+  }, error = function(e) FALSE)
+}
+
+# Validation helpers for dictionary
+check_dictionary_file <- function(base_path) {
+  file.exists(file.path(base_path, "inst", "extdata", "dictionary.csv"))
+}
+
+check_variables_documented <- function(base_path) {
+  dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+  if (!file.exists(dict_path)) return(FALSE)
+  
+  data_dir <- file.path(base_path, "data")
+  if (!dir.exists(data_dir)) return(TRUE) # No data files yet
+  
   rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
-
-  if (length(rda_files) == 0) {
-    return(NULL)
-  }
-
-  # Collect dataset information
-  datasets <- list()
-
+  if (length(rda_files) == 0) return(TRUE) # No data files yet
+  
+  all_vars <- character(0)
   for (rda_file in rda_files) {
-    # Load data
     temp_env <- new.env()
-    load(rda_file, envir = temp_env)
-    data_name <- ls(envir = temp_env)[1]
-    data <- get(data_name, envir = temp_env)
-
-    # Create dataset info
-    datasets[[data_name]] <- list(
-      rows = nrow(data),
-      cols = ncol(data),
-      variables = list(
-        names = names(data),
-        types = vapply(
-          data,
-          function(x) class(x)[1],
-          character(1),
-          USE.NAMES = FALSE
-        )
-      )
-    )
+    tryCatch({
+      load(rda_file, envir = temp_env)
+      data_name <- ls(envir = temp_env)[1]
+      data_obj <- get(data_name, envir = temp_env)
+      all_vars <- c(all_vars, names(data_obj))
+    }, error = function(e) NULL)
   }
+  
+  dict <- utils::read.csv(dict_path)
+  dict_vars <- dict$variable_name
+  length(setdiff(all_vars, dict_vars)) == 0
+}
 
-  return(datasets)
+check_descriptions_filled <- function(base_path) {
+  dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+  if (!file.exists(dict_path)) return(FALSE)
+  
+  dict <- utils::read.csv(dict_path)
+  if (nrow(dict) == 0) return(TRUE)
+  
+  !any(is.na(dict$description) | dict$description == "" | trimws(dict$description) == "")
+}
+
+check_dictionary_structure <- function(base_path) {
+  dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
+  if (!file.exists(dict_path)) return(FALSE)
+  
+  dict <- utils::read.csv(dict_path)
+  required_cols <- c("directory", "file_name", "variable_name", "variable_type", "description")
+  all(required_cols %in% names(dict))
+}
+
+# Validation helpers for build
+check_license_file <- function(base_path) {
+  license_files <- c("LICENSE", "LICENSE.md")
+  license_paths <- file.path(base_path, license_files)
+  any(file.exists(license_paths))
+}
+
+check_citation_files <- function(base_path) {
+  citation_cff <- file.path(base_path, "CITATION.cff")
+  citation_inst <- file.path(base_path, "inst", "CITATION")
+  file.exists(citation_cff) && file.exists(citation_inst)
+}
+
+check_readme_file <- function(base_path) {
+  file.exists(file.path(base_path, "README.md"))
+}
+
+check_documentation <- function(base_path) {
+  man_dir <- file.path(base_path, "man")
+  if (!dir.exists(man_dir)) return(FALSE)
+  
+  rd_files <- list.files(man_dir, pattern = "\\.Rd$")
+  length(rd_files) > 0
+}
+
+check_website <- function(base_path) {
+  docs_dir <- file.path(base_path, "docs")
+  if (!dir.exists(docs_dir)) return(FALSE)
+  
+  index_file <- file.path(docs_dir, "index.html")
+  file.exists(index_file)
+}
+
+check_package_installable <- function(base_path) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  namespace_path <- file.path(base_path, "NAMESPACE") 
+  r_dir <- file.path(base_path, "R")
+  
+  file.exists(desc_path) && file.exists(namespace_path) && dir.exists(r_dir)
+}
+
+#' Process checklist into structured results
+#' @param checklist List of check items with name, description, check, required fields
+#' @return Formatted checklist results
+format_checklist_results <- function(checklist) {
+  results <- list()
+  passed <- 0
+  total <- length(checklist)
+  
+  for (i in seq_along(checklist)) {
+    item <- checklist[[i]]
+    error_msg <- NULL
+    
+    check_passed <- tryCatch(
+      item$check,
+      error = function(e) {
+        error_msg <- e$message
+        FALSE
+      }
+    )
+    
+    results[[i]] <- list(
+      name = item$name,
+      description = item$description,
+      passed = check_passed,
+      required = if (is.null(item$required)) TRUE else item$required,
+      details = if (!check_passed && !is.null(item$details)) item$details else NULL,
+      error = if (!is.null(error_msg)) error_msg else NULL
+    )
+    
+    if (check_passed) passed <- passed + 1
+  }
+  
+  list(
+    all_passed = passed == total,
+    all_required_passed = all(sapply(results, function(x) !x$required || x$passed)),
+    total_checks = total,
+    passed_checks = passed,
+    failed_checks = total - passed,
+    items = results
+  )
+}
+
+#' Display formatted checklist to user
+#' @param validation Validation results from format_checklist_results
+#' @param title Title for the checklist display
+#' @param verbose Whether to show detailed output
+show_checklist <- function(validation, title, verbose = TRUE) {
+  if (!verbose) return(invisible(NULL))
+  
+  # Show summary
+  status <- if (validation$all_required_passed) "✅" else "❌"
+  cli::cli_h3("{status} {title}: {validation$passed_checks}/{validation$total_checks} checks passed")
+  
+  # Show individual items
+  for (item in validation$items) {
+    icon <- if (item$passed) "✅" else "❌"
+    
+    cli::cli_text("{icon} {item$name}: {item$description}")
+    
+    if (!item$passed && !is.null(item$details)) {
+      cli::cli_alert_info("  → {item$details}")
+    }
+    
+    if (!item$passed && !is.null(item$error)) {
+      cli::cli_alert_warning("  → Error: {item$error}")
+    }
+  }
+  
+  invisible(validation)
+}
+
+#' Get summary string for validation results
+#' @param validation Validation results
+#' @return Character string with summary
+checklist_summary <- function(validation) {
+  paste0(validation$passed_checks, "/", validation$total_checks, " checks passed")
+}
+
+#' Validate setup completion status
+#' @param base_path Base path for the project
+#' @return Formatted checklist results
+#' @export
+validate_setup_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  
+  checklist <- list(
+    list(
+      name = "R package structure",
+      description = "DESCRIPTION file exists",
+      check = check_description_exists(base_path),
+      required = TRUE,
+      details = "Run setup() to create R package structure"
+    ),
+    list(
+      name = "RStudio project",
+      description = ".Rproj file exists",
+      check = check_rproj_exists(base_path),
+      required = TRUE,
+      details = "Run setup() to create RStudio project file"
+    ),
+    list(
+      name = "Data directories", 
+      description = "Required directories exist (data/, data_raw/, inst/extdata/)",
+      check = check_dirs_exist(base_path),
+      required = TRUE,
+      details = "Run setup() to create required directory structure"
+    ),
+    list(
+      name = "Git configuration",
+      description = ".gitignore configured properly",
+      check = check_gitignore_configured(base_path),
+      required = FALSE,
+      details = "Run setup() to configure .gitignore properly"
+    )
+  )
+  
+  format_checklist_results(checklist)
+}
+
+validate_processing_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  
+  checklist <- list(
+    list(
+      name = "Raw data files",
+      description = "Data files found in data_raw/ directory",
+      check = check_raw_data_files(base_path),
+      required = TRUE,
+      details = "Place CSV/Excel files in data_raw/ directory"
+    ),
+    list(
+      name = "Processed RDA files",
+      description = ".rda files exist in data/ directory",
+      check = check_rda_files(base_path),
+      required = TRUE,
+      details = "Run process() to convert raw data to .rda format"
+    ),
+    list(
+      name = "CSV exports",
+      description = ".csv files exist in inst/extdata/ directory",
+      check = check_csv_files(base_path),
+      required = TRUE,
+      details = "Run process() to export CSV files to inst/extdata/"
+    ),
+    list(
+      name = "File consistency",
+      description = "Raw, RDA, and CSV files match in count and naming",
+      check = check_file_consistency(base_path),
+      required = FALSE,
+      details = "Run process() to ensure consistent file processing"
+    )
+  )
+  
+  format_checklist_results(checklist)
+}
+
+validate_metadata_collected <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  
+  checklist <- list(
+    list(
+      name = "DESCRIPTION file",
+      description = "DESCRIPTION file exists",
+      check = check_description_exists(base_path),
+      required = TRUE,
+      details = "Run setup() first to create DESCRIPTION file"
+    ),
+    list(
+      name = "Package name",
+      description = "Package field in DESCRIPTION is meaningful",
+      check = check_package_name(base_path),
+      required = TRUE,
+      details = "Run collect() to set proper package name"
+    ),
+    list(
+      name = "Package title",
+      description = "Title field in DESCRIPTION is meaningful", 
+      check = check_package_title(base_path),
+      required = TRUE,
+      details = "Run collect() to set meaningful package title"
+    ),
+    list(
+      name = "Package description",
+      description = "Description field in DESCRIPTION is meaningful",
+      check = check_package_description(base_path),
+      required = TRUE,
+      details = "Run collect() to set meaningful package description"
+    ),
+    list(
+      name = "Authors", 
+      description = "Authors@R field with maintainer (cre role)",
+      check = check_package_authors(base_path),
+      required = TRUE,
+      details = "Run collect() to set proper authors with maintainer"
+    ),
+    list(
+      name = "License",
+      description = "License field is properly set",
+      check = check_package_license(base_path),
+      required = TRUE,
+      details = "Run collect() to set proper license"
+    ),
+    list(
+      name = "URLs",
+      description = "URL fields configured (if github_user provided)",
+      check = check_package_urls(base_path),
+      required = FALSE,
+      details = "URLs will be set automatically if github_user is provided"
+    )
+  )
+  
+  format_checklist_results(checklist)
+}
+
+validate_dictionary_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  
+  checklist <- list(
+    list(
+      name = "Dictionary file",
+      description = "dictionary.csv exists in inst/extdata/",
+      check = check_dictionary_file(base_path),
+      required = TRUE,
+      details = "Run generate() to create dictionary file"
+    ),
+    list(
+      name = "Variables documented",
+      description = "All variables from data files are in dictionary",
+      check = check_variables_documented(base_path),
+      required = TRUE,
+      details = "Run generate() to document all variables"
+    ),
+    list(
+      name = "Descriptions filled",
+      description = "All variable descriptions are complete (not empty or NA)",
+      check = check_descriptions_filled(base_path),
+      required = TRUE,
+      details = "Run generate() with a chat object or fill descriptions manually"
+    ),
+    list(
+      name = "Dictionary structure",
+      description = "Dictionary has proper structure and required columns",
+      check = check_dictionary_structure(base_path),
+      required = TRUE,
+      details = "Run generate() to create properly structured dictionary"
+    )
+  )
+  
+  format_checklist_results(checklist)
+}
+
+validate_build_completed <- function(base_path = NULL) {
+  base_path <- get_base_path(base_path)
+  
+  checklist <- list(
+    list(
+      name = "LICENSE file",
+      description = "LICENSE or LICENSE.md file exists",
+      check = check_license_file(base_path),
+      required = TRUE,
+      details = "Run build() to create LICENSE file"
+    ),
+    list(
+      name = "CITATION files",
+      description = "Citation files exist (CITATION.cff and inst/CITATION)",
+      check = check_citation_files(base_path),
+      required = TRUE,
+      details = "Run build() to create citation files"
+    ),
+    list(
+      name = "README file",
+      description = "README.md file exists",
+      check = check_readme_file(base_path),
+      required = TRUE,
+      details = "Run build() to generate README.md"
+    ),
+    list(
+      name = "Documentation",
+      description = "man/ directory with .Rd files exists",
+      check = check_documentation(base_path),
+      required = TRUE,
+      details = "Run build() to generate roxygen documentation"
+    ),
+    list(
+      name = "Package website",
+      description = "Website built in docs/ directory",
+      check = check_website(base_path),
+      required = FALSE,
+      details = "Run build() to generate package website"
+    ),
+    list(
+      name = "Package installable",
+      description = "Package structure is valid and installable",
+      check = check_package_installable(base_path),
+      required = TRUE,
+      details = "Run build() to ensure package is properly structured"
+    )
+  )
+  
+  format_checklist_results(checklist)
 }

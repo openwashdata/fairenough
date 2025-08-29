@@ -2,20 +2,25 @@
 % Please edit documentation in R/build_package.R
 \name{build_readme}
 \alias{build_readme}
-\title{Build README from inst/templates/README.Rmd}
+\title{Build README from inst/templates/README.qmd}
 \usage{
-build_readme(base_path = NULL, verbose = TRUE, overwrite = TRUE)
+build_readme(
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = TRUE,
+  quarto = FALSE
+)
 }
 \arguments{
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show messages}
 
-\item{overwrite}{Whether to overwrite README.Rmd found at base_path}
+\item{overwrite}{Whether to overwrite README.qmd found at base_path}
 }
 \value{
 Path to generated README
 }
 \description{
-Build README.md from the README.Rmd template, incorporating package metadata.
+Build README.md from the README.qmd template, incorporating package metadata.
 }

@@ -100,8 +100,7 @@ build_package <- function(
 #' @param spell_check Whether to run spell check (default: TRUE)
 #' @param good_practice Whether to run good practice checks (default: FALSE, as it's slow)
 #' @return List with validation results
-#' @export
-validate_package <- function(
+.validate_package <- function(
   base_path = NULL,
   verbose = TRUE,
   spell_check = TRUE,
@@ -119,7 +118,7 @@ validate_package <- function(
   if (verbose) {
     cli::cli_alert_info("Running R CMD check")
   }
-  results$check <- run_checks(base_path = base_path, verbose = verbose)
+  results$check <- .run_checks(base_path = base_path, verbose = verbose)
 
   # 2. Spell check (if requested)
   if (spell_check) {
@@ -327,48 +326,87 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   return(invisible(TRUE))
 }
 
-#' Build README from inst/templates/README.Rmd
+#' Build README from inst/templates/README.qmd
 #'
-#' Build README.md from the README.Rmd template, incorporating package metadata.
+#' Build README.md from the README.qmd template, incorporating package metadata.
 #'
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
-#' @param overwrite Whether to overwrite README.Rmd found at base_path
+#' @param overwrite Whether to overwrite README.qmd found at base_path
 #' @return Path to generated README
 #' @export
-build_readme <- function(base_path = NULL, verbose = TRUE, overwrite = TRUE) {
+build_readme <- function(
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = TRUE,
+  quarto = FALSE
+) {
   base_path <- get_base_path(base_path)
+  quarto_installed <- system("quarto --version", ignore.stderr = TRUE) == 0
+  cli::cli_alert_info("Is Quarto installed: {quarto_installed}")
 
-  # Create README.Rmd from template if it doesn't exist
-  readme_rmd <- file.path(base_path, "README.Rmd")
-  template_path <- system.file(
-    "templates",
-    "README.Rmd",
-    package = "fairenough"
-  )
-  fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
-
-  # Check if rmarkdown is available
-  if (requireNamespace("rmarkdown", quietly = TRUE)) {
-    tryCatch(
-      {
-        # Render README with proper working directory
-        readme_md <- file.path(base_path, "README.md")
-        rmarkdown::render(
-          readme_rmd,
-          output_format = "github_document",
-          output_file = readme_md,
-          quiet = !verbose
-        )
-        if (verbose) cli::cli_alert_success("Generated README.md")
-      },
-      error = function(e) {
-        cli::cli_alert_warning("Could not render README: {e$message}")
-      }
+  if (quarto && quarto_installed) {
+    # Create README.qmd from template if it doesn't exist
+    readme_qmd <- file.path(base_path, "README.qmd")
+    template_path <- system.file(
+      "templates",
+      "README.qmd",
+      package = "fairenough"
     )
+    fs::file_copy(template_path, readme_qmd, overwrite = overwrite)
+
+    # Check if quarto is available
+    if (requireNamespace("quarto", quietly = TRUE)) {
+      tryCatch(
+        {
+          # Render README with quarto
+          quarto::quarto_render(
+            readme_qmd,
+            output_format = "gfm",
+            quiet = !verbose
+          )
+          if (verbose) cli::cli_alert_success("Generated README.md")
+        },
+        error = function(e) {
+          cli::cli_alert_warning("Could not render README: {e$message}")
+        }
+      )
+    } else {
+      cli::cli_alert_warning("Package {.pkg quarto} not installed")
+      cli::cli_alert_info("Install it with: install.packages('quarto')")
+    }
   } else {
-    cli::cli_alert_warning("Package {.pkg rmarkdown} not installed")
-    cli::cli_alert_info("Install it with: install.packages('rmarkdown')")
+    # Create README.Rmd from template if it doesn't exist
+    readme_rmd <- file.path(base_path, "README.Rmd")
+    template_path <- system.file(
+      "templates",
+      "README.Rmd",
+      package = "fairenough"
+    )
+    fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
+
+    # Check if rmarkdown is available
+    if (requireNamespace("rmarkdown", quietly = TRUE)) {
+      tryCatch(
+        {
+          # Render README with proper working directory
+          readme_md <- file.path(base_path, "README.md")
+          rmarkdown::render(
+            readme_rmd,
+            output_format = "github_document",
+            output_file = readme_md,
+            quiet = !verbose
+          )
+          if (verbose) cli::cli_alert_success("Generated README.md")
+        },
+        error = function(e) {
+          cli::cli_alert_warning("Could not render README: {e$message}")
+        }
+      )
+    } else {
+      cli::cli_alert_warning("Package {.pkg rmarkdown} not installed")
+      cli::cli_alert_info("Install it with: install.packages('rmarkdown')")
+    }
   }
 
   return(invisible(file.path(base_path, "README.md")))
@@ -447,11 +485,38 @@ build_site <- function(
       metadata <- list()
     }
 
+    # Flatten metadata structure for template substitution
+    template_data <- list()
+    if (!is.null(metadata$package)) {
+      # Flatten package fields to top level for template
+      template_data$package <- metadata$package
+      # Add flattened versions for backward compatibility
+      if (!is.null(metadata$package$name)) {
+        template_data$package.name <- metadata$package$name
+      }
+      if (!is.null(metadata$package$github_user)) {
+        template_data$package.github_user <- metadata$package$github_user
+      }
+      if (!is.null(metadata$package$title)) {
+        template_data$package.title <- metadata$package$title
+      }
+      if (!is.null(metadata$package$description)) {
+        template_data$package.description <- metadata$package$description
+      }
+    }
+    # Keep other metadata sections as-is
+    if (!is.null(metadata$authors)) {
+      template_data$authors <- metadata$authors
+    }
+    if (!is.null(metadata$license)) {
+      template_data$license <- metadata$license
+    }
+
     # Use our own template function that respects base_path
     use_template(
       template = "_pkgdown.yml",
       save_as = "_pkgdown.yml",
-      data = metadata,
+      data = template_data,
       base_path = base_path,
       package = "fairenough",
       verbose = verbose
@@ -466,20 +531,12 @@ build_site <- function(
   tryCatch(
     {
       # pkgdown::build_site() needs to know the package path
-      if (verbose) {
-        pkgdown::build_site(
-          pkg = base_path,
-          preview = preview,
-          install = install
-        )
-      } else {
-        suppressMessages(pkgdown::build_site(
-          pkg = base_path,
-          preview = preview,
-          install = install
-        ))
-      }
-      if (verbose) cli::cli_alert_success("Website built in {.path docs/}")
+      devtools::build_site(
+        base_path,
+        preview = preview,
+        install = install,
+        quiet = !verbose
+      )
     },
     error = function(e) {
       cli::cli_alert_warning("Could not build website: {e$message}")
@@ -497,8 +554,7 @@ build_site <- function(
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @return Logical indicating if checks passed
-#' @export
-run_checks <- function(base_path = NULL, verbose = TRUE) {
+.run_checks <- function(base_path = NULL, verbose = TRUE) {
   base_path <- get_base_path(base_path)
 
   if (!requireNamespace("devtools", quietly = TRUE)) {
@@ -514,7 +570,7 @@ run_checks <- function(base_path = NULL, verbose = TRUE) {
   check_result <- tryCatch(
     {
       devtools::check(
-        pkg = base_path,
+        base_path,
         quiet = !verbose,
         args = "--no-manual"
       )

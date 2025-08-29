@@ -4,7 +4,7 @@
 #' Processes all files in the raw data directory and exports them as .rda and CSV.
 #'
 #' @param raw_dir Directory containing raw data files (default: "data_raw")
-#' @param auto_clean Whether to automatically clean data (default: TRUE)
+#' @param auto_clean Whether to run clean_data (default: TRUE)
 #' @param overwrite Whether to overwrite existing files (default: TRUE)
 #' @param base_path Base path for the project (default: uses get_base_path())
 #' @param verbose Whether to show detailed messages (default: TRUE)
@@ -71,12 +71,12 @@ process_data <- function(
 
         # Clean if requested
         if (auto_clean) {
-          data <- clean_data(data, verbose = FALSE)
+          data <- process_clean(data, verbose = FALSE)
         }
 
         # Export to both formats
-        export_rda(data, file_name, base_path, overwrite, verbose = FALSE)
-        export_csv(data, file_name, base_path, overwrite, verbose = FALSE)
+        .export_rda(data, file_name, base_path, overwrite, verbose = FALSE)
+        .export_csv(data, file_name, base_path, overwrite, verbose = FALSE)
 
         processed_files[[file_name]] <- list(
           source = file_path,
@@ -141,15 +141,15 @@ process_data <- function(
 #' @examples
 #' \dontrun{
 #' # Basic cleaning
-#' clean_data(my_data)
+#' process_clean(my_data)
 #'
 #' # Keep original column names
-#' clean_data(my_data, clean_names = FALSE)
+#' process_clean(my_data, clean_names = FALSE)
 #'
 #' # Custom null values
-#' clean_data(my_data, string_nulls = c("N/A", "missing", ""))
+#' process_clean(my_data, string_nulls = c("N/A", "missing", ""))
 #' }
-clean_data <- function(
+process_clean <- function(
   data,
   clean_names = TRUE,
   string_nulls = c("null", "NA", ""),
@@ -210,8 +210,7 @@ clean_data <- function(
 #' @param overwrite Whether to overwrite existing file (default: TRUE)
 #' @param verbose Whether to show messages (default: TRUE)
 #' @return Path to the created file
-#' @export
-export_rda <- function(
+.export_rda <- function(
   data,
   name,
   base_path = NULL,
@@ -258,8 +257,7 @@ export_rda <- function(
 #' @param overwrite Whether to overwrite existing file (default: TRUE)
 #' @param verbose Whether to show messages (default: TRUE)
 #' @return Path to the created file
-#' @export
-export_csv <- function(
+.export_csv <- function(
   data,
   name,
   base_path = NULL,

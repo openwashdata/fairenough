@@ -9,8 +9,16 @@ CLAUDE.md
 tests/*
 !tests/testthat
 !tests/palmerpenguins
-TODO.md
+TODO/
 legacy
 .claude
 /.quarto/
 docs/
+rv/
+data_raw/
+*.bk*
+*.DS_Store
+.RData
+.Ruserdata
+README.html
+.Rprofile
