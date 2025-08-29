@@ -32,6 +32,34 @@ authors:
   given-names: Lars
   email: lschoebitz@ethz.ch
   orcid: https://orcid.org/0000-0003-2196-5015
+preferred-citation:
+  type: generic
+  title: 'fairenough: fairenough'
+  authors:
+  - family-names: Massari
+    given-names: Nicolo
+    email: nmassari@ethz.ch
+    orcid: https://orcid.org/0009-0006-8421-930X
+  - family-names: Zhong
+    given-names: Mian
+    email: mzhong@ethz.ch
+    orcid: https://orcid.org/0009-0009-4546-7214
+  - family-names: Götschmann
+    given-names: Margaux
+    email: margauxg@ethz.ch
+    orcid: https://orcid.org/0009-0002-2567-3343
+  - family-names: Walder
+    given-names: Colin
+    email: cwalder@ethz.ch
+    orcid: https://orcid.org/0009-0006-0969-1954
+  - family-names: Schöbitz
+    given-names: Lars
+    email: lschoebitz@ethz.ch
+    orcid: https://orcid.org/0000-0003-2196-5015
+  url: https://github.com/openwashdata/fairenough
+  abstract: Convert tidy data into R packages with documentation websites and intelligent
+    AI descriptions.
+  version: 0.1.0
 repository-code: https://github.com/openwashdata/fairenough
 url: https://github.com/openwashdata/fairenough
 contact:
@@ -350,6 +378,23 @@ references:
     orcid: https://orcid.org/0000-0003-3925-190X
   year: '2025'
   doi: 10.32614/CRAN.package.rmarkdown
+- type: software
+  title: quarto
+  abstract: 'quarto: R Interface to ''Quarto'' Markdown Publishing System'
+  notes: Imports
+  url: https://quarto-dev.github.io/quarto-r/
+  repository: https://CRAN.R-project.org/package=quarto
+  authors:
+  - family-names: Allaire
+    given-names: JJ
+    email: jj@posit.co
+    orcid: https://orcid.org/0000-0003-0174-9868
+  - family-names: Dervieux
+    given-names: Christophe
+    email: cderv@posit.co
+    orcid: https://orcid.org/0000-0003-4474-2498
+  year: '2025'
+  doi: 10.32614/CRAN.package.quarto
 - type: software
   title: knitr
   abstract: 'knitr: A General-Purpose Package for Dynamic Report Generation in R'
