@@ -48,7 +48,8 @@ Imports:
     goodpractice,
     gt, 
     fontawesome,
-    stringr
+    stringr,
+    rsvg
 Suggests: 
     testthat,
 VignetteBuilder: 
