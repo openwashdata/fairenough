@@ -48,7 +48,7 @@ library(fairenough)
 
 # 1. Set up your LLM chat object (see options below)
 Sys.setenv(OPENAI_API_KEY = "your-api-key")
-chat <- elmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3))
+chat <- ellmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3))
 
 # 2. Place your CSV/Excel files in an empty directory and run
 fairenough(chat)
