@@ -346,11 +346,24 @@ if (length(datasets) > 0) {
 Data are available as [CC-BY](https://github.com/`r desc::desc_get_field("github_user")`/`r desc::desc_get_field("Package")`/blob/main/LICENSE.md).
 
 ## Citation
-
+Please cite with:
 ```{r citation, echo=FALSE, message=FALSE, warning=FALSE}
-tryCatch({
-  citation(desc::desc_get_field("Package"))
-}, error = function(e) {
-  cat("Citation information not available\n")
-})
+# Capture the citation output
+cit <- capture.output(print(citation(desc::desc_get_field("Package")), style = "text"))
+bib <- capture.output(print(citation(desc::desc_get_field("Package")), style = "bibtex"))
+
+# Remove the empty first lines if they exist
+cit <- cit[nzchar(cit)]
+bib <- bib[nzchar(bib)]
 ```
+
+**Text:**
+```
+`r paste(cit, collapse = "\n")`
+```
+
+**BibTeX:**
+```bibtex
+`r paste(bib, collapse = "\n")`
+```
+
