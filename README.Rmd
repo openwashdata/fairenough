@@ -10,21 +10,25 @@ format: gfm
 
 Convert tidy data into R packages with documentation websites and intelligent AI descriptions. **fairenough** prepares your data for publication in one click.
 
-**See it in action:** [View example output →](https://openwashdata.github.io/palmerpenguins/)
-
 ## Why fairenough?
 
-Creating R data packages traditionally requires extensive manual work:
+Fairenough transforms this:
+```
+my-data/
+└── penguins.csv
+```
 
-- Writing data documentation by hand
+Into this complete R package:
 
-- Setting up package structure and files  
+- **Documentation:** AI-generated variable descriptions and data dictionaries
 
-- Configuring websites and citations
+- **Website:** Professional [pkgdown site](https://openwashdata.github.io/palmerpenguins/) ready for deployment  
 
-- Managing dependencies and validation
+- **Citations:** Properly formatted citation files with DOI support
 
-**fairenough automates this entire workflow** and optionally allows for AI-powered documentation generation.
+- **Validation:** Data structure checks and format consistency
+
+- **Integration:** Full R package that others can install and use
 
 <!-- Demo GIF placeholder: Show the transformation from CSV files to complete package -->
 <!-- ![fairenough demo](demo.gif) -->
@@ -45,7 +49,7 @@ library(fairenough)
 
 # 1. Set up your LLM chat object (see options below)
 Sys.setenv(OPENAI_API_KEY = "your-api-key")
-chat <- elmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3))
+chat <- ellmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3))
 
 # 2. Place your CSV/Excel files in an empty directory and run
 fairenough(chat)
@@ -67,77 +71,23 @@ fairenough works with any [ellmer](https://ellmer.tidyverse.org/) chat object. P
 
 ```r
 # OpenAI (recommended for quality)
-chat <- elmer::chat_openai(model = "gpt-4o-mini")
+chat <- ellmer::chat_openai(model = "gpt-4o-mini")
 
 # Anthropic Claude (excellent for R code)
-chat <- elmer::chat_anthropic(model = "claude-3-5-sonnet-20241022")
+chat <- ellmer::chat_anthropic(model = "claude-3-5-sonnet-20241022")
 
 # Google Gemini (generous free tier)
-chat <- elmer::chat_google_gemini()
+chat <- ellmer::chat_google_gemini()
 
 # Local models via Ollama (private, free)
-chat <- elmer::chat_ollama(model = "llama3.1")
+chat <- ellmer::chat_ollama(model = "llama3.1")
 ```
 
 [See all supported providers →](https://ellmer.tidyverse.org/reference/index.html)
 
-## Step-by-Step Usage
-
-For more control over the process, use individual functions:
-
-```r
-# Step 1: Initialize R package structure
-setup()
-
-# Step 2: Process your data files  
-process(auto_clean = TRUE)  # Optional: basic data cleaning
-
-# Step 3: Collect package metadata interactively
-collect(extended = TRUE)    # Optional: comprehensive documentation
-
-# Step 4: Generate AI-powered documentation
-generate(chat, context = "DESCRIBE YOUR DATA")
-
-# Step 5: Build complete package
-build(overwrite = TRUE)     # Optional: update existing files
-```
-
-## Features
-
-| Function | Purpose | Key Options |
-|----------|---------|-------------|
-| `fairenough()` | **Complete pipeline** | Accepts all wrapper function arguments |
-| `setup()` | Initialize R package structure | Creates directories, .gitignore, etc. |
-| `process()` | Validate and process data files | `auto_clean = TRUE` for basic tidying |
-| `collect()` | Interactive metadata collection | `extended = TRUE` for detailed docs |
-| `generate()` | AI-powered documentation | `context = "..."` for custom descriptions |
-| `build()` | Build package infrastructure | `overwrite = TRUE` to update existing |
-
-**Global options:** All functions support `verbose = TRUE` and `overwrite = TRUE`
-
-**Supported formats:** CSV, Excel (.xlsx, .xls), with automatic format detection and validation
-
-## Example Output
-
-fairenough transforms this:
-```
-my-data/
-└── penguins.csv
-```
-
-Into this complete R package:
-
-- **Documentation:** AI-generated variable descriptions and data dictionaries
-
-- **Website:** Professional [pkgdown site](https://openwashdata.github.io/palmerpenguins/) ready for deployment  
-
-- **Citations:** Properly formatted citation files with DOI support
-
-- **Validation:** Data structure checks and format consistency
-
-- **Integration:** Full R package that others can install and use
-
 ## Getting Help
+
+- **Detailed documentation:**  [Reference](https://openwashdata.github.io/fairenough/reference/index.html)
 
 - **Issues & bugs:** [GitHub Issues](https://github.com/openwashdata/fairenough/issues)
 
@@ -162,11 +112,24 @@ devtools::load_all()
 
 ---
 
-**Citation:** If you use fairenough in your research, please cite with:
+## Citation
+Please cite with:
 ```{r citation, echo=FALSE, message=FALSE, warning=FALSE}
-tryCatch({
-  citation(desc::desc_get_field("Package"))
-}, error = function(e) {
-  cat("Citation information not available\n")
-})
+# Capture the citation output
+cit <- capture.output(print(citation(desc::desc_get_field("Package")), style = "text"))
+bib <- capture.output(print(citation(desc::desc_get_field("Package")), style = "bibtex"))
+
+# Remove the empty first lines if they exist
+cit <- cit[nzchar(cit)]
+bib <- bib[nzchar(bib)]
+```
+
+**Text:**
+```
+`r paste(cit, collapse = "\n")`
+```
+
+**BibTeX:**
+```bibtex
+`r paste(bib, collapse = "\n")`
 ```
