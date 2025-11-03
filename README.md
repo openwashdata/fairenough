@@ -41,8 +41,8 @@ Into this complete R package:
 provider
 
 ``` r
-# Install from GitHub
-devtools::install_github("openwashdata/fairenough")
+install.packages("pak")
+pak::pkg_install("openwashdata/fairenough")
 ```
 
 ## Quick Start
@@ -104,7 +104,7 @@ chat <- ellmer::chat_ollama(model = "llama3.1")
 ## Contributing
 
 We welcome contributions! Please see our [contributing
-guidelines](.github/CONTRIBUTING.md) and note that this project follows
+guidelines](CONTRIBUTING.md) and note that this project follows
 [conventional commits](https://www.conventionalcommits.org/).
 
 **Development workflow:**
