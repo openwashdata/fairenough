@@ -38,8 +38,8 @@ Into this complete R package:
 **Prerequisites:** R ≥ 4.1.0 and an API key for your preferred LLM provider
 
 ```r
-# Install from GitHub
-devtools::install_github("openwashdata/fairenough")
+install.packages("pak")
+pak::pkg_install("openwashdata/fairenough")
 ```
 
 ## Quick Start

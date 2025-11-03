@@ -46,10 +46,9 @@ Imports:
     spelling, 
     rstudioapi, 
     goodpractice,
-    gt, 
+    gt,
     fontawesome,
-    stringr,
-    rsvg
+    stringr
 Suggests: 
     testthat,
 VignetteBuilder: 
