@@ -641,13 +641,22 @@ build_citation <- function(
           overwrite ||
             (!file.exists(citation_cff_file) || !file.exists(citation_cff_file))
         ) {
-          # Create CITATION.cff in base_path
-          cff <- cffr::cff_write(
-            x = desc_path,
+          # Create CFF object
+          cff <- cffr::cff_create(x = desc_path)
+
+          # Remove preferred-citation field if it exists
+          cff$`preferred-citation` <- NULL
+
+          # Write CITATION.cff without preferred-citation
+          cffr::cff_write(
+            x = cff,
             outfile = file.path(base_path, "CITATION.cff"),
             validate = validate,
             verbose = verbose,
+            authors_roles = c("aut", "cre", "ctb")
           )
+
+          #  Write inst/CITATION with cff_write_citation to specify path
           cffr::cff_write_citation(
             cff,
             file = file.path(base_path, "inst", "CITATION"),

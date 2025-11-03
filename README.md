@@ -21,9 +21,7 @@ Into this complete R package:
 - **Documentation:** AI-generated variable descriptions and data
   dictionaries
 
-- **Website:** Professional [pkgdown
-  site](https://openwashdata.github.io/palmerpenguins/) ready for
-  deployment
+- **Website:** Professional pkgdown site ready for deployment
 
 - **Citations:** Properly formatted citation files with DOI support
 
@@ -31,9 +29,8 @@ Into this complete R package:
 
 - **Integration:** Full R package that others can install and use
 
-<!-- Demo GIF placeholder: Show the transformation from CSV files to complete package -->
-
-<!-- ![fairenough demo](demo.gif) -->
+**[Demo: Palmerpenguins published with
+fairenough!](https://openwashdata.github.io/palmerpenguins/)**
 
 ## Installation
 
@@ -47,15 +44,15 @@ pak::pkg_install("openwashdata/fairenough")
 
 ## Quick Start
 
+- Create a new project (or just an empty directory) containing you
+  dataset(s)
+- Start an R console at the project (or directory) path
+- Run
+
 ``` r
 library(fairenough)
 
-# 1. Set up your LLM chat object (see options below)
-Sys.setenv(OPENAI_API_KEY = "your-api-key")
-chat <- ellmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3))
-
-# 2. Place your CSV/Excel files in an empty directory and run
-fairenough(chat)
+fairenough()
 ```
 
 **That’s it!** You’ll get a complete R package with:
@@ -68,27 +65,32 @@ fairenough(chat)
 
 - Proper R package structure
 
-### LLM Provider Options
-
-fairenough works with any [ellmer](https://ellmer.tidyverse.org/) chat
-object. Popular options:
+## Quick Start with Ellmer
 
 ``` r
-# OpenAI (recommended for quality)
-chat <- ellmer::chat_openai(model = "gpt-4o-mini")
+# 1. Set up your LLM chat object (see options below)
+chat <- ellmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3), api_key = "")
 
-# Anthropic Claude (excellent for R code)
-chat <- ellmer::chat_anthropic(model = "claude-3-5-sonnet-20241022")
-
-# Google Gemini (generous free tier)
-chat <- ellmer::chat_google_gemini()
-
-# Local models via Ollama (private, free)
-chat <- ellmer::chat_ollama(model = "llama3.1")
+# 2. Place your CSV/Excel files in an empty directory and run
+fairenough(chat)
 ```
 
-[See all supported providers
-→](https://ellmer.tidyverse.org/reference/index.html)
+- Running fairenough with an `ellmer::chat` object will generate
+  descriptions for your dataset’s variables
+
+- [See all supported providers
+  →](https://ellmer.tidyverse.org/reference/index.html)
+
+``` r
+# OpenAI
+chat <- ellmer::chat_openai()
+
+# Anthropic Claude
+chat <- ellmer::chat_anthropic()
+
+# Local models via Ollama
+chat <- ellmer::chat_ollama()
+```
 
 ## Getting Help
 
@@ -104,8 +106,9 @@ chat <- ellmer::chat_ollama(model = "llama3.1")
 ## Contributing
 
 We welcome contributions! Please see our [contributing
-guidelines](CONTRIBUTING.md) and note that this project follows
-[conventional commits](https://www.conventionalcommits.org/).
+guidelines](https://github.com/openwashdata/fairenough/blob/main/.github/CONTRIBUTING.md)
+and note that this project follows [conventional
+commits](https://www.conventionalcommits.org/).
 
 **Development workflow:**
 
@@ -122,7 +125,7 @@ for implementation details.
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](https://github.com/openwashdata/fairenough/blob/main/LICENSE.md)
 
 ------------------------------------------------------------------------
 
