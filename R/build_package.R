@@ -652,7 +652,8 @@ build_citation <- function(
             x = cff,
             outfile = file.path(base_path, "CITATION.cff"),
             validate = validate,
-            verbose = verbose
+            verbose = verbose,
+            authors_roles = c("aut", "cre", "ctb")
           )
 
           #  Write inst/CITATION with cff_write_citation to specify path
