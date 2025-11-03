@@ -224,7 +224,7 @@ display_dictionary_table <- function(dict_table) {
 
 ## Installation
 
-You can install the development version of `r desc::desc_get_field("Package")` from GitHub `r fontawesome::fa("github")` with:
+You can install the development version of `r desc::desc_get_field("Package")` from GitHub `r fontawesome::fa_i("github")` with:
 
 ```r
 devtools::install_github("`r desc::desc_get_field("github_user")`/`r desc::desc_get_field("Package")`", dependencies = TRUE)
@@ -239,7 +239,7 @@ devtools::install_github("`r desc::desc_get_field("github_user")`/`r desc::desc_
 If you prefer to work with the data outside of R, you can download individual datasets as CSV files.
 
 1. **Right-click** on the "Download CSV" link for the dataset you want.
-2. Select **"Save Link As"** [`r fontawesome::fa("chrome", fill = browser_favicon_colour)`](https://www.google.com/chrome/) [`r fontawesome::fa("edge", fill = browser_favicon_colour)`](https://www.microsoft.com/edge/) [`r fontawesome::fa("firefox", fill = browser_favicon_colour)`](https://www.mozilla.org/firefox/) or **"Download Linked File"** [`r fontawesome::fa("safari", fill = browser_favicon_colour)`](https://www.apple.com/safari/).
+2. Select **"Save Link As"** [`r fontawesome::fa_i("chrome", fill = browser_favicon_colour)`](https://www.google.com/chrome/) [`r fontawesome::fa_i("edge", fill = browser_favicon_colour)`](https://www.microsoft.com/edge/) [`r fontawesome::fa_i("firefox", fill = browser_favicon_colour)`](https://www.mozilla.org/firefox/) or **"Download Linked File"** [`r fontawesome::fa_i("safari", fill = browser_favicon_colour)`](https://www.apple.com/safari/).
 3. Choose where you'd like to save the file on your computer.
 
 ```{r download-links, echo=FALSE, message=FALSE, warning=FALSE}
