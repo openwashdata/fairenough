@@ -2,8 +2,8 @@ Package: fairenough
 Title: fairenough
 Version: 0.1.0
 Authors@R: c(
-    person("Nicolo", "Massari", , "nmassari@ethz.ch", role = c("aut", "cre"),
-            comment = c(ORCID = "0009-0006-8421-930X")),
+    person("Nicolo", "Massari", , "nmassari@ethz.ch", role = "aut",
+           comment = c(ORCID = "0009-0006-8421-930X")),
     person("Mian", "Zhong", , "mzhong@ethz.ch", role = "aut",
            comment = c(ORCID = "0009-0009-4546-7214")),
     person("Margaux", "Götschmann", , "margauxg@ethz.ch", role = "aut",
@@ -12,6 +12,8 @@ Authors@R: c(
            comment = c(ORCID = "0009-0006-0969-1954")),
     person("Lars", "Schöbitz", , "lschoebitz@ethz.ch", role = "aut",
            comment = c(ORCID = "0000-0003-2196-5015")),
+    person("Adriana", "Clavijo Daza", , "aclavijo@ethz.ch", role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0002-0589-2274")),
     person("Global Health Engineering, ETH Zurich", role = "cph")
   )
 Description: Convert tidy data into R packages with documentation websites and intelligent AI descriptions.
@@ -59,4 +61,4 @@ Encoding: UTF-8
 Language: en-GB
 Date: 2025-08-28
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
