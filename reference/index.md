@@ -1,0 +1,114 @@
+# Package index
+
+## All functions
+
+- [`LICENSE_CONFIG`](https://openwashdata.github.io/fairenough/reference/LICENSE_CONFIG.md)
+  : License Configuration
+- [`build()`](https://openwashdata.github.io/fairenough/reference/build.md)
+  : Build package components wrapper
+- [`build_citation()`](https://openwashdata.github.io/fairenough/reference/build_citation.md)
+  : Build CITATION file using cffr
+- [`build_license()`](https://openwashdata.github.io/fairenough/reference/build_license.md)
+  : Build License
+- [`build_package()`](https://openwashdata.github.io/fairenough/reference/build_package.md)
+  : Build package structure and core files
+- [`build_readme()`](https://openwashdata.github.io/fairenough/reference/build_readme.md)
+  : Build README from inst/templates/README.qmd
+- [`build_roxygen()`](https://openwashdata.github.io/fairenough/reference/build_roxygen.md)
+  : Generate roxygen documentation for datasets
+- [`build_site()`](https://openwashdata.github.io/fairenough/reference/build_site.md)
+  : Build website with pkgdown
+- [`check_description_exists()`](https://openwashdata.github.io/fairenough/reference/check_description_exists.md)
+  : Validation system for fairenough pipeline steps
+- [`checklist_summary()`](https://openwashdata.github.io/fairenough/reference/checklist_summary.md)
+  : Get summary string for validation results
+- [`collect()`](https://openwashdata.github.io/fairenough/reference/collect.md)
+  : Collect metadata wrapper
+- [`collect_metadata()`](https://openwashdata.github.io/fairenough/reference/collect_metadata.md)
+  : Collect comprehensive metadata interactively
+- [`.collect_dataset_info()`](https://openwashdata.github.io/fairenough/reference/dot-collect_dataset_info.md)
+  : Collect dataset information from .rda files
+- [`.create_directories()`](https://openwashdata.github.io/fairenough/reference/dot-create_directories.md)
+  : Create project directories
+- [`.export_csv()`](https://openwashdata.github.io/fairenough/reference/dot-export_csv.md)
+  : Export data as CSV file
+- [`.export_rda()`](https://openwashdata.github.io/fairenough/reference/dot-export_rda.md)
+  : Export data as RDA file
+- [`.move_data_files()`](https://openwashdata.github.io/fairenough/reference/dot-move_data_files.md)
+  : Move data files to raw data directory
+- [`.run_checks()`](https://openwashdata.github.io/fairenough/reference/dot-run_checks.md)
+  : Run package checks
+- [`.setup_gitignore()`](https://openwashdata.github.io/fairenough/reference/dot-setup_gitignore.md)
+  : Setup gitignore for data directory and R files
+- [`.validate_package()`](https://openwashdata.github.io/fairenough/reference/dot-validate_package.md)
+  : Validate package with modern tools
+- [`ensure_directory()`](https://openwashdata.github.io/fairenough/reference/ensure_directory.md)
+  : Ensure directory exists with messaging
+- [`fairenough()`](https://openwashdata.github.io/fairenough/reference/fairenough.md)
+  : Main fairenough wrapper
+- [`filter_supported_files()`](https://openwashdata.github.io/fairenough/reference/filter_supported_files.md)
+  : Filter files by supported extensions
+- [`format_checklist_results()`](https://openwashdata.github.io/fairenough/reference/format_checklist_results.md)
+  : Process checklist into structured results
+- [`gendict()`](https://openwashdata.github.io/fairenough/reference/gendict.md)
+  : Generate data dictionary using LLM
+- [`generate()`](https://openwashdata.github.io/fairenough/reference/generate.md)
+  : Generation of documentation for datasets
+- [`generate_dictionary()`](https://openwashdata.github.io/fairenough/reference/generate_dictionary.md)
+  : Generate data dictionary
+- [`get_available_licenses()`](https://openwashdata.github.io/fairenough/reference/get_available_licenses.md)
+  : Get Supported License Names
+- [`get_base_path()`](https://openwashdata.github.io/fairenough/reference/get_base_path.md)
+  : Get base path with consistent handling across all functions
+- [`get_key()`](https://openwashdata.github.io/fairenough/reference/get_key.md)
+  : Get key from DESCRIPTION file
+- [`get_license_config()`](https://openwashdata.github.io/fairenough/reference/get_license_config.md)
+  : Get License Configuration
+- [`get_metadata()`](https://openwashdata.github.io/fairenough/reference/get_metadata.md)
+  : Get metadata from DESCRIPTION file
+- [`get_raw_dir()`](https://openwashdata.github.io/fairenough/reference/get_raw_dir.md)
+  : Get raw directory path with consistent handling across all functions
+- [`get_supported_extensions()`](https://openwashdata.github.io/fairenough/reference/get_supported_extensions.md)
+  : Get supported file extensions
+- [`is_supported_file_type()`](https://openwashdata.github.io/fairenough/reference/is_supported_file_type.md)
+  : Check if file type is supported
+- [`match_license()`](https://openwashdata.github.io/fairenough/reference/match_license.md)
+  : Match License to License Config
+- [`process()`](https://openwashdata.github.io/fairenough/reference/process.md)
+  : Process data wrapper
+- [`process_clean()`](https://openwashdata.github.io/fairenough/reference/process_clean.md)
+  : Clean data with standard transformations
+- [`process_data()`](https://openwashdata.github.io/fairenough/reference/process_data.md)
+  : Process all data files
+- [`prompt_confirm()`](https://openwashdata.github.io/fairenough/reference/prompt_confirm.md)
+  : Yes/No confirmation
+- [`prompt_input()`](https://openwashdata.github.io/fairenough/reference/prompt_input.md)
+  : General-purpose prompting utilities for R
+- [`prompt_menu()`](https://openwashdata.github.io/fairenough/reference/prompt_menu.md)
+  : Menu selection using utils::menu()
+- [`prompt_multi_select()`](https://openwashdata.github.io/fairenough/reference/prompt_multi_select.md)
+  : Multiple selection menu
+- [`read_data()`](https://openwashdata.github.io/fairenough/reference/read_data.md)
+  : Read data from various sources
+- [`save_metadata()`](https://openwashdata.github.io/fairenough/reference/save_metadata.md)
+  : Save metadata to DESCRIPTION file
+- [`setup()`](https://openwashdata.github.io/fairenough/reference/setup.md)
+  : Setup wrapper
+- [`setup_package()`](https://openwashdata.github.io/fairenough/reference/setup_package.md)
+  : Setup fairenough project structure
+- [`show_checklist()`](https://openwashdata.github.io/fairenough/reference/show_checklist.md)
+  : Display formatted checklist to user
+- [`use_template()`](https://openwashdata.github.io/fairenough/reference/use_template.md)
+  : Use a template file with data substitution
+- [`validate_data_frame()`](https://openwashdata.github.io/fairenough/reference/validate_data_frame.md)
+  : Validate data frame
+- [`validate_file_path()`](https://openwashdata.github.io/fairenough/reference/validate_file_path.md)
+  : Validate file path
+- [`validate_setup_completed()`](https://openwashdata.github.io/fairenough/reference/validate_setup_completed.md)
+  : Validate setup completion status
+- [`validate_email()`](https://openwashdata.github.io/fairenough/reference/validators.md)
+  [`validate_package_name()`](https://openwashdata.github.io/fairenough/reference/validators.md)
+  [`validate_orcid()`](https://openwashdata.github.io/fairenough/reference/validators.md)
+  [`validate_date()`](https://openwashdata.github.io/fairenough/reference/validators.md)
+  [`validate_url()`](https://openwashdata.github.io/fairenough/reference/validators.md)
+  : Common validators
