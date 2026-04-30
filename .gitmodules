@@ -1,3 +1,0 @@
-[submodule "tests/palmerpenguins"]
-	path = tests/palmerpenguins
-	url = https://github.com/openwashdata/palmerpenguins.git

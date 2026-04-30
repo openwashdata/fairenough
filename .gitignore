@@ -8,7 +8,6 @@ inst/doc
 CLAUDE.md
 tests/*
 !tests/testthat
-!tests/palmerpenguins
 TODO/
 legacy
 .claude
