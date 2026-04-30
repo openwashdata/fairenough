@@ -14,7 +14,7 @@ Tick boxes as items land.
   (`!tests/palmerpenguins`), `.Rbuildignore` (`tests/palmerpenguins`).
   The submodule's content reappears in Phase 5 as a vignette. *(15 min)*
 
-- [ ] **1.2 Drop `rv`.** Delete `rproject.toml`, `rv.lock`, and the `rv/`
+- [x] **1.2 Drop `rv`.** Delete `rproject.toml`, `rv.lock`, and the `rv/`
   ignore entries from `.gitignore` / `.Rbuildignore`. Document the dev
   workflow as `devtools::install_deps(dependencies = TRUE)` in a
   `CONTRIBUTING.md` (or a section of `README.Rmd`). CRAN doesn't care

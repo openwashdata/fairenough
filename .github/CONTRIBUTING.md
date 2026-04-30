@@ -1,3 +1,14 @@
+## SETUP
+
+Clone the repository, then install development dependencies from `DESCRIPTION`:
+
+```r
+devtools::install_deps(dependencies = TRUE)
+devtools::load_all()
+```
+
+R ≥ 4.1.0 is required.
+
 ## COMMITS
 This project follows [conventional commits](https://www.conventionalcommits.org/)
 

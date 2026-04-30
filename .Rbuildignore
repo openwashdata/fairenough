@@ -13,9 +13,6 @@
 CLAUDE\.md
 TODO
 legacy
-rv/
-rproject\.toml
-rv\.lock
 CITATION.cff
 ^README\.Rmd$
 ^README\.html$
