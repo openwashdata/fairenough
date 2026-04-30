@@ -50,6 +50,17 @@ Tick boxes as items land.
   truth and regenerate the other (typically `CITATION.cff` →
   `cffr::cff_write_citation()` → `inst/CITATION`). *(15 min)*
 
+- [ ] **2.5 Fix `prompt_multi_select(allow_other = TRUE)` runtime bug**
+  in `collect_metadata` (Zenodo communities prompt). `prompt_multi_select`
+  does not accept `allow_other`. Either add the argument to its
+  signature (and implement) or drop the call. Surfaced by R CMD check
+  "checking R code for possible problems" NOTE. *(15 min)*
+
+- [ ] **2.6 Strip non-ASCII characters from `R/utils.R`.** Surfaced as a
+  CRAN-blocking WARNING. Run `tools::showNonASCIIfile("R/utils.R")` to
+  locate them; replace with ASCII equivalents or `\uxxxx` escapes per
+  CRAN's portability rule. *(15 min)*
+
 ## Phase 3 — Public API surface (CRAN reviewers will ask)
 
 - [ ] **3.1 Mark internals `@keywords internal` and prune NAMESPACE
@@ -60,6 +71,18 @@ Tick boxes as items land.
   `is_supported_file_type`, `get_supported_extensions`. Make the
   `validate_*_completed` family consistent (export all 5 or none).
   *(2 hr — must run R CMD check after to catch external uses)*
+
+- [ ] **3.2 Add missing `@param` docs.** R CMD check WARNING flagged
+  five undocumented args: `build()` `good_practice`; `build_readme()`
+  `quarto`; `check_description_exists()` `base_path`; `gendict()`
+  `verbose` and `...`; `validators` (the shared Rd) `x`. *(20 min)*
+
+- [ ] **3.3 Audit unused `Imports`.** R CMD check NOTE listed
+  `fontawesome`, `gt`, `knitr`, `pkgdown`, `roxygen2`, `stringr` as
+  declared in `Imports:` but never imported from. For each: confirm it
+  is truly unused, then drop from `DESCRIPTION` or move to `Suggests`.
+  Some may become real `Imports` once Phase 5's vignette lands
+  (`knitr`, `rmarkdown`). *(30 min)*
 
 ## Phase 4 — Tests (must pass with no network / no API keys)
 
@@ -156,8 +179,11 @@ Tick boxes as items land.
 
 ## Effort summary
 
-~25–30 hours of focused work across the seven phases. Phase 1 is ~40
+~26–32 hours of focused work across the seven phases. Phase 1 is ~40
 minutes and unblocks everything below.
+
+A baseline `devtools::check()` after Phase 1 returned 0 errors,
+3 warnings, 3 notes — items 2.5, 2.6, 3.2, 3.3 address these directly.
 
 ## Workflow notes
 
