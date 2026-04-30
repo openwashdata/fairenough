@@ -20,7 +20,7 @@ Tick boxes as items land.
   `CONTRIBUTING.md` (or a section of `README.Rmd`). CRAN doesn't care
   about lockfiles. *(15 min)*
 
-- [ ] **1.3 Add `R-CMD-check` GitHub Actions workflow.**
+- [x] **1.3 Add `R-CMD-check` GitHub Actions workflow.**
   `usethis::use_github_action_check_standard()` (matrix of release/devel/
   oldrel × OS). Enable the badge in `README.Rmd`. **No further work makes
   sense without this** — it is the feedback loop for everything below.

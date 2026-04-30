@@ -1,9 +1,9 @@
 
 # fairenough
 
-<!-- Badges will go here: CI status, CRAN status, coverage, etc. -->
+[![R-CMD-check](https://github.com/openwashdata/fairenough/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/openwashdata/fairenough/actions/workflows/R-CMD-check.yaml)
 
-<!-- ![R-CMD-check](badge-placeholder) [![CRAN status](badge-placeholder)](link) [![Codecov](badge-placeholder)](link) -->
+<!-- [![CRAN status](badge-placeholder)](link) [![Codecov](badge-placeholder)](link) -->
 
 Convert tidy data into R packages with documentation websites and
 intelligent AI descriptions. **fairenough** prepares your data for
