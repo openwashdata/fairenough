@@ -56,7 +56,7 @@ Tick boxes as items land.
   signature (and implement) or drop the call. Surfaced by R CMD check
   "checking R code for possible problems" NOTE. *(15 min)*
 
-- [ ] **2.6 Strip non-ASCII characters from `R/utils.R`.** Surfaced as a
+- [x] **2.6 Strip non-ASCII characters from `R/utils.R`.** Surfaced as a
   CRAN-blocking WARNING. Run `tools::showNonASCIIfile("R/utils.R")` to
   locate them; replace with ASCII equivalents or `\uxxxx` escapes per
   CRAN's portability rule. *(15 min)*

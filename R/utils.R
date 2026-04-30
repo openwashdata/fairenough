@@ -620,21 +620,21 @@ show_checklist <- function(validation, title, verbose = TRUE) {
   if (!verbose) return(invisible(NULL))
   
   # Show summary
-  status <- if (validation$all_required_passed) "✅" else "❌"
+  status <- if (validation$all_required_passed) "\u2705" else "\u274C"
   cli::cli_h3("{status} {title}: {validation$passed_checks}/{validation$total_checks} checks passed")
   
   # Show individual items
   for (item in validation$items) {
-    icon <- if (item$passed) "✅" else "❌"
+    icon <- if (item$passed) "\u2705" else "\u274C"
     
     cli::cli_text("{icon} {item$name}: {item$description}")
     
     if (!item$passed && !is.null(item$details)) {
-      cli::cli_alert_info("  → {item$details}")
+      cli::cli_alert_info("  \u2192 {item$details}")
     }
     
     if (!item$passed && !is.null(item$error)) {
-      cli::cli_alert_warning("  → Error: {item$error}")
+      cli::cli_alert_warning("  \u2192 Error: {item$error}")
     }
   }
   
