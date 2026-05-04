@@ -8,13 +8,11 @@ inst/doc
 CLAUDE.md
 tests/*
 !tests/testthat
-!tests/palmerpenguins
 TODO/
 legacy
 .claude
 /.quarto/
 docs/
-rv/
 data_raw/
 *.bk*
 *.DS_Store

@@ -13,10 +13,6 @@
 CLAUDE\.md
 TODO
 legacy
-tests/palmerpenguins
-rv/
-rproject\.toml
-rv\.lock
 CITATION.cff
 ^README\.Rmd$
 ^README\.html$
