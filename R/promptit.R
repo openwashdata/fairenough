@@ -339,6 +339,7 @@ prompt_confirm <- function(message, value = NULL, default = TRUE) {
 #' Common validators
 #'
 #' @name validators
+#' @param x Character vector to validate
 #' @return Function that returns TRUE for valid input, FALSE otherwise
 NULL
 

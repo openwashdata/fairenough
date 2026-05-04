@@ -72,10 +72,12 @@ Tick boxes as items land.
   `validate_*_completed` family consistent (export all 5 or none).
   *(2 hr — must run R CMD check after to catch external uses)*
 
-- [ ] **3.2 Add missing `@param` docs.** R CMD check WARNING flagged
+- [x] **3.2 Add missing `@param` docs.** R CMD check WARNING flagged
   five undocumented args: `build()` `good_practice`; `build_readme()`
   `quarto`; `check_description_exists()` `base_path`; `gendict()`
-  `verbose` and `...`; `validators` (the shared Rd) `x`. *(20 min)*
+  `verbose` and `...`; `validators` (the shared Rd) `x`. `build()`
+  `good_practice` was a dead arg — dropped instead of documented; see
+  6.8 for the orphan it surfaced. *(20 min)*
 
 - [ ] **3.3 Audit unused `Imports`.** R CMD check NOTE listed
   `fontawesome`, `gt`, `knitr`, `pkgdown`, `roxygen2`, `stringr` as
@@ -157,6 +159,16 @@ Tick boxes as items land.
 - [ ] **6.7 Decompose `save_metadata()`** (R/collect_metadata.R:498,
   192 lines). Split out the `Config/*` JSON-encoded fields writer into
   `.save_config_fields`. *(1 hr)*
+
+- [ ] **6.8 Resolve orphaned `.validate_package()`** (R/build_package.R:103).
+  Surfaced during 3.2: `.validate_package()` accepts and uses
+  `good_practice` (calls `goodpractice::gp()`) but has no callers
+  anywhere in the package. Decide: (a) wire it up — add `good_practice`
+  to `build_package()`'s signature and have it call `.validate_package`,
+  then forward from `build()`; or (b) delete `.validate_package()` and
+  its Rd. Either way, document the decision in commit. Plan item 7.4
+  (run `goodpractice::gp()` on `fairenough` itself) is a *developer*
+  check and doesn't depend on this. *(30 min)*
 
 ## Phase 7 — Pre-CRAN polish
 

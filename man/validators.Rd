@@ -19,6 +19,9 @@ validate_date(x)
 
 validate_url(x)
 }
+\arguments{
+\item{x}{Character vector to validate}
+}
 \value{
 Function that returns TRUE for valid input, FALSE otherwise
 }

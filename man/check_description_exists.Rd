@@ -6,6 +6,9 @@
 \usage{
 check_description_exists(base_path)
 }
+\arguments{
+\item{base_path}{Base path for the project}
+}
 \description{
 These functions validate actual completion status using comprehensive checklists.
 Each validation returns detailed results about what's complete and what's missing.

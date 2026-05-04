@@ -333,6 +333,7 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
 #' @param overwrite Whether to overwrite README.qmd found at base_path
+#' @param quarto Whether to use Quarto to build readme (default: FALSE)
 #' @return Path to generated README
 #' @export
 build_readme <- function(

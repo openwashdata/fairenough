@@ -8,7 +8,6 @@ build(
   base_path = NULL,
   verbose = TRUE,
   overwrite = TRUE,
-  good_practice = FALSE,
   validate = TRUE,
   preview = TRUE,
   quarto = FALSE

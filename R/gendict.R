@@ -283,6 +283,9 @@ NULL
 #' @param sample_size Number of sample values to show
 #' @param method Processing method (sequential, sequential_fresh, parallel)
 #' @param test_llm_connection Whether to test LLM connection first
+#' @param verbose Whether to show detailed messages (default: FALSE)
+#' @param ... Additional arguments. Currently unused; reserved for future
+#'   extensions.
 #' @return Tibble with variable names and descriptions
 #' @export
 gendict <- function(
