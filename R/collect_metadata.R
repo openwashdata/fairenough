@@ -309,8 +309,7 @@ collect_metadata <- function(
             "Data Science" = "data-science",
             "Open Science" = "open-science"
           ),
-          title = "Select Zenodo communities",
-          allow_other = TRUE
+          title = "Select Zenodo communities"
         )
       }
     }

@@ -50,7 +50,7 @@ Tick boxes as items land.
   truth and regenerate the other (typically `CITATION.cff` →
   `cffr::cff_write_citation()` → `inst/CITATION`). *(15 min)*
 
-- [ ] **2.5 Fix `prompt_multi_select(allow_other = TRUE)` runtime bug**
+- [x] **2.5 Fix `prompt_multi_select(allow_other = TRUE)` runtime bug**
   in `collect_metadata` (Zenodo communities prompt). `prompt_multi_select`
   does not accept `allow_other`. Either add the argument to its
   signature (and implement) or drop the call. Surfaced by R CMD check
