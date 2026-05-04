@@ -1,5 +1,7 @@
 # fairenough
 
+[![R-CMD-check](https://github.com/openwashdata/fairenough/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/openwashdata/fairenough/actions/workflows/R-CMD-check.yaml)
+
 Convert tidy data into R packages with documentation websites and
 intelligent AI descriptions. **fairenough** prepares your data for
 publication in one click.
@@ -35,6 +37,7 @@ fairenough!](https://openwashdata.github.io/palmerpenguins/)**
 provider
 
 ``` r
+
 install.packages("pak")
 pak::pkg_install("openwashdata/fairenough")
 ```
@@ -47,6 +50,7 @@ pak::pkg_install("openwashdata/fairenough")
 - Run
 
 ``` r
+
 library(fairenough)
 
 fairenough()
@@ -65,6 +69,7 @@ fairenough()
 ## Quick Start with Ellmer
 
 ``` r
+
 # 1. Set up your LLM chat object (see options below)
 chat <- ellmer::chat_openai(model = "gpt-4o-mini", api_args = list(temperature = 0.3), api_key = "")
 
@@ -80,6 +85,7 @@ fairenough(chat)
   →](https://ellmer.tidyverse.org/reference/index.html)
 
 ``` r
+
 # OpenAI
 chat <- ellmer::chat_openai()
 
@@ -111,6 +117,7 @@ commits](https://www.conventionalcommits.org/).
 **Development workflow:**
 
 ``` r
+
 # Test new functions
 roxygen2::roxygenise(clean = TRUE)
 devtools::load_all()
