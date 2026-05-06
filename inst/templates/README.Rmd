@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 
 # Load required packages with better error handling
-required_packages <- c("desc", "dplyr", "readr", "gt", 
+required_packages <- c("desc", "dplyr", "readr", "gt",
                        "fontawesome", "stringr", "fairenough")
 
 for (pkg in required_packages) {
@@ -178,7 +178,7 @@ display_data_preview <- function(data, max_cols = 10) {
     head(3) |>
     (\(x) if (ncol(x) > display_cols) dplyr::select(x, 1:display_cols) else x)() |>
     dplyr::mutate(
-      dplyr::across(dplyr::where(is.character), 
+      dplyr::across(dplyr::where(is.character),
                    ~ stringr::str_trunc(., width = 50, ellipsis = "..."))
     )
   

@@ -79,12 +79,19 @@ Tick boxes as items land.
   `good_practice` was a dead arg — dropped instead of documented; see
   6.8 for the orphan it surfaced. *(20 min)*
 
-- [ ] **3.3 Audit unused `Imports`.** R CMD check NOTE listed
+- [x] **3.3 Audit unused `Imports`.** R CMD check NOTE listed
   `fontawesome`, `gt`, `knitr`, `pkgdown`, `roxygen2`, `stringr` as
   declared in `Imports:` but never imported from. For each: confirm it
   is truly unused, then drop from `DESCRIPTION` or move to `Suggests`.
-  Some may become real `Imports` once Phase 5's vignette lands
-  (`knitr`, `rmarkdown`). *(30 min)*
+  `knitr` stays in `Suggests` after Phase 5 (CRAN convention for
+  `VignetteBuilder` packages — vignettes run at build time, not user
+  runtime). `rmarkdown` is already a real `Imports` (used by
+  `build_readme()`'s Rmarkdown branch) and stays there. Resolution:
+  dropped `roxygen2` (only metadata, transitively pulled by `devtools`);
+  moved `fontawesome`, `gt`, `knitr`, `pkgdown`, `stringr` to
+  `Suggests`. Templates' existing `requireNamespace()` loop already
+  handles missing optional packages with a clear stop() message.
+  *(30 min)*
 
 ## Phase 4 — Tests (must pass with no network / no API keys)
 
