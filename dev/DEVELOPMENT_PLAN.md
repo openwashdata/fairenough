@@ -196,7 +196,7 @@ Tick boxes as items land.
 - [ ] **7.5 Update `README.Rmd` badges.** Replace the placeholder block
   with real R-CMD-check / lifecycle / CRAN-status badges. *(15 min)*
 
-- [ ] **7.6 Re-tighten R-CMD-check `error-on`.** Phase 1.3 set
+- [x] **7.6 Re-tighten R-CMD-check `error-on`.** Phase 1.3 set
   `error-on: '"error"'` in `.github/workflows/R-CMD-check.yaml` so the
   workflow could merge while Phase 2/3 cleanups landed. Once
   `devtools::check()` is 0W/0N, delete the line (default `"warning"`)
