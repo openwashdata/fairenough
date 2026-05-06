@@ -28,6 +28,10 @@ build_readme(
 
   Whether to overwrite README.qmd found at base_path
 
+- quarto:
+
+  Whether to use Quarto to build readme (default: FALSE)
+
 ## Value
 
 Path to generated README

@@ -43,6 +43,15 @@ gendict(
 
   Whether to test LLM connection first
 
+- verbose:
+
+  Whether to show detailed messages (default: FALSE)
+
+- ...:
+
+  Additional arguments. Currently unused; reserved for future
+  extensions.
+
 ## Value
 
 Tibble with variable names and descriptions

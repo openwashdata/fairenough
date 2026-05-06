@@ -16,6 +16,12 @@ validate_date(x)
 validate_url(x)
 ```
 
+## Arguments
+
+- x:
+
+  Character vector to validate
+
 ## Value
 
 Function that returns TRUE for valid input, FALSE otherwise

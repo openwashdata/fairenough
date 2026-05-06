@@ -9,3 +9,9 @@ complete and what's missing.
 ``` r
 check_description_exists(base_path)
 ```
+
+## Arguments
+
+- base_path:
+
+  Base path for the project
