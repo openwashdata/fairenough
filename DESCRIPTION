@@ -31,29 +31,28 @@ Imports:
     janitor,
     readr,
     readxl,
-    roxygen2,
     tools,
     usethis,
     whisker,
     cffr,
-    pkgdown,
     rmarkdown,
     quarto,
-    knitr,
     withr,
-    ellmer, 
-    glue, 
-    jsonlite, 
-    tibble, 
-    spelling, 
-    rstudioapi, 
-    goodpractice,
-    gt,
+    ellmer,
+    glue,
+    jsonlite,
+    tibble,
+    spelling,
+    rstudioapi,
+    goodpractice
+Suggests:
     fontawesome,
-    stringr
-Suggests: 
-    testthat,
-VignetteBuilder: 
+    gt,
+    knitr,
+    pkgdown,
+    stringr,
+    testthat
+VignetteBuilder:
     knitr
 Config/Needs/website: rmarkdown
 Config/testthat/edition: 3

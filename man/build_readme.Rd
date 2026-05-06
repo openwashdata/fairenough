@@ -17,6 +17,8 @@ build_readme(
 \item{verbose}{Whether to show messages}
 
 \item{overwrite}{Whether to overwrite README.qmd found at base_path}
+
+\item{quarto}{Whether to use Quarto to build readme (default: FALSE)}
 }
 \value{
 Path to generated README

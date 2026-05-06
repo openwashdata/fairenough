@@ -27,6 +27,11 @@ gendict(
 \item{method}{Processing method (sequential, sequential_fresh, parallel)}
 
 \item{test_llm_connection}{Whether to test LLM connection first}
+
+\item{verbose}{Whether to show detailed messages (default: FALSE)}
+
+\item{...}{Additional arguments. Currently unused; reserved for future
+extensions.}
 }
 \value{
 Tibble with variable names and descriptions

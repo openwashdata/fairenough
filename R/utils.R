@@ -320,9 +320,11 @@ use_template <- function(
 }
 
 #' Validation system for fairenough pipeline steps
-#' 
+#'
 #' These functions validate actual completion status using comprehensive checklists.
 #' Each validation returns detailed results about what's complete and what's missing.
+#'
+#' @param base_path Base path for the project
 #'
 
 # Simple validation helper functions for setup
