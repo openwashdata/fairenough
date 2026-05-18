@@ -77,7 +77,8 @@ setup_package <- function(
   files_moved <- .move_data_files(
     raw_dir = raw_dir,
     base_path = base_path,
-    verbose = verbose
+    verbose = verbose,
+    overwrite = overwrite
   )
 
   # Setup gitignore if requested
@@ -138,15 +139,21 @@ setup_package <- function(
 #' Move data files to raw data directory
 #'
 #' Moves CSV and Excel files from the project root to the data_raw directory.
+#' By default the user is asked to confirm the move and the function aborts
+#' if any destination file already exists. Pass `overwrite = TRUE` to skip
+#' the prompt and replace existing destination files.
 #'
 #' @param raw_dir Name of the raw data directory
 #' @param base_path Base path for the project
 #' @param verbose Whether to show messages
+#' @param overwrite Skip the confirmation prompt and overwrite existing
+#'   destination files (default: FALSE)
 #' @return Character vector of moved files
 .move_data_files <- function(
   raw_dir = "data_raw",
   base_path = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  overwrite = FALSE
 ) {
   base_path <- get_base_path(base_path)
   data_path <- file.path(base_path, raw_dir)
@@ -158,32 +165,57 @@ setup_package <- function(
   # Filter out files already in raw_dir
   data_files <- data_files[!grepl(paste0("/", raw_dir, "/"), data_files)]
 
-  moved_files <- character()
+  if (length(data_files) == 0) {
+    if (verbose) cli::cli_alert_info("No data files found in project root")
+    return(character())
+  }
 
-  if (length(data_files) > 0) {
+  file_names <- basename(data_files)
+  new_paths <- file.path(data_path, file_names)
+  collisions <- file_names[file.exists(new_paths)]
+
+  if (length(collisions) > 0 && !overwrite) {
+    cli::cli_abort(c(
+      "Refusing to move files: would overwrite existing file{?s} in {.path {raw_dir}/}.",
+      "i" = "Conflicting file{?s}: {.file {collisions}}",
+      "i" = "Remove {?it/them} or re-run with {.code overwrite = TRUE}."
+    ))
+  }
+
+  if (!overwrite) {
     if (verbose) {
-      cli::cli_alert_info("Found {length(data_files)} data file{?s} to move")
+      cli::cli_alert_info(
+        "About to move {length(data_files)} data file{?s} into {.path {raw_dir}/}:"
+      )
+      cli::cli_ul(file_names)
+    }
+    if (!prompt_confirm("Proceed with the move?", default = FALSE)) {
+      if (verbose) cli::cli_alert_info("No files moved.")
+      return(character())
+    }
+  }
+
+  moved_files <- character()
+  for (i in seq_along(data_files)) {
+    file_name <- file_names[i]
+    new_path <- new_paths[i]
+
+    if (overwrite && file.exists(new_path)) {
+      file.remove(new_path)
     }
 
-    for (file in data_files) {
-      file_name <- basename(file)
-      new_path <- file.path(data_path, file_name)
-
-      if (file.rename(file, new_path)) {
-        moved_files <- c(moved_files, file_name)
-        if (verbose) {
-          cli::cli_alert_success(
-            "Moved {.file {file_name}} to {.path {raw_dir}/}"
-          )
-        }
-      } else {
-        if (verbose) {
-          cli::cli_alert_warning("Could not move {.file {file_name}}")
-        }
+    if (file.rename(data_files[i], new_path)) {
+      moved_files <- c(moved_files, file_name)
+      if (verbose) {
+        cli::cli_alert_success(
+          "Moved {.file {file_name}} to {.path {raw_dir}/}"
+        )
+      }
+    } else {
+      if (verbose) {
+        cli::cli_alert_warning("Could not move {.file {file_name}}")
       }
     }
-  } else {
-    if (verbose) cli::cli_alert_info("No data files found in project root")
   }
 
   return(moved_files)

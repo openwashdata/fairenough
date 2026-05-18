@@ -34,7 +34,7 @@ Tick boxes as items land.
   with getter/setter on it. CRAN explicitly forbids persistent session
   state mutation. *(1 hr)*
 
-- [ ] **2.2 Confirm-before-rename in `setup_package`** (R/setup_package.R:172).
+- [x] **2.2 Confirm-before-rename in `setup_package`** (R/setup_package.R:172).
   Currently silently `file.rename`s files matched by extension into
   `data_raw/`. Add a confirmation prompt and an abort when files would
   be overwritten. *(30 min)*
