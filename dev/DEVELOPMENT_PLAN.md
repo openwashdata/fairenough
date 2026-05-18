@@ -28,7 +28,7 @@ Tick boxes as items land.
 
 ## Phase 2 — Correctness bugs (CRAN-blocking, user-affecting)
 
-- [ ] **2.1 Stop mutating global `options()`** in `get_base_path` /
+- [x] **2.1 Stop mutating global `options()`** in `get_base_path` /
   `get_raw_dir` (R/utils.R:21, 41, 57, 70). Replace with a
   package-internal env: `.fairenough_state <- new.env(parent = emptyenv())`,
   with getter/setter on it. CRAN explicitly forbids persistent session

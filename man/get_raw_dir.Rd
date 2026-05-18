@@ -13,7 +13,8 @@ get_raw_dir(raw_dir = NULL)
 Normalized base path
 }
 \description{
-This function provides a consistent way to handle raw_dir across all fairenough functions.
-If raw_dir is provided, it sets the global option and returns the normalized path.
-If raw_dir is NULL, it checks for the global option, falling back to "data_raw"
+Provides a consistent way to handle \code{raw_dir} across all fairenough
+functions. If \code{raw_dir} is provided, it is cached in a package-private
+environment and returned. If \code{raw_dir} is \code{NULL}, the cached value is
+returned when set, otherwise \code{"data_raw"} is used as the default.
 }
