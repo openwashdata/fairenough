@@ -13,6 +13,5 @@
 CLAUDE\.md
 TODO
 legacy
-CITATION.cff
-^README\.Rmd$
 ^README\.html$
+^CITATION\.cff$

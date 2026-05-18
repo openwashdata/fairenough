@@ -44,11 +44,17 @@ Tick boxes as items land.
   `cli::cli_abort`. Replace soft-deprecated `usethis::ui_yeah` at
   `utils.R:287` with `cli::cli_inform` + a `prompt_confirm` call. *(20 min)*
 
-- [ ] **2.4 Sync `inst/CITATION` with `DESCRIPTION` authors.** Adriana
+- [x] **2.4 Sync `inst/CITATION` with `DESCRIPTION` authors.** Adriana
   is `aut, cre` in `DESCRIPTION` but missing from `inst/CITATION`.
   Decide whether `CITATION.cff` or `inst/CITATION` is the source of
   truth and regenerate the other (typically `CITATION.cff` →
-  `cffr::cff_write_citation()` → `inst/CITATION`). *(15 min)*
+  `cffr::cff_write_citation()` → `inst/CITATION`). Resolution:
+  `DESCRIPTION` is the source of truth; `CITATION.cff` regenerated via
+  `cffr::cff_write()` and `inst/CITATION` regenerated via
+  `cffr::as_bibentry()` + `cffr::cff_write_citation()`. The pre-existing
+  `inst/CITATION` had to be deleted before regen because cffr otherwise
+  embeds its content as a `preferred-citation` block and round-trips
+  the stale author list. *(15 min)*
 
 - [x] **2.5 Fix `prompt_multi_select(allow_other = TRUE)` runtime bug**
   in `collect_metadata` (Zenodo communities prompt). `prompt_multi_select`
