@@ -522,7 +522,7 @@ DESCRIPTION:"
         method,
         sequential = .gendict_sequential_chat(chat, column_prompts, col_names),
         parallel = .gendict_parallel_chat(chat, column_prompts, col_names),
-        stop("Unknown method: ", method)
+        cli::cli_abort("Unknown method: {.val {method}}")
       )
 
       # Create the final dictionary with variable names, descriptions, and examples/ranges

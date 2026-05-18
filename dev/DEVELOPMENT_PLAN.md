@@ -39,7 +39,7 @@ Tick boxes as items land.
   `data_raw/`. Add a confirmation prompt and an abort when files would
   be overwritten. *(30 min)*
 
-- [ ] **2.3 Standardize error emission.** Replace plain `stop()` at
+- [x] **2.3 Standardize error emission.** Replace plain `stop()` at
   `build_license.R:181, 186, 192` and `gendict.R:522` with
   `cli::cli_abort`. Replace soft-deprecated `usethis::ui_yeah` at
   `utils.R:287` with `cli::cli_inform` + a `prompt_confirm` call. *(20 min)*

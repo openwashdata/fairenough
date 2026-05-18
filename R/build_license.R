@@ -176,27 +176,21 @@ match_license <- function(license) {
 #' @return Invisible TRUE if successful
 #' @export
 build_license <- function(license, ...) {
-  # Check if usethis is available
   if (!requireNamespace("usethis", quietly = TRUE)) {
-    stop("The 'usethis' package is required but not installed.", call. = FALSE)
+    cli::cli_abort("The {.pkg usethis} package is required but not installed.")
   }
 
-  # Validate and match license
   if (is.null(license) || is.na(license) || trimws(license) == "") {
-    stop("License cannot be NULL, NA, or empty string.", call. = FALSE)
+    cli::cli_abort("License cannot be {.code NULL}, {.code NA}, or empty string.")
   }
 
   matched_license <- match_license(license)
   if (is.null(matched_license)) {
-    available <- paste(get_available_licenses("description"), collapse = "\n  ")
-    stop(
-      "Unknown license: '",
-      license,
-      "'.\n",
-      "Available licenses:\n  ",
-      available,
-      call. = FALSE
-    )
+    available <- get_available_licenses("description")
+    cli::cli_abort(c(
+      "Unknown license: {.val {license}}.",
+      "i" = "Available licenses: {.val {available}}"
+    ))
   }
 
   # Get configuration and call appropriate function

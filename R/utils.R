@@ -284,11 +284,8 @@ use_template <- function(
   # Check if file exists and prompt
   if (file.exists(output_path)) {
     if (interactive()) {
-      if (
-        !usethis::ui_yeah(
-          "Overwrite pre-existing file {usethis::ui_path(save_as)}?"
-        )
-      ) {
+      cli::cli_inform("File {.path {save_as}} already exists.")
+      if (!prompt_confirm("Overwrite it?", default = FALSE)) {
         return(invisible(NULL))
       }
     }
