@@ -17,3 +17,4 @@ The validated data frame (throws error if invalid)
 \description{
 Validate data frame
 }
+\keyword{internal}

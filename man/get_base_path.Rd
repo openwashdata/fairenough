@@ -19,3 +19,4 @@ package-private environment, and returned. If \code{base_path} is \code{NULL}, t
 cached value is returned when set, otherwise the function falls back to
 \code{\link[here:here]{here::here()}} or the current directory.
 }
+\keyword{internal}

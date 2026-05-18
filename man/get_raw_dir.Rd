@@ -18,3 +18,4 @@ functions. If \code{raw_dir} is provided, it is cached in a package-private
 environment and returned. If \code{raw_dir} is \code{NULL}, the cached value is
 returned when set, otherwise \code{"data_raw"} is used as the default.
 }
+\keyword{internal}

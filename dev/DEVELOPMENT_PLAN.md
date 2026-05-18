@@ -69,13 +69,22 @@ Tick boxes as items land.
 
 ## Phase 3 — Public API surface (CRAN reviewers will ask)
 
-- [ ] **3.1 Mark internals `@keywords internal` and prune NAMESPACE
+- [x] **3.1 Mark internals `@keywords internal` and prune NAMESPACE
   from 44 → ~15 exports.** Demote: the four `prompt_*` helpers; the
   five field validators (`validate_url/email/orcid/date/package_name`);
   `ensure_directory`, `use_template`, `get_base_path`, `get_raw_dir`,
   `validate_data_frame`, `validate_file_path`, `filter_supported_files`,
   `is_supported_file_type`, `get_supported_extensions`. Make the
   `validate_*_completed` family consistent (export all 5 or none).
+  Resolution: 18 functions demoted as listed. Family policy: exported
+  all 5 (`validate_setup_completed` already exported, added `@export`
+  to the other 4). Templates (`inst/templates/README.{Rmd,qmd}`)
+  rewritten to use `here::here()` and `readr::read_csv()` so generated
+  user packages no longer need fairenough as a render-time dependency
+  (decoupling beyond what plan strictly required). Tests calling bare
+  `is_supported_file_type()` / `filter_supported_files()` updated to
+  use `fairenough:::` prefix. NAMESPACE: 44 → 29 exports (further
+  prune of `*_package` / `*_data` aliases is left for a follow-up).
   *(2 hr — must run R CMD check after to catch external uses)*
 
 - [x] **3.2 Add missing `@param` docs.** R CMD check WARNING flagged

@@ -35,3 +35,4 @@ and use built-in R functions (utils::menu and readline) with cli for styling.
 All functions handle non-interactive sessions gracefully.
 Text input with validation
 }
+\keyword{internal}

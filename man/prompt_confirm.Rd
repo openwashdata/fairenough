@@ -19,3 +19,4 @@ Logical TRUE or FALSE
 \description{
 Yes/No confirmation
 }
+\keyword{internal}

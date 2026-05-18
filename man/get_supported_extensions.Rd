@@ -12,3 +12,4 @@ Character vector of supported file extensions (without dots)
 \description{
 Get supported file extensions
 }
+\keyword{internal}
