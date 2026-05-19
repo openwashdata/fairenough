@@ -160,6 +160,19 @@ Tick boxes as items land.
   `setup`, `process`, `collect`, `generate`, `build`. Use `\dontrun{}`
   for anything filesystem-mutating. *(1 hr)*
 
+- [ ] **5.4 Populate the generated user package's `Suggests:` with
+  README render-time deps.** `setup_package()` calls
+  `usethis::create_package()` which produces a minimal `DESCRIPTION`.
+  The README templates copied in by `build_readme()`
+  (`inst/templates/README.{Rmd,qmd}`) require `desc`, `dplyr`, `readr`,
+  `gt`, `fontawesome`, `stringr`, and `here` at render time, but none
+  are declared in the new package's `DESCRIPTION`. Result: README
+  renders only on machines that happen to have all seven installed.
+  Add a step (in `setup_package()` or `build_readme()`) that writes
+  these to the user package's `Suggests:` via `desc::desc_set_dep()`.
+  Surfaced post-3.1 when reviewing the template's dependency story.
+  *(30 min)*
+
 ## Phase 6 — Refactors (non-blocking; big readability wins)
 
 - [ ] **6.1 Strip ~25 `cat("DEBUG: ...")` scaffolding lines** in
