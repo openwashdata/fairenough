@@ -326,6 +326,37 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   return(invisible(TRUE))
 }
 
+# Declare the packages the README templates (inst/templates/README.{Rmd,qmd})
+# need at render time in the user's package DESCRIPTION:Suggests, so the
+# README still knits on machines that don't happen to have all of them
+# installed. Skips any package already declared under any dep type, so
+# we never silently move an Import to Suggests.
+.add_readme_render_suggests <- function(base_path, verbose = TRUE) {
+  desc_path <- file.path(base_path, "DESCRIPTION")
+  if (!file.exists(desc_path)) return(invisible(character()))
+
+  render_deps <- c("desc", "dplyr", "readr", "gt", "fontawesome", "stringr", "here")
+
+  d <- desc::desc(file = desc_path)
+  existing <- d$get_deps()$package
+  to_add <- setdiff(render_deps, existing)
+
+  for (pkg in to_add) {
+    d$set_dep(pkg, type = "Suggests")
+  }
+
+  if (length(to_add) > 0) {
+    d$write()
+    if (verbose) {
+      cli::cli_alert_success(
+        "Added README render deps to {.path DESCRIPTION} Suggests: {.pkg {to_add}}"
+      )
+    }
+  }
+
+  invisible(to_add)
+}
+
 #' Build README from inst/templates/README.qmd
 #'
 #' Build README.md from the README.qmd template, incorporating package metadata.
@@ -345,6 +376,8 @@ build_readme <- function(
   base_path <- get_base_path(base_path)
   quarto_installed <- system("quarto --version", ignore.stderr = TRUE) == 0
   cli::cli_alert_info("Is Quarto installed: {quarto_installed}")
+
+  .add_readme_render_suggests(base_path, verbose = verbose)
 
   if (quarto && quarto_installed) {
     # Create README.qmd from template if it doesn't exist

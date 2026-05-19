@@ -193,7 +193,7 @@ Tick boxes as items land.
   and a non-interactive / LLM-backed form so the docs match what
   users actually need to write. *(1 hr)*
 
-- [ ] **5.4 Populate the generated user package's `Suggests:` with
+- [x] **5.4 Populate the generated user package's `Suggests:` with
   README render-time deps.** `setup_package()` calls
   `usethis::create_package()` which produces a minimal `DESCRIPTION`.
   The README templates copied in by `build_readme()`
@@ -204,7 +204,11 @@ Tick boxes as items land.
   Add a step (in `setup_package()` or `build_readme()`) that writes
   these to the user package's `Suggests:` via `desc::desc_set_dep()`.
   Surfaced post-3.1 when reviewing the template's dependency story.
-  *(30 min)*
+  Resolution: added `.add_readme_render_suggests(base_path)` helper
+  in `R/build_package.R` and called it at the top of `build_readme()`.
+  It uses `desc::desc()` to inspect existing deps and only adds
+  packages not already declared under any type, so never moves an
+  Import to Suggests. *(30 min)*
 
 ## Phase 6 — Refactors (non-blocking; big readability wins)
 
