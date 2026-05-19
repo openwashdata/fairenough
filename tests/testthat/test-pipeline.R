@@ -42,20 +42,6 @@ test_that("process handles data files correctly", {
   expect_true(validation$all_required_passed)
 })
 
-test_that("collect updates DESCRIPTION", {
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  on.exit(cleanup_temp_dir(temp_dir))
-  
-  suppressMessages(setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE))
-  
-  # Skip collect test in non-interactive mode (requires user input)
-  skip("collect() requires interactive input or mocking")
-  
-  # Check that DESCRIPTION was created/updated
-  expect_true(check_description_exists(temp_dir))
-})
-
 test_that("generate creates dictionary", {
   temp_dir <- tempfile()
   dir.create(temp_dir)
