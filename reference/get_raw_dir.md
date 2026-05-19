@@ -1,9 +1,9 @@
 # Get raw directory path with consistent handling across all functions
 
-This function provides a consistent way to handle raw_dir across all
-fairenough functions. If raw_dir is provided, it sets the global option
-and returns the normalized path. If raw_dir is NULL, it checks for the
-global option, falling back to "data_raw"
+Provides a consistent way to handle `raw_dir` across all fairenough
+functions. If `raw_dir` is provided, it is cached in a package-private
+environment and returned. If `raw_dir` is `NULL`, the cached value is
+returned when set, otherwise `"data_raw"` is used as the default.
 
 ## Usage
 

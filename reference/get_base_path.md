@@ -1,9 +1,11 @@
 # Get base path with consistent handling across all functions
 
-This function provides a consistent way to handle base_path across all
-fairenough functions. If base_path is provided, it sets the global
-option and returns the normalized path. If base_path is NULL, it checks
-for the global option, falling back to here::here() or "."
+Provides a consistent way to handle `base_path` across all fairenough
+functions. If `base_path` is provided, it is normalized, cached in a
+package-private environment, and returned. If `base_path` is `NULL`, the
+cached value is returned when set, otherwise the function falls back to
+[`here::here()`](https://here.r-lib.org/reference/here.html) or the
+current directory.
 
 ## Usage
 

@@ -55,9 +55,13 @@
 <url><loc>https://openwashdata.github.io/fairenough/reference/setup_package.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/show_checklist.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/use_template.html</loc></url>
+<url><loc>https://openwashdata.github.io/fairenough/reference/validate_build_completed.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/validate_data_frame.html</loc></url>
+<url><loc>https://openwashdata.github.io/fairenough/reference/validate_dictionary_completed.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/validate_file_path.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/validate_license_config.html</loc></url>
+<url><loc>https://openwashdata.github.io/fairenough/reference/validate_metadata_collected.html</loc></url>
+<url><loc>https://openwashdata.github.io/fairenough/reference/validate_processing_completed.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/validate_setup_completed.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/validators.html</loc></url>
 </urlset>
