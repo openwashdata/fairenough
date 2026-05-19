@@ -162,16 +162,28 @@ Tick boxes as items land.
 
 ## Phase 5 — Vignette: palmerpenguins demo
 
-- [ ] **5.1 Create a vignette** demonstrating the full pipeline on
+- [x] **5.1 Create a vignette** demonstrating the full pipeline on
   penguins: `vignettes/palmerpenguins-demo.Rmd`. Walks through setup →
   process → collect → generate → build, ending with the resulting
   package layout. Use `eval = FALSE` for the `chat` step (or the mock
   from 4.2) so it does not need an API key in CI. **This replaces the
-  role of the deleted submodule.** *(3 hr)*
+  role of the deleted submodule.** Resolution: hybrid execution —
+  setup/process/collect/generate run live during knit, `build()` is
+  shown as `eval = FALSE` so the vignette stays under a few seconds.
+  Uses an inline 5-line duck-typed `chat` mock so no API key is ever
+  needed. `palmerpenguins` added to `Suggests:` (the only practical
+  way to get a real dataset into a CRAN vignette); the entire vignette
+  is `eval = FALSE` when the package isn't installed, with a one-line
+  fallback message. *(3 hr)*
 
-- [ ] **5.2 Resolve the `VignetteBuilder` warning.** Once 5.1 lands,
+- [x] **5.2 Resolve the `VignetteBuilder` warning.** Once 5.1 lands,
   `DESCRIPTION`'s `VignetteBuilder: knitr` is justified. Update
-  `inst/doc` handling in `.gitignore` if needed. *(15 min)*
+  `inst/doc` handling in `.gitignore` if needed. Resolution: nothing
+  to do for `VignetteBuilder: knitr` (already declared, `knitr`
+  already in `Suggests:`). `devtools::build_vignettes()` auto-added
+  `/doc/` and `/Meta/` to `.gitignore` and the matching `^doc$` /
+  `^Meta$` to `.Rbuildignore` when 5.1's vignette first built; the
+  pre-existing `inst/doc` entry is also kept. *(15 min)*
 
 - [ ] **5.3 Add `@examples` to public functions.** Minimum: `fairenough`,
   `setup`, `process`, `collect`, `generate`, `build`. Use `\dontrun{}`

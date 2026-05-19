@@ -15,3 +15,5 @@ TODO
 legacy
 ^README\.html$
 ^CITATION\.cff$
+^doc$
+^Meta$
