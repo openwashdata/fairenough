@@ -14,7 +14,7 @@
 #' @param validator Function that returns TRUE for valid input
 #' @param validator_message Message to show when validation fails
 #' @return User input or default value
-#' @export
+#' @keywords internal
 prompt_input <- function(
   message,
   value = NULL,
@@ -93,7 +93,7 @@ prompt_input <- function(
 #' @param allow_other Add "Other (specify)" option
 #' @param graphics Whether to use graphical menu if available
 #' @return Selected value or NULL
-#' @export
+#' @keywords internal
 prompt_menu <- function(
   choices,
   title = "Select an option",
@@ -184,7 +184,7 @@ prompt_menu <- function(
 #' @param min_choices Minimum number of choices required
 #' @param max_choices Maximum number of choices allowed
 #' @return Character vector of selected values
-#' @export
+#' @keywords internal
 prompt_multi_select <- function(
   choices,
   title = "Select multiple options",
@@ -300,7 +300,7 @@ prompt_multi_select <- function(
 #' @param value Current value - if not NULL, returns it without prompting
 #' @param default Default choice (TRUE for yes, FALSE for no)
 #' @return Logical TRUE or FALSE
-#' @export
+#' @keywords internal
 prompt_confirm <- function(message, value = NULL, default = TRUE) {
   # If value already exists, return it
   if (!is.null(value)) {
@@ -344,31 +344,31 @@ prompt_confirm <- function(message, value = NULL, default = TRUE) {
 NULL
 
 #' @describeIn validators Email validator
-#' @export
+#' @keywords internal
 validate_email <- function(x) {
   grepl("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", x)
 }
 
 #' @describeIn validators Package name validator
-#' @export
+#' @keywords internal
 validate_package_name <- function(x) {
   grepl("^[a-zA-Z][a-zA-Z0-9.]*[a-zA-Z0-9]$", x)
 }
 
 #' @describeIn validators ORCID validator
-#' @export
+#' @keywords internal
 validate_orcid <- function(x) {
   grepl("^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$", x)
 }
 
 #' @describeIn validators Date validator (YYYY or YYYY-MM-DD)
-#' @export
+#' @keywords internal
 validate_date <- function(x) {
   grepl("^\\d{4}(-\\d{2}-\\d{2})?$", x)
 }
 
 #' @describeIn validators URL validator
-#' @export
+#' @keywords internal
 validate_url <- function(x) {
   grepl("^https?://[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}", x)
 }

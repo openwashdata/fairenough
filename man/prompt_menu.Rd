@@ -35,3 +35,4 @@ Selected value or NULL
 \description{
 Menu selection using utils::menu()
 }
+\keyword{internal}

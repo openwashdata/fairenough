@@ -5,30 +5,34 @@ NULL
 SUPPORTED_EXTENSIONS <- c("csv", "xlsx", "xls")
 SUPPORTED_EXTENSIONS_DOT <- c(".csv", ".xlsx", ".xls")
 
+# Package-private cache for path state shared across fairenough calls within
+# a session. CRAN forbids mutating global options() for persistent state, so
+# we keep it in the package namespace instead.
+.fairenough_state <- new.env(parent = emptyenv())
+
 #' Get base path with consistent handling across all functions
 #'
-#' This function provides a consistent way to handle base_path across all fairenough functions.
-#' If base_path is provided, it sets the global option and returns the normalized path.
-#' If base_path is NULL, it checks for the global option, falling back to here::here() or "."
+#' Provides a consistent way to handle `base_path` across all fairenough
+#' functions. If `base_path` is provided, it is normalized, cached in a
+#' package-private environment, and returned. If `base_path` is `NULL`, the
+#' cached value is returned when set, otherwise the function falls back to
+#' [here::here()] or the current directory.
 #'
 #' @param base_path Optional base path to set
 #' @return Normalized base path
-#' @export
+#' @keywords internal
 get_base_path <- function(base_path = NULL) {
-  # If base_path is provided, set it as option and use it
   if (!is.null(base_path)) {
     normalized_path <- normalizePath(base_path, mustWork = TRUE)
-    options(fairenough.base_path = normalized_path)
+    .fairenough_state$base_path <- normalized_path
     return(normalized_path)
   }
 
-  # Otherwise, check for existing option
-  stored_path <- getOption("fairenough.base_path")
+  stored_path <- .fairenough_state$base_path
   if (!is.null(stored_path)) {
     return(stored_path)
   }
 
-  # Fall back to here::here() or current directory
   default_path <- tryCatch(
     here::here(),
     error = function(e) {
@@ -38,36 +42,33 @@ get_base_path <- function(base_path = NULL) {
   )
 
   normalized_path <- normalizePath(default_path, mustWork = TRUE)
-  options(fairenough.base_path = normalized_path)
+  .fairenough_state$base_path <- normalized_path
   return(normalized_path)
 }
 
 #' Get raw directory path with consistent handling across all functions
 #'
-#' This function provides a consistent way to handle raw_dir across all fairenough functions.
-#' If raw_dir is provided, it sets the global option and returns the normalized path.
-#' If raw_dir is NULL, it checks for the global option, falling back to "data_raw"
+#' Provides a consistent way to handle `raw_dir` across all fairenough
+#' functions. If `raw_dir` is provided, it is cached in a package-private
+#' environment and returned. If `raw_dir` is `NULL`, the cached value is
+#' returned when set, otherwise `"data_raw"` is used as the default.
 #'
 #' @param raw_dir Optional base path to set
 #' @return Normalized base path
-#' @export
+#' @keywords internal
 get_raw_dir <- function(raw_dir = NULL) {
-  # If raw_dir is provided, set it as option and use it
   if (!is.null(raw_dir)) {
-    options(fairenough.raw_dir = raw_dir)
+    .fairenough_state$raw_dir <- raw_dir
     return(raw_dir)
   }
 
-  # Otherwise, check for existing option
-  stored_path <- getOption("fairenough.raw_dir")
+  stored_path <- .fairenough_state$raw_dir
   if (!is.null(stored_path)) {
     return(stored_path)
   }
 
-  # Fall back to data_raw
   default_path <- "data_raw"
-
-  options(fairenough.raw_dir = default_path)
+  .fairenough_state$raw_dir <- default_path
   return(default_path)
 }
 
@@ -120,7 +121,7 @@ read_data <- function(data, show_messages = TRUE) {
 
 #' Get supported file extensions
 #' @return Character vector of supported file extensions (without dots)
-#' @export
+#' @keywords internal
 get_supported_extensions <- function() {
   return(SUPPORTED_EXTENSIONS)
 }
@@ -128,7 +129,7 @@ get_supported_extensions <- function() {
 #' Check if file type is supported
 #' @param file_path Path to file
 #' @return Logical indicating if file type is supported
-#' @export
+#' @keywords internal
 is_supported_file_type <- function(file_path) {
   if (!is.character(file_path) || length(file_path) != 1) {
     return(FALSE)
@@ -140,7 +141,7 @@ is_supported_file_type <- function(file_path) {
 #' Filter files by supported extensions
 #' @param file_paths Character vector of file paths
 #' @return Character vector of files with supported extensions
-#' @export
+#' @keywords internal
 filter_supported_files <- function(file_paths) {
   if (length(file_paths) == 0) {
     return(character(0))
@@ -159,7 +160,7 @@ filter_supported_files <- function(file_paths) {
 #' Validate file path
 #' @param file_path Path to file
 #' @return The validated file path (throws error if invalid)
-#' @export
+#' @keywords internal
 validate_file_path <- function(file_path) {
   if (!is.character(file_path) || length(file_path) != 1) {
     cli::cli_abort("File path must be a single character string")
@@ -183,7 +184,7 @@ validate_file_path <- function(file_path) {
 #' @param data Data frame to validate
 #' @param min_rows Minimum number of rows required (default 1)
 #' @return The validated data frame (throws error if invalid)
-#' @export
+#' @keywords internal
 validate_data_frame <- function(data, min_rows = 1) {
   if (!is.data.frame(data)) {
     cli::cli_abort("Input must be a data frame")
@@ -202,7 +203,7 @@ validate_data_frame <- function(data, min_rows = 1) {
 #' @param recursive Whether to create parent directories (default TRUE)
 #' @param verbose Whether to show messages (default TRUE)
 #' @return The directory path
-#' @export
+#' @keywords internal
 ensure_directory <- function(
   dir_path,
   description = NULL,
@@ -238,7 +239,7 @@ ensure_directory <- function(
 #' @param open Whether to open the file after creation
 #' @param verbose Whether to show messages
 #' @return Path to created file
-#' @export
+#' @keywords internal
 use_template <- function(
   template,
   save_as = template,
@@ -283,11 +284,8 @@ use_template <- function(
   # Check if file exists and prompt
   if (file.exists(output_path)) {
     if (interactive()) {
-      if (
-        !usethis::ui_yeah(
-          "Overwrite pre-existing file {usethis::ui_path(save_as)}?"
-        )
-      ) {
+      cli::cli_inform("File {.path {save_as}} already exists.")
+      if (!prompt_confirm("Overwrite it?", default = FALSE)) {
         return(invisible(NULL))
       }
     }
@@ -691,6 +689,10 @@ validate_setup_completed <- function(base_path = NULL) {
   format_checklist_results(checklist)
 }
 
+#' Validate processing completion status
+#' @param base_path Base path for the project
+#' @return Formatted checklist results
+#' @export
 validate_processing_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
   
@@ -728,6 +730,10 @@ validate_processing_completed <- function(base_path = NULL) {
   format_checklist_results(checklist)
 }
 
+#' Validate metadata collection status
+#' @param base_path Base path for the project
+#' @return Formatted checklist results
+#' @export
 validate_metadata_collected <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
   
@@ -786,6 +792,10 @@ validate_metadata_collected <- function(base_path = NULL) {
   format_checklist_results(checklist)
 }
 
+#' Validate dictionary completion status
+#' @param base_path Base path for the project
+#' @return Formatted checklist results
+#' @export
 validate_dictionary_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
   
@@ -823,6 +833,10 @@ validate_dictionary_completed <- function(base_path = NULL) {
   format_checklist_results(checklist)
 }
 
+#' Validate build completion status
+#' @param base_path Base path for the project
+#' @return Formatted checklist results
+#' @export
 validate_build_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
   

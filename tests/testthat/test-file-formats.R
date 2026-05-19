@@ -19,22 +19,22 @@ test_that("reads CSV files correctly", {
 })
 
 test_that("detects supported file formats", {
-  expect_true(is_supported_file_type("data.csv"))
-  expect_true(is_supported_file_type("data.xlsx"))
-  expect_true(is_supported_file_type("data.xls"))
-  expect_false(is_supported_file_type("data.txt"))
-  expect_false(is_supported_file_type("data.docx"))
+  expect_true(fairenough:::is_supported_file_type("data.csv"))
+  expect_true(fairenough:::is_supported_file_type("data.xlsx"))
+  expect_true(fairenough:::is_supported_file_type("data.xls"))
+  expect_false(fairenough:::is_supported_file_type("data.txt"))
+  expect_false(fairenough:::is_supported_file_type("data.docx"))
 })
 
 test_that("filters supported files correctly", {
   files <- c("data.csv", "readme.txt", "data.xlsx", "script.R", "data.xls")
-  result <- filter_supported_files(files)
+  result <- fairenough:::filter_supported_files(files)
   
   expected <- c("data.csv", "data.xlsx", "data.xls")
   expect_equal(result, expected)
 })
 
 test_that("handles empty file lists", {
-  expect_equal(filter_supported_files(character(0)), character(0))
-  expect_equal(filter_supported_files(c("readme.txt")), character(0))
+  expect_equal(fairenough:::filter_supported_files(character(0)), character(0))
+  expect_equal(fairenough:::filter_supported_files(c("readme.txt")), character(0))
 })

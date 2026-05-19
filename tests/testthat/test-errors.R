@@ -6,7 +6,7 @@ test_that("handles missing data_raw directory gracefully", {
   on.exit(cleanup_temp_dir(temp_dir))
   
   # Setup basic structure but no data_raw
-  suppressMessages(setup(base_path = temp_dir, verbose = FALSE))
+  suppressMessages(setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE))
   unlink(file.path(temp_dir, "data_raw"), recursive = TRUE)
   
   # Should handle missing data_raw
@@ -21,7 +21,7 @@ test_that("handles empty directories appropriately", {
   dir.create(temp_dir)
   on.exit(cleanup_temp_dir(temp_dir))
   
-  suppressMessages(setup(base_path = temp_dir, verbose = FALSE))
+  suppressMessages(setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE))
   
   # Should handle empty data_raw
   expect_message(

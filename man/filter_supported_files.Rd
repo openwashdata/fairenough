@@ -15,3 +15,4 @@ Character vector of files with supported extensions
 \description{
 Filter files by supported extensions
 }
+\keyword{internal}

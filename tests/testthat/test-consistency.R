@@ -10,7 +10,7 @@ test_that("row counts preserved through pipeline", {
   
   # Run setup and process
   suppressMessages({
-    setup(base_path = temp_dir, verbose = FALSE)
+    setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE)
     process(base_path = temp_dir, verbose = FALSE)
   })
   
@@ -41,7 +41,7 @@ test_that("janitor cleaning applied consistently", {
   create_messy_data(temp_dir)
   
   suppressMessages({
-    setup(base_path = temp_dir, verbose = FALSE)
+    setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE)
     process(base_path = temp_dir, verbose = FALSE)
   })
   
@@ -71,7 +71,7 @@ test_that("file consistency check works correctly", {
   create_test_data(temp_dir)
   
   suppressMessages({
-    setup(base_path = temp_dir, verbose = FALSE)
+    setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE)
     process(base_path = temp_dir, verbose = FALSE)
   })
   

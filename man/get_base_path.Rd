@@ -13,7 +13,10 @@ get_base_path(base_path = NULL)
 Normalized base path
 }
 \description{
-This function provides a consistent way to handle base_path across all fairenough functions.
-If base_path is provided, it sets the global option and returns the normalized path.
-If base_path is NULL, it checks for the global option, falling back to here::here() or "."
+Provides a consistent way to handle \code{base_path} across all fairenough
+functions. If \code{base_path} is provided, it is normalized, cached in a
+package-private environment, and returned. If \code{base_path} is \code{NULL}, the
+cached value is returned when set, otherwise the function falls back to
+\code{\link[here:here]{here::here()}} or the current directory.
 }
+\keyword{internal}

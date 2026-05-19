@@ -4,7 +4,12 @@
 \alias{.move_data_files}
 \title{Move data files to raw data directory}
 \usage{
-.move_data_files(raw_dir = "data_raw", base_path = NULL, verbose = TRUE)
+.move_data_files(
+  raw_dir = "data_raw",
+  base_path = NULL,
+  verbose = TRUE,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{raw_dir}{Name of the raw data directory}
@@ -12,10 +17,16 @@
 \item{base_path}{Base path for the project}
 
 \item{verbose}{Whether to show messages}
+
+\item{overwrite}{Skip the confirmation prompt and overwrite existing
+destination files (default: FALSE)}
 }
 \value{
 Character vector of moved files
 }
 \description{
 Moves CSV and Excel files from the project root to the data_raw directory.
+By default the user is asked to confirm the move and the function aborts
+if any destination file already exists. Pass \code{overwrite = TRUE} to skip
+the prompt and replace existing destination files.
 }

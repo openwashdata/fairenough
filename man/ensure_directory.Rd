@@ -26,3 +26,4 @@ The directory path
 \description{
 Ensure directory exists with messaging
 }
+\keyword{internal}

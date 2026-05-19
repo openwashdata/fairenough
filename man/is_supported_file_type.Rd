@@ -15,3 +15,4 @@ Logical indicating if file type is supported
 \description{
 Check if file type is supported
 }
+\keyword{internal}

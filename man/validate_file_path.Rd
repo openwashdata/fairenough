@@ -15,3 +15,4 @@ The validated file path (throws error if invalid)
 \description{
 Validate file path
 }
+\keyword{internal}

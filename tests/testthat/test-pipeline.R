@@ -7,7 +7,7 @@ test_that("setup creates proper structure", {
   
   # Run setup
   suppressMessages({
-    result <- setup(base_path = temp_dir, verbose = FALSE)
+    result <- setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE)
   })
   
   # Check core components (skip .Rproj which may not be created in temp dirs)
@@ -26,7 +26,7 @@ test_that("process handles data files correctly", {
   
   # Create test data and setup
   create_test_data(temp_dir)
-  suppressMessages(setup(base_path = temp_dir, verbose = FALSE))
+  suppressMessages(setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE))
   
   # Run process
   suppressMessages({
@@ -47,7 +47,7 @@ test_that("collect updates DESCRIPTION", {
   dir.create(temp_dir)
   on.exit(cleanup_temp_dir(temp_dir))
   
-  suppressMessages(setup(base_path = temp_dir, verbose = FALSE))
+  suppressMessages(setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE))
   
   # Skip collect test in non-interactive mode (requires user input)
   skip("collect() requires interactive input or mocking")
@@ -64,7 +64,7 @@ test_that("generate creates dictionary", {
   # Setup with data
   create_test_data(temp_dir)
   suppressMessages({
-    setup(base_path = temp_dir, verbose = FALSE)
+    setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE)
     process(base_path = temp_dir, verbose = FALSE)
   })
   
@@ -87,7 +87,7 @@ test_that("pipeline steps complete in sequence", {
   
   # Run each step and verify with validation
   suppressMessages({
-    setup(base_path = temp_dir, verbose = FALSE)
+    setup(base_path = temp_dir, verbose = FALSE, overwrite = TRUE)
     expect_gte(validate_setup_completed(temp_dir)$passed_checks, 3)
     
     process(base_path = temp_dir, verbose = FALSE)

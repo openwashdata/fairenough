@@ -32,3 +32,4 @@ Character vector of selected values
 \description{
 Multiple selection menu
 }
+\keyword{internal}

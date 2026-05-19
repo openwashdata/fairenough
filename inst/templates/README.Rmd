@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 # Load required packages with better error handling
 required_packages <- c("desc", "dplyr", "readr", "gt",
-                       "fontawesome", "stringr", "fairenough")
+                       "fontawesome", "stringr", "here")
 
 for (pkg in required_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
@@ -39,16 +39,16 @@ browser_favicon_colour <- "lightblue"
 #' Load and validate dictionary
 #' @return data.frame or NULL
 load_dictionary <- function() {
-  base_path <- fairenough::get_base_path()
+  base_path <- here::here()
   dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
-  
+
   if (!file.exists(dict_path)) {
     warning("Dictionary file not found at: ", dict_path)
     return(NULL)
   }
-  
+
   tryCatch({
-    dict_data <- fairenough::read_data(dict_path, show_messages = FALSE)
+    dict_data <- readr::read_csv(dict_path, show_col_types = FALSE)
     
     # Ensure it's a data frame
     if (!is.data.frame(dict_data)) {
@@ -99,15 +99,15 @@ missing_packages <- optional_packages[!vapply(optional_packages, requireNamespac
 #' @param dataset_name Name of the dataset (without extension)
 #' @return data.frame or NULL
 load_dataset <- function(dataset_name) {
-  base_path <- fairenough::get_base_path()
+  base_path <- here::here()
   csv_path <- file.path(base_path, "inst", "extdata", paste0(dataset_name, ".csv"))
-  
+
   if (!file.exists(csv_path)) {
     return(NULL)
   }
-  
+
   tryCatch({
-    data <- fairenough::read_data(csv_path, show_messages = FALSE)
+    data <- readr::read_csv(csv_path, show_col_types = FALSE)
     if (!is.data.frame(data)) {
       return(NULL)
     }

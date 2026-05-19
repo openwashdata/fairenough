@@ -28,27 +28,33 @@ Tick boxes as items land.
 
 ## Phase 2 — Correctness bugs (CRAN-blocking, user-affecting)
 
-- [ ] **2.1 Stop mutating global `options()`** in `get_base_path` /
+- [x] **2.1 Stop mutating global `options()`** in `get_base_path` /
   `get_raw_dir` (R/utils.R:21, 41, 57, 70). Replace with a
   package-internal env: `.fairenough_state <- new.env(parent = emptyenv())`,
   with getter/setter on it. CRAN explicitly forbids persistent session
   state mutation. *(1 hr)*
 
-- [ ] **2.2 Confirm-before-rename in `setup_package`** (R/setup_package.R:172).
+- [x] **2.2 Confirm-before-rename in `setup_package`** (R/setup_package.R:172).
   Currently silently `file.rename`s files matched by extension into
   `data_raw/`. Add a confirmation prompt and an abort when files would
   be overwritten. *(30 min)*
 
-- [ ] **2.3 Standardize error emission.** Replace plain `stop()` at
+- [x] **2.3 Standardize error emission.** Replace plain `stop()` at
   `build_license.R:181, 186, 192` and `gendict.R:522` with
   `cli::cli_abort`. Replace soft-deprecated `usethis::ui_yeah` at
   `utils.R:287` with `cli::cli_inform` + a `prompt_confirm` call. *(20 min)*
 
-- [ ] **2.4 Sync `inst/CITATION` with `DESCRIPTION` authors.** Adriana
+- [x] **2.4 Sync `inst/CITATION` with `DESCRIPTION` authors.** Adriana
   is `aut, cre` in `DESCRIPTION` but missing from `inst/CITATION`.
   Decide whether `CITATION.cff` or `inst/CITATION` is the source of
   truth and regenerate the other (typically `CITATION.cff` →
-  `cffr::cff_write_citation()` → `inst/CITATION`). *(15 min)*
+  `cffr::cff_write_citation()` → `inst/CITATION`). Resolution:
+  `DESCRIPTION` is the source of truth; `CITATION.cff` regenerated via
+  `cffr::cff_write()` and `inst/CITATION` regenerated via
+  `cffr::as_bibentry()` + `cffr::cff_write_citation()`. The pre-existing
+  `inst/CITATION` had to be deleted before regen because cffr otherwise
+  embeds its content as a `preferred-citation` block and round-trips
+  the stale author list. *(15 min)*
 
 - [x] **2.5 Fix `prompt_multi_select(allow_other = TRUE)` runtime bug**
   in `collect_metadata` (Zenodo communities prompt). `prompt_multi_select`
@@ -63,13 +69,22 @@ Tick boxes as items land.
 
 ## Phase 3 — Public API surface (CRAN reviewers will ask)
 
-- [ ] **3.1 Mark internals `@keywords internal` and prune NAMESPACE
+- [x] **3.1 Mark internals `@keywords internal` and prune NAMESPACE
   from 44 → ~15 exports.** Demote: the four `prompt_*` helpers; the
   five field validators (`validate_url/email/orcid/date/package_name`);
   `ensure_directory`, `use_template`, `get_base_path`, `get_raw_dir`,
   `validate_data_frame`, `validate_file_path`, `filter_supported_files`,
   `is_supported_file_type`, `get_supported_extensions`. Make the
   `validate_*_completed` family consistent (export all 5 or none).
+  Resolution: 18 functions demoted as listed. Family policy: exported
+  all 5 (`validate_setup_completed` already exported, added `@export`
+  to the other 4). Templates (`inst/templates/README.{Rmd,qmd}`)
+  rewritten to use `here::here()` and `readr::read_csv()` so generated
+  user packages no longer need fairenough as a render-time dependency
+  (decoupling beyond what plan strictly required). Tests calling bare
+  `is_supported_file_type()` / `filter_supported_files()` updated to
+  use `fairenough:::` prefix. NAMESPACE: 44 → 29 exports (further
+  prune of `*_package` / `*_data` aliases is left for a follow-up).
   *(2 hr — must run R CMD check after to catch external uses)*
 
 - [x] **3.2 Add missing `@param` docs.** R CMD check WARNING flagged
@@ -95,8 +110,23 @@ Tick boxes as items land.
 
 ## Phase 4 — Tests (must pass with no network / no API keys)
 
-- [ ] **4.1 Replace empty `test-basic.R`** (currently `expect_true(TRUE)`).
-  Delete or use for tiny smoke checks. *(5 min)*
+- [x] **4.1 Replace empty `test-basic.R`** (currently `expect_true(TRUE)`).
+  Delete or use for tiny smoke checks. Resolution: deleted (the other
+  test files already exercise package load implicitly). Also surfaced
+  and fixed two pre-existing issues uncovered while restoring the
+  suite: (1) `tests/testthat.R` (the standard testthat runner) had
+  been swept up by an over-broad `.gitignore` rule (`tests/*`) and
+  deleted on 2025-08-19, leaving R CMD check blind to the test suite
+  for ~9 months; restored the file and added `!tests/testthat.R` to
+  `.gitignore`; (2) `.setup_gitignore()` relied on
+  `usethis::proj_get()`, which errors silently in non-interactive use
+  outside an active usethis project, leaving generated packages
+  without `.gitignore` entries — rewrote to write `base_path/.gitignore`
+  directly. Plus passed `overwrite = TRUE` to the ten `setup()` calls
+  in the test suite so they bypass 2.2's confirm-before-rename in
+  non-interactive mode. Test suite now: 77 pass / 0 fail / 1 skip
+  under both `devtools::test()` and R CMD check. *(5 min — actual:
+  ~45 min once the test-runner gap was discovered)*
 
 - [ ] **4.2 Add a fake `chat` mock** + skip patterns. Pattern: a small
   stand-in object satisfying the `ellmer::chat` interface used in

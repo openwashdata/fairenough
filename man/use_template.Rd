@@ -36,3 +36,4 @@ Path to created file
 Similar to usethis::use_template but respects base_path.
 Reads a template from the package, substitutes data, and writes to target location.
 }
+\keyword{internal}
