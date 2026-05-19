@@ -110,8 +110,23 @@ Tick boxes as items land.
 
 ## Phase 4 — Tests (must pass with no network / no API keys)
 
-- [ ] **4.1 Replace empty `test-basic.R`** (currently `expect_true(TRUE)`).
-  Delete or use for tiny smoke checks. *(5 min)*
+- [x] **4.1 Replace empty `test-basic.R`** (currently `expect_true(TRUE)`).
+  Delete or use for tiny smoke checks. Resolution: deleted (the other
+  test files already exercise package load implicitly). Also surfaced
+  and fixed two pre-existing issues uncovered while restoring the
+  suite: (1) `tests/testthat.R` (the standard testthat runner) had
+  been swept up by an over-broad `.gitignore` rule (`tests/*`) and
+  deleted on 2025-08-19, leaving R CMD check blind to the test suite
+  for ~9 months; restored the file and added `!tests/testthat.R` to
+  `.gitignore`; (2) `.setup_gitignore()` relied on
+  `usethis::proj_get()`, which errors silently in non-interactive use
+  outside an active usethis project, leaving generated packages
+  without `.gitignore` entries — rewrote to write `base_path/.gitignore`
+  directly. Plus passed `overwrite = TRUE` to the ten `setup()` calls
+  in the test suite so they bypass 2.2's confirm-before-rename in
+  non-interactive mode. Test suite now: 77 pass / 0 fail / 1 skip
+  under both `devtools::test()` and R CMD check. *(5 min — actual:
+  ~45 min once the test-runner gap was discovered)*
 
 - [ ] **4.2 Add a fake `chat` mock** + skip patterns. Pattern: a small
   stand-in object satisfying the `ellmer::chat` interface used in

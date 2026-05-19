@@ -252,17 +252,17 @@ setup_package <- function(
     cli::cli_alert_info("Setting up .gitignore")
   }
 
+  gitignore_path <- file.path(base_path, ".gitignore")
+  existing <- if (file.exists(gitignore_path)) {
+    readLines(gitignore_path, warn = FALSE)
+  } else {
+    character()
+  }
+  to_add <- setdiff(ignores, existing)
+
   tryCatch(
     {
-      active_path <- usethis::proj_get()
-      # use_git_ignore's directory option uses path relative to active dir
-      relative_path <- fs::path_rel(base_path, start = active_path)
-
-      usethis::use_git_ignore(
-        directory = relative_path,
-        ignores = ignores
-      )
-
+      writeLines(c(existing, to_add), gitignore_path)
       if (verbose) {
         cli::cli_alert_success("Added entries to .gitignore:")
         for (ignore in ignores) {
