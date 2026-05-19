@@ -46,3 +46,11 @@ build(
 ## Value
 
 List with results from each build step
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+build(base_path = "path/to/my-data-package")
+} # }
+```

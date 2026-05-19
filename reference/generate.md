@@ -45,3 +45,16 @@ generate(
 ## Value
 
 Data frame containing the dictionary
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Without an LLM: produces a dictionary skeleton with empty descriptions.
+generate(base_path = "path/to/my-data-package")
+
+# With an LLM: fills in descriptions via ellmer.
+chat <- ellmer::chat_openai(model = "gpt-4o-mini")
+generate(base_path = "path/to/my-data-package", chat = chat)
+} # }
+```

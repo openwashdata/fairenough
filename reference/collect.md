@@ -50,3 +50,21 @@ collect(
 ## Value
 
 List containing all metadata organized by category
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Interactive: walks you through prompts for title, authors, license, etc.
+collect(base_path = "path/to/my-data-package")
+
+# Non-interactive: supply every required field as a named argument.
+collect(
+  base_path = "path/to/my-data-package",
+  interactive = FALSE,
+  pkg_name = "mypkg",
+  title = "My Package",
+  description = "What this package contains."
+)
+} # }
+```

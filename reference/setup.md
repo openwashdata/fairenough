@@ -40,3 +40,11 @@ setup(
 ## Value
 
 Invisibly returns a list with setup results
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+setup(base_path = "path/to/my-data-package")
+} # }
+```

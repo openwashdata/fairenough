@@ -40,3 +40,11 @@ process(
 ## Value
 
 Invisibly returns a list of processed files
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+process(base_path = "path/to/my-data-package")
+} # }
+```

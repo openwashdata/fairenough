@@ -249,3 +249,9 @@ Massari N, Zhong M, Götschmann M, Walder C, Schöbitz L (2025). "fairenough: fa
 - [`validate_setup_completed()`](https://openwashdata.github.io/fairenough/reference/validate_setup_completed.md)
   : Validate setup completion status
 
+# Articles
+
+### All vignettes
+
+- [fairenough demo: turning palmerpenguins into a data
+  package](https://openwashdata.github.io/fairenough/articles/palmerpenguins-demo.md):

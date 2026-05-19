@@ -42,3 +42,16 @@ fairenough(
 ## Value
 
 List containing results from all pipeline steps
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Full pipeline in one call, prompting for metadata interactively.
+fairenough(base_path = "path/to/my-data-package")
+
+# With an LLM-backed chat for variable descriptions.
+chat <- ellmer::chat_openai(model = "gpt-4o-mini")
+fairenough(base_path = "path/to/my-data-package", chat = chat)
+} # }
+```
