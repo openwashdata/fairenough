@@ -140,9 +140,13 @@ Tick boxes as items land.
   existing tests called a real provider, so the skip helper is staged
   for use by future integration tests. *(1 hr)*
 
-- [ ] **4.3 Add `gendict` unit test** using the mock. Asserts the
+- [x] **4.3 Add `gendict` unit test** using the mock. Asserts the
   returned tibble shape, that variable names match input columns, and
-  the `description` column is non-empty. *(1 hr)*
+  the `description` column is non-empty. Four `test_that` blocks in
+  `tests/testthat/test-gendict.R`: tibble shape + columns; variable
+  column matches input names in order; description column non-empty
+  for every row; one prompt sent to the chat per input column
+  (introspection via the mock's `$calls()` accessor). *(1 hr)*
 
 - [ ] **4.4 Add an end-to-end `fairenough()` test** on a tiny synthetic
   CSV in `withr::local_tempdir()`. No `chat` arg → tests the no-LLM path.
