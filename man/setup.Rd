@@ -30,3 +30,8 @@ Invisibly returns a list with setup results
 Wrapper function that initializes a fairenough data package project
 with clear step messaging.
 }
+\examples{
+\dontrun{
+setup(base_path = "path/to/my-data-package")
+}
+}

@@ -9,6 +9,10 @@
 #' @param verbose Whether to show detailed messages (default: TRUE)
 #' @param overwrite Whether to overwrite existing files (default: FALSE)
 #' @return Invisibly returns a list with setup results
+#' @examples
+#' \dontrun{
+#' setup(base_path = "path/to/my-data-package")
+#' }
 #' @export
 setup <- function(
   raw_dir = "data_raw",
@@ -77,6 +81,10 @@ setup <- function(
 #' @param base_path Base path for the project
 #' @param verbose Whether to show detailed messages (default: TRUE)
 #' @return Invisibly returns a list of processed files
+#' @examples
+#' \dontrun{
+#' process(base_path = "path/to/my-data-package")
+#' }
 #' @export
 process <- function(
   raw_dir = NULL,
@@ -143,6 +151,20 @@ process <- function(
 #' @param overwrite Whether to overwrite existing metadata (default: FALSE)
 #' @param ... Additional arguments passed to collect_metadata
 #' @return List containing all metadata organized by category
+#' @examples
+#' \dontrun{
+#' # Interactive: walks you through prompts for title, authors, license, etc.
+#' collect(base_path = "path/to/my-data-package")
+#'
+#' # Non-interactive: supply every required field as a named argument.
+#' collect(
+#'   base_path = "path/to/my-data-package",
+#'   interactive = FALSE,
+#'   pkg_name = "mypkg",
+#'   title = "My Package",
+#'   description = "What this package contains."
+#' )
+#' }
 #' @export
 collect <- function(
   extended = FALSE,
@@ -217,6 +239,15 @@ collect <- function(
 #' @param verbose Whether to show detailed messages (default: TRUE)
 #' @param ... Additional arguments passed to gendict
 #' @return Data frame containing the dictionary
+#' @examples
+#' \dontrun{
+#' # Without an LLM: produces a dictionary skeleton with empty descriptions.
+#' generate(base_path = "path/to/my-data-package")
+#'
+#' # With an LLM: fills in descriptions via ellmer.
+#' chat <- ellmer::chat_openai(model = "gpt-4o-mini")
+#' generate(base_path = "path/to/my-data-package", chat = chat)
+#' }
 #' @export
 generate <- function(
   chat = NULL,
@@ -295,6 +326,10 @@ generate <- function(
 #' @param preview Whether to preview the site after building (default: TRUE)
 #' @param quarto Whether to use Quarto to build readme (default: FALSE)
 #' @return List with results from each build step
+#' @examples
+#' \dontrun{
+#' build(base_path = "path/to/my-data-package")
+#' }
 #' @export
 build <- function(
   base_path = NULL,
@@ -404,6 +439,15 @@ build <- function(
 #' @param base_path Base path for the project
 #' @param ... Additional arguments passed to collect() and generate() function
 #' @return List containing results from all pipeline steps
+#' @examples
+#' \dontrun{
+#' # Full pipeline in one call, prompting for metadata interactively.
+#' fairenough(base_path = "path/to/my-data-package")
+#'
+#' # With an LLM-backed chat for variable descriptions.
+#' chat <- ellmer::chat_openai(model = "gpt-4o-mini")
+#' fairenough(base_path = "path/to/my-data-package", chat = chat)
+#' }
 #' @export
 fairenough <- function(
   chat = NULL,

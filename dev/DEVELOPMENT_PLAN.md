@@ -185,9 +185,13 @@ Tick boxes as items land.
   `^Meta$` to `.Rbuildignore` when 5.1's vignette first built; the
   pre-existing `inst/doc` entry is also kept. *(15 min)*
 
-- [ ] **5.3 Add `@examples` to public functions.** Minimum: `fairenough`,
+- [x] **5.3 Add `@examples` to public functions.** Minimum: `fairenough`,
   `setup`, `process`, `collect`, `generate`, `build`. Use `\dontrun{}`
-  for anything filesystem-mutating. *(1 hr)*
+  for anything filesystem-mutating. All six wrappers in `R/wrappers.R`
+  now carry an `@examples` block wrapped in `\dontrun{}`. `collect`,
+  `generate`, and `fairenough` show both an interactive/default form
+  and a non-interactive / LLM-backed form so the docs match what
+  users actually need to write. *(1 hr)*
 
 - [ ] **5.4 Populate the generated user package's `Suggests:` with
   README render-time deps.** `setup_package()` calls
