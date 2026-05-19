@@ -49,6 +49,7 @@ Suggests:
     fontawesome,
     gt,
     knitr,
+    palmerpenguins,
     pkgdown,
     stringr,
     testthat

@@ -128,37 +128,87 @@ Tick boxes as items land.
   under both `devtools::test()` and R CMD check. *(5 min — actual:
   ~45 min once the test-runner gap was discovered)*
 
-- [ ] **4.2 Add a fake `chat` mock** + skip patterns. Pattern: a small
+- [x] **4.2 Add a fake `chat` mock** + skip patterns. Pattern: a small
   stand-in object satisfying the `ellmer::chat` interface used in
   `gendict()`; `chat$chat()` returns canned strings. Add
   `testthat::skip_if(Sys.getenv("OPENAI_API_KEY") == "")` to any test
-  that talks to a real provider. *(1 hr)*
+  that talks to a real provider. Resolution: added `make_fake_chat()`
+  and `skip_without_openai()` to `tests/testthat/helpers-testing.R`.
+  Mock is a duck-typed list with `$chat(prompt)` returning a string
+  (sufficient for gendict's sequential path) and a `$calls()`
+  introspection method so tests can assert on what was sent. No
+  existing tests called a real provider, so the skip helper is staged
+  for use by future integration tests. *(1 hr)*
 
-- [ ] **4.3 Add `gendict` unit test** using the mock. Asserts the
+- [x] **4.3 Add `gendict` unit test** using the mock. Asserts the
   returned tibble shape, that variable names match input columns, and
-  the `description` column is non-empty. *(1 hr)*
+  the `description` column is non-empty. Four `test_that` blocks in
+  `tests/testthat/test-gendict.R`: tibble shape + columns; variable
+  column matches input names in order; description column non-empty
+  for every row; one prompt sent to the chat per input column
+  (introspection via the mock's `$calls()` accessor). *(1 hr)*
 
-- [ ] **4.4 Add an end-to-end `fairenough()` test** on a tiny synthetic
+- [x] **4.4 Add an end-to-end `fairenough()` test** on a tiny synthetic
   CSV in `withr::local_tempdir()`. No `chat` arg → tests the no-LLM path.
   Assert the resulting directory has `DESCRIPTION`, `R/`, `data/`,
-  `inst/extdata/`. *(1.5 hr)*
+  `inst/extdata/`. Added `tests/testthat/test-fairenough-e2e.R`. To run
+  non-interactively the test passes `interactive = FALSE` and supplies
+  values for the required prompts (`pkg_name`, `title`, `description`)
+  via `fairenough()`'s `...`. Two hygiene measures: `skip_on_cran()`
+  because the test exercises `devtools::install` + `pkgdown::build_site`
+  (~minute), and `withr::local_libpaths()` so the generated test
+  package installs into a per-test temp library instead of leaking
+  into the user's R library. *(1.5 hr)*
 
 ## Phase 5 — Vignette: palmerpenguins demo
 
-- [ ] **5.1 Create a vignette** demonstrating the full pipeline on
+- [x] **5.1 Create a vignette** demonstrating the full pipeline on
   penguins: `vignettes/palmerpenguins-demo.Rmd`. Walks through setup →
   process → collect → generate → build, ending with the resulting
   package layout. Use `eval = FALSE` for the `chat` step (or the mock
   from 4.2) so it does not need an API key in CI. **This replaces the
-  role of the deleted submodule.** *(3 hr)*
+  role of the deleted submodule.** Resolution: hybrid execution —
+  setup/process/collect/generate run live during knit, `build()` is
+  shown as `eval = FALSE` so the vignette stays under a few seconds.
+  Uses an inline 5-line duck-typed `chat` mock so no API key is ever
+  needed. `palmerpenguins` added to `Suggests:` (the only practical
+  way to get a real dataset into a CRAN vignette); the entire vignette
+  is `eval = FALSE` when the package isn't installed, with a one-line
+  fallback message. *(3 hr)*
 
-- [ ] **5.2 Resolve the `VignetteBuilder` warning.** Once 5.1 lands,
+- [x] **5.2 Resolve the `VignetteBuilder` warning.** Once 5.1 lands,
   `DESCRIPTION`'s `VignetteBuilder: knitr` is justified. Update
-  `inst/doc` handling in `.gitignore` if needed. *(15 min)*
+  `inst/doc` handling in `.gitignore` if needed. Resolution: nothing
+  to do for `VignetteBuilder: knitr` (already declared, `knitr`
+  already in `Suggests:`). `devtools::build_vignettes()` auto-added
+  `/doc/` and `/Meta/` to `.gitignore` and the matching `^doc$` /
+  `^Meta$` to `.Rbuildignore` when 5.1's vignette first built; the
+  pre-existing `inst/doc` entry is also kept. *(15 min)*
 
-- [ ] **5.3 Add `@examples` to public functions.** Minimum: `fairenough`,
+- [x] **5.3 Add `@examples` to public functions.** Minimum: `fairenough`,
   `setup`, `process`, `collect`, `generate`, `build`. Use `\dontrun{}`
-  for anything filesystem-mutating. *(1 hr)*
+  for anything filesystem-mutating. All six wrappers in `R/wrappers.R`
+  now carry an `@examples` block wrapped in `\dontrun{}`. `collect`,
+  `generate`, and `fairenough` show both an interactive/default form
+  and a non-interactive / LLM-backed form so the docs match what
+  users actually need to write. *(1 hr)*
+
+- [x] **5.4 Populate the generated user package's `Suggests:` with
+  README render-time deps.** `setup_package()` calls
+  `usethis::create_package()` which produces a minimal `DESCRIPTION`.
+  The README templates copied in by `build_readme()`
+  (`inst/templates/README.{Rmd,qmd}`) require `desc`, `dplyr`, `readr`,
+  `gt`, `fontawesome`, `stringr`, and `here` at render time, but none
+  are declared in the new package's `DESCRIPTION`. Result: README
+  renders only on machines that happen to have all seven installed.
+  Add a step (in `setup_package()` or `build_readme()`) that writes
+  these to the user package's `Suggests:` via `desc::desc_set_dep()`.
+  Surfaced post-3.1 when reviewing the template's dependency story.
+  Resolution: added `.add_readme_render_suggests(base_path)` helper
+  in `R/build_package.R` and called it at the top of `build_readme()`.
+  It uses `desc::desc()` to inspect existing deps and only adds
+  packages not already declared under any type, so never moves an
+  Import to Suggests. *(30 min)*
 
 ## Phase 6 — Refactors (non-blocking; big readability wins)
 

@@ -34,3 +34,8 @@ Wrapper function that runs all build functions in sequence.
 Generates roxygen docs, citation files, builds the package,
 creates README, and builds the website.
 }
+\examples{
+\dontrun{
+build(base_path = "path/to/my-data-package")
+}
+}

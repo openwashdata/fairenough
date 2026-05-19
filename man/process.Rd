@@ -30,3 +30,8 @@ Invisibly returns a list of processed files
 Wrapper function that processes all data files in the raw data directory
 with clear step messaging.
 }
+\examples{
+\dontrun{
+process(base_path = "path/to/my-data-package")
+}
+}
