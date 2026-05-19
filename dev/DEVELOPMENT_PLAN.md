@@ -128,11 +128,17 @@ Tick boxes as items land.
   under both `devtools::test()` and R CMD check. *(5 min — actual:
   ~45 min once the test-runner gap was discovered)*
 
-- [ ] **4.2 Add a fake `chat` mock** + skip patterns. Pattern: a small
+- [x] **4.2 Add a fake `chat` mock** + skip patterns. Pattern: a small
   stand-in object satisfying the `ellmer::chat` interface used in
   `gendict()`; `chat$chat()` returns canned strings. Add
   `testthat::skip_if(Sys.getenv("OPENAI_API_KEY") == "")` to any test
-  that talks to a real provider. *(1 hr)*
+  that talks to a real provider. Resolution: added `make_fake_chat()`
+  and `skip_without_openai()` to `tests/testthat/helpers-testing.R`.
+  Mock is a duck-typed list with `$chat(prompt)` returning a string
+  (sufficient for gendict's sequential path) and a `$calls()`
+  introspection method so tests can assert on what was sent. No
+  existing tests called a real provider, so the skip helper is staged
+  for use by future integration tests. *(1 hr)*
 
 - [ ] **4.3 Add `gendict` unit test** using the mock. Asserts the
   returned tibble shape, that variable names match input columns, and
