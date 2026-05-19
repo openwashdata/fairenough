@@ -148,10 +148,17 @@ Tick boxes as items land.
   for every row; one prompt sent to the chat per input column
   (introspection via the mock's `$calls()` accessor). *(1 hr)*
 
-- [ ] **4.4 Add an end-to-end `fairenough()` test** on a tiny synthetic
+- [x] **4.4 Add an end-to-end `fairenough()` test** on a tiny synthetic
   CSV in `withr::local_tempdir()`. No `chat` arg → tests the no-LLM path.
   Assert the resulting directory has `DESCRIPTION`, `R/`, `data/`,
-  `inst/extdata/`. *(1.5 hr)*
+  `inst/extdata/`. Added `tests/testthat/test-fairenough-e2e.R`. To run
+  non-interactively the test passes `interactive = FALSE` and supplies
+  values for the required prompts (`pkg_name`, `title`, `description`)
+  via `fairenough()`'s `...`. Two hygiene measures: `skip_on_cran()`
+  because the test exercises `devtools::install` + `pkgdown::build_site`
+  (~minute), and `withr::local_libpaths()` so the generated test
+  package installs into a per-test temp library instead of leaking
+  into the user's R library. *(1.5 hr)*
 
 ## Phase 5 — Vignette: palmerpenguins demo
 
