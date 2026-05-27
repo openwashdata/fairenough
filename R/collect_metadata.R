@@ -577,6 +577,81 @@ collect_metadata <- function(
   return(metadata)
 }
 
+# Write the Config/* custom fields onto a desc object via the caller's
+# set_if_new closure. Covers publication strings, coverage and related
+# identifiers (JSON-encoded), and any non-standard top-level metadata key
+# (encoded as JSON for lists, comma-joined for multi-element vectors,
+# coerced to string otherwise).
+.save_config_fields <- function(metadata, set_if_new) {
+  if (!is.null(metadata$publication)) {
+    if (!is.null(metadata$publication$keywords)) {
+      set_if_new(
+        "Config/Keywords",
+        paste(metadata$publication$keywords, collapse = ", ")
+      )
+    }
+    set_if_new("Config/Funder", metadata$publication$funder)
+    set_if_new("Config/GrantID", metadata$publication$grant_id)
+    if (!is.null(metadata$publication$communities)) {
+      set_if_new(
+        "Config/Communities",
+        paste(metadata$publication$communities, collapse = ", ")
+      )
+    }
+  }
+
+  if (!is.null(metadata$coverage)) {
+    if (!is.null(metadata$coverage$temporal)) {
+      set_if_new(
+        "Config/TemporalCoverage",
+        jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE)
+      )
+    }
+    if (!is.null(metadata$coverage$spatial)) {
+      set_if_new(
+        "Config/SpatialCoverage",
+        jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE)
+      )
+    }
+  }
+
+  if (!is.null(metadata$related) && length(metadata$related) > 0) {
+    set_if_new(
+      "Config/RelatedIdentifiers",
+      jsonlite::toJSON(metadata$related, auto_unbox = TRUE)
+    )
+  }
+
+  standard_fields <- c(
+    "package",
+    "authors",
+    "license",
+    "publication",
+    "coverage",
+    "related"
+  )
+  other_fields <- setdiff(names(metadata), standard_fields)
+
+  for (field in other_fields) {
+    if (!is.null(metadata[[field]])) {
+      config_field <- paste0("Config/", tools::toTitleCase(field))
+
+      if (is.list(metadata[[field]]) && !is.data.frame(metadata[[field]])) {
+        set_if_new(
+          config_field,
+          jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE)
+        )
+      } else if (
+        is.vector(metadata[[field]]) && length(metadata[[field]]) > 1
+      ) {
+        set_if_new(config_field, paste(metadata[[field]], collapse = ", "))
+      } else {
+        set_if_new(config_field, as.character(metadata[[field]]))
+      }
+    }
+  }
+}
+
 #' Save metadata to DESCRIPTION file
 #'
 #' Saves metadata structure to DESCRIPTION file using appropriate fields.
@@ -697,81 +772,9 @@ save_metadata <- function(
   # Set license
   set_if_new("License", metadata$license$id)
 
-  # Set custom fields with Config/ prefix
-  if (!is.null(metadata$publication)) {
-    if (!is.null(metadata$publication$keywords)) {
-      set_if_new(
-        "Config/Keywords",
-        paste(metadata$publication$keywords, collapse = ", ")
-      )
-    }
-    set_if_new("Config/Funder", metadata$publication$funder)
-    set_if_new("Config/GrantID", metadata$publication$grant_id)
-    if (!is.null(metadata$publication$communities)) {
-      set_if_new(
-        "Config/Communities",
-        paste(metadata$publication$communities, collapse = ", ")
-      )
-    }
-  }
-
-  # Coverage (store as JSON for complex structure)
-  if (!is.null(metadata$coverage)) {
-    if (!is.null(metadata$coverage$temporal)) {
-      set_if_new(
-        "Config/TemporalCoverage",
-        jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE)
-      )
-    }
-    if (!is.null(metadata$coverage$spatial)) {
-      set_if_new(
-        "Config/SpatialCoverage",
-        jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE)
-      )
-    }
-  }
-
-  # Related identifiers (store as JSON)
-  if (!is.null(metadata$related) && length(metadata$related) > 0) {
-    set_if_new(
-      "Config/RelatedIdentifiers",
-      jsonlite::toJSON(metadata$related, auto_unbox = TRUE)
-    )
-  }
-
-  # Handle any other custom fields generically
-  standard_fields <- c(
-    "package",
-    "authors",
-    "license",
-    "publication",
-    "coverage",
-    "related"
-  )
-  other_fields <- setdiff(names(metadata), standard_fields)
-
-  for (field in other_fields) {
-    if (!is.null(metadata[[field]])) {
-      # Convert field name to Config/ format
-      config_field <- paste0("Config/", tools::toTitleCase(field))
-
-      # Store as JSON if it's a complex structure, otherwise as string
-      if (is.list(metadata[[field]]) && !is.data.frame(metadata[[field]])) {
-        set_if_new(
-          config_field,
-          jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE)
-        )
-      } else if (
-        is.vector(metadata[[field]]) && length(metadata[[field]]) > 1
-      ) {
-        # Multiple values - join with commas
-        set_if_new(config_field, paste(metadata[[field]], collapse = ", "))
-      } else {
-        # Single value
-        set_if_new(config_field, as.character(metadata[[field]]))
-      }
-    }
-  }
+  # Custom Config/* fields (publication, coverage JSON, related JSON, and any
+  # non-standard top-level metadata keys)
+  .save_config_fields(metadata, set_if_new)
 
   # Write back to file
   d$write(file = desc_path)

@@ -254,7 +254,7 @@ Tick boxes as items land.
   `.collect_related`. Top-level becomes ~50 lines of orchestration.
   *(3 hr)*
 
-- [ ] **6.7 Decompose `save_metadata()`** (R/collect_metadata.R:498,
+- [x] **6.7 Decompose `save_metadata()`** (R/collect_metadata.R:498,
   192 lines). Split out the `Config/*` JSON-encoded fields writer into
   `.save_config_fields`. *(1 hr)*
 
