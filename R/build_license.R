@@ -21,7 +21,8 @@ LICENSE_CONFIG <- list(
       patterns = c("MIT", "mit license"),
       usethis_func = "use_mit_license",
       requires_copyright = TRUE,
-      description = "MIT License"
+      description = "MIT License",
+      url = "https://opensource.org/licenses/MIT"
     ),
 
     `Apache-2.0` = list(
@@ -29,7 +30,8 @@ LICENSE_CONFIG <- list(
       patterns = c("APACHE", "apache 2", "apache-2.0"),
       usethis_func = "use_apache_license",
       requires_version = TRUE,
-      description = "Apache License 2.0"
+      description = "Apache License 2.0",
+      url = "https://www.apache.org/licenses/LICENSE-2.0"
     ),
 
     `GPL-2` = list(
@@ -37,7 +39,8 @@ LICENSE_CONFIG <- list(
       patterns = c("GPL.*2", "gnu gpl v?2"),
       usethis_func = "use_gpl_license",
       version = 2,
-      description = "GNU General Public License v2"
+      description = "GNU General Public License v2",
+      url = "https://www.gnu.org/licenses/gpl-2.0.html"
     ),
 
     `GPL-3` = list(
@@ -45,7 +48,8 @@ LICENSE_CONFIG <- list(
       patterns = c("GPL(?!.*2)", "gnu gpl v?3", "gpl$"),
       usethis_func = "use_gpl_license",
       version = 3,
-      description = "GNU General Public License v3"
+      description = "GNU General Public License v3",
+      url = "https://www.gnu.org/licenses/gpl-3.0.html"
     ),
 
     `AGPL-3` = list(
@@ -53,7 +57,8 @@ LICENSE_CONFIG <- list(
       patterns = c("AGPL", "affero gpl"),
       usethis_func = "use_agpl_license",
       version = 3,
-      description = "GNU Affero General Public License v3"
+      description = "GNU Affero General Public License v3",
+      url = "https://www.gnu.org/licenses/agpl-3.0.html"
     ),
 
     `LGPL-2.1` = list(
@@ -61,7 +66,8 @@ LICENSE_CONFIG <- list(
       patterns = c("LGPL.*2", "lesser gpl.*2"),
       usethis_func = "use_lgpl_license",
       version = 2.1,
-      description = "GNU Lesser General Public License v2.1"
+      description = "GNU Lesser General Public License v2.1",
+      url = "https://www.gnu.org/licenses/lgpl-2.1.html"
     ),
 
     `LGPL-3` = list(
@@ -69,21 +75,24 @@ LICENSE_CONFIG <- list(
       patterns = c("LGPL(?!.*2)", "lesser gpl.*3", "lgpl$"),
       usethis_func = "use_lgpl_license",
       version = 3,
-      description = "GNU Lesser General Public License v3"
+      description = "GNU Lesser General Public License v3",
+      url = "https://www.gnu.org/licenses/lgpl-3.0.html"
     ),
 
     CC0 = list(
       canonical = "CC0",
       patterns = c("CC-?0", "CC-?ZERO", "public domain"),
       usethis_func = "use_cc0_license",
-      description = "Creative Commons Zero"
+      description = "Creative Commons Zero",
+      url = "https://creativecommons.org/publicdomain/zero/1.0/"
     ),
 
     `CC-BY` = list(
       canonical = "CC-BY",
       patterns = c("CC-?BY", "creative commons by", "cc by 4"),
       usethis_func = "use_ccby_license",
-      description = "Creative Commons Attribution"
+      description = "Creative Commons Attribution",
+      url = "https://creativecommons.org/licenses/by/4.0/"
     ),
 
     Proprietary = list(
@@ -91,7 +100,8 @@ LICENSE_CONFIG <- list(
       patterns = c("PROPRIETARY", "CLOSED", "PRIVATE", "ALL RIGHTS RESERVED"),
       usethis_func = "use_proprietary_license",
       requires_copyright = TRUE,
-      description = "Proprietary License"
+      description = "Proprietary License",
+      url = NULL
     )
   )
 )
@@ -164,6 +174,25 @@ match_license <- function(license) {
   }
 
   return(NULL)
+}
+
+#' Get License URL
+#'
+#' Look up a license's reference URL from `LICENSE_CONFIG`. Accepts any
+#' input recognized by `match_license()` (canonical name, DESCRIPTION-style
+#' spelling such as `"CC-BY-4.0"` or `"CC BY 4.0"`, etc.) and returns the
+#' canonical URL.
+#'
+#' @param license Character string identifying a license.
+#' @return Character URL, or `NULL` if the license is unrecognized or has
+#'   no canonical URL (e.g. `"Proprietary"`).
+#' @keywords internal
+get_license_url <- function(license) {
+  canonical <- match_license(license)
+  if (is.null(canonical)) {
+    return(NULL)
+  }
+  LICENSE_CONFIG$definitions[[canonical]]$url
 }
 
 #' Build License

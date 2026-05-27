@@ -265,25 +265,8 @@ collect_metadata <- function(
     }
   }
 
-  # Get license URL based on canonical name
-  license_urls <- list(
-    "CC-BY" = "https://creativecommons.org/licenses/by/4.0/",
-    "CC0" = "https://creativecommons.org/publicdomain/zero/1.0/",
-    "MIT" = "https://opensource.org/licenses/MIT",
-    "GPL-2" = "https://www.gnu.org/licenses/gpl-2.0.html",
-    "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
-    "LGPL-2.1" = "https://www.gnu.org/licenses/lgpl-2.1.html",
-    "LGPL-3" = "https://www.gnu.org/licenses/lgpl-3.0.html",
-    "AGPL-3" = "https://www.gnu.org/licenses/agpl-3.0.html",
-    "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0",
-    "Proprietary" = NULL
-  )
-
-  license_url <- if (!is.null(license) && license %in% names(license_urls)) {
-    license_urls[[license]]
-  } else {
-    NULL
-  }
+  # Get license URL from the single LICENSE_CONFIG source
+  license_url <- get_license_url(license)
 
   # Publication Information - Optional fields (only if extended)
   if (extended) {
@@ -762,18 +745,9 @@ get_metadata <- function(base_path = NULL) {
   if (!is.null(license_id)) {
     metadata$license <- list(id = license_id)
 
-    # Add standard license URLs
-    license_urls <- list(
-      "CC-BY-4.0" = "https://creativecommons.org/licenses/by/4.0/",
-      "CC BY 4.0" = "https://creativecommons.org/licenses/by/4.0/",
-      "CC0-1.0" = "https://creativecommons.org/publicdomain/zero/1.0/",
-      "MIT" = "https://opensource.org/licenses/MIT",
-      "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
-      "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0"
-    )
-
-    if (license_id %in% names(license_urls)) {
-      metadata$license$url <- license_urls[[license_id]]
+    license_url <- get_license_url(license_id)
+    if (!is.null(license_url)) {
+      metadata$license$url <- license_url
     }
   }
 

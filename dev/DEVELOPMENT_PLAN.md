@@ -239,7 +239,7 @@ Tick boxes as items land.
   validate_*_completed framework). Pure file moves, no logic changes.
   *(1.5 hr)*
 
-- [ ] **6.4 De-duplicate license-URL tables.** Three sources today:
+- [x] **6.4 De-duplicate license-URL tables.** Three sources today:
   `LICENSE_CONFIG` in `build_license.R`, inline tables at
   `collect_metadata.R:259` and `:757`. Make `LICENSE_CONFIG` the single
   source. *(30 min)*
