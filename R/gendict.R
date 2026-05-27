@@ -6,8 +6,10 @@ NULL
 .gendict_display_progress <- function(
   col_names,
   responses,
-  current_index = NULL
+  current_index = NULL,
+  verbose = TRUE
 ) {
+  if (!verbose) return(invisible(NULL))
   if (!is.null(current_index)) {
     # Display single result
     cli::cli_alert_success(
@@ -33,10 +35,20 @@ NULL
 }
 
 # Helper function: Sequential chat (one at a time)
-.gendict_sequential_chat <- function(chat, prompts, col_names, delay = 0) {
+.gendict_sequential_chat <- function(
+  chat,
+  prompts,
+  col_names,
+  delay = 0,
+  verbose = TRUE
+) {
   llm_responses <- vector("character", length(prompts))
 
-  cli::cli_alert_info("Processing {length(prompts)} columns sequentially...")
+  if (verbose) {
+    cli::cli_alert_info(
+      "Processing {length(prompts)} columns sequentially..."
+    )
+  }
 
   for (i in seq_along(prompts)) {
     # Add a small delay between requests to avoid rate limiting
@@ -59,15 +71,17 @@ NULL
     llm_responses[i] <- response
 
     # Display progress
-    .gendict_display_progress(col_names, llm_responses, i)
+    .gendict_display_progress(col_names, llm_responses, i, verbose = verbose)
   }
 
   return(llm_responses)
 }
 
 # Helper function: Parallel chat using ellmer::parallel_chat
-.gendict_parallel_chat <- function(chat, prompts, col_names) {
-  cli::cli_alert_info("Processing {length(prompts)} columns in parallel...")
+.gendict_parallel_chat <- function(chat, prompts, col_names, verbose = TRUE) {
+  if (verbose) {
+    cli::cli_alert_info("Processing {length(prompts)} columns in parallel...")
+  }
 
   llm_responses <- tryCatch(
     {
@@ -81,7 +95,12 @@ NULL
       cli::cli_alert_warning(
         "parallel_chat failed: {e$message}. Falling back to sequential processing."
       )
-      return(.gendict_sequential_chat(chat, prompts, col_names))
+      return(.gendict_sequential_chat(
+        chat,
+        prompts,
+        col_names,
+        verbose = verbose
+      ))
     }
   )
 
@@ -119,18 +138,25 @@ NULL
   }
 
   # Display all results at once for parallel processing
-  .gendict_display_progress(col_names, llm_responses)
+  .gendict_display_progress(col_names, llm_responses, verbose = verbose)
 
   return(llm_responses)
 }
 
 # Helper function: Sequential with fresh connection for each request
-.gendict_sequential_fresh <- function(chat_config, prompts, col_names) {
+.gendict_sequential_fresh <- function(
+  chat_config,
+  prompts,
+  col_names,
+  verbose = TRUE
+) {
   llm_responses <- vector("character", length(prompts))
 
-  cli::cli_alert_info(
-    "Processing {length(prompts)} columns (fresh connection each time)..."
-  )
+  if (verbose) {
+    cli::cli_alert_info(
+      "Processing {length(prompts)} columns (fresh connection each time)..."
+    )
+  }
 
   for (i in seq_along(prompts)) {
     response <- tryCatch(
@@ -163,7 +189,7 @@ NULL
     llm_responses[i] <- response
 
     # Display progress
-    .gendict_display_progress(col_names, llm_responses, i)
+    .gendict_display_progress(col_names, llm_responses, i, verbose = verbose)
 
     # Small delay between requests
     if (i < length(prompts)) {
@@ -283,7 +309,7 @@ NULL
 #' @param sample_size Number of sample values to show
 #' @param method Processing method (sequential, sequential_fresh, parallel)
 #' @param test_llm_connection Whether to test LLM connection first
-#' @param verbose Whether to show detailed messages (default: FALSE)
+#' @param verbose Whether to show detailed messages (default: TRUE)
 #' @param ... Additional arguments. Currently unused; reserved for future
 #'   extensions.
 #' @return Tibble with variable names and descriptions
@@ -295,44 +321,26 @@ gendict <- function(
   sample_size = 5,
   method = "sequential",
   test_llm_connection = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 ) {
-  if (verbose) {
-    cat("DEBUG: gendict called with data:", class(data), "\n")
-  }
-  if (verbose) {
-    cat("DEBUG: ... args:", length(list(...)), "\n")
-  }
-  if (verbose) {
-    cat("DEBUG: About to call match.arg\n")
-  }
   # Validate method parameter
   method <- match.arg(method, c("sequential", "parallel"))
-  if (verbose) {
-    cat("DEBUG: match.arg successful, method =", method, "\n")
-  }
 
-  if (verbose) {
-    cat("DEBUG: About to call read_data\n")
-  }
   # Use utility function to read and validate data
   data <- read_data(data)
-  if (verbose) {
-    cat("DEBUG: read_data successful\n")
-  }
 
-  cli::cli_alert_info("Generating dictionary for {ncol(data)} variable{?s}...")
   if (verbose) {
-    cat("DEBUG: After cli_alert_info\n")
+    cli::cli_alert_info(
+      "Generating dictionary for {ncol(data)} variable{?s}..."
+    )
   }
 
   # Test LLM connection first
-  if (verbose) {
-    cat("DEBUG: About to check test_llm_connection\n")
-  }
   if (test_llm_connection) {
-    cli::cli_alert_info("Testing LLM connection...")
+    if (verbose) {
+      cli::cli_alert_info("Testing LLM connection...")
+    }
     test_response <- tryCatch(
       {
         chat$chat("Hello, please respond with 'Connection successful'")
@@ -344,15 +352,14 @@ gendict <- function(
     )
 
     if (!is.null(test_response)) {
-      cli::cli_alert_success(
-        "LLM connection test: {substr(test_response, 1, 50)}..."
-      )
+      if (verbose) {
+        cli::cli_alert_success(
+          "LLM connection test: {substr(test_response, 1, 50)}..."
+        )
+      }
     } else {
       cli::cli_abort("Cannot proceed without LLM connection")
     }
-  }
-  if (verbose) {
-    cat("DEBUG: After test_llm_connection check\n")
   }
   # Define the allowed data types
   allowed_data_types <- c(
@@ -368,9 +375,6 @@ gendict <- function(
     "json",
     "array"
   )
-  if (verbose) {
-    cat("DEBUG: After defining allowed_data_types\n")
-  }
 
   # Prepare a list of prompts, one for each column, including the sampled data
   column_prompts <- list()
@@ -378,50 +382,19 @@ gendict <- function(
   sample_strings <- list() # Store formatted sample strings
   continuity_flags <- list() # Store whether each column is continuous
   col_names <- names(data)
-  if (verbose) {
-    cat(
-      "DEBUG: About to start for loop, col_names:",
-      paste(col_names, collapse = ", "),
-      "\n"
-    )
-  }
 
   for (i in seq_along(col_names)) {
-    if (verbose) {
-      cat("DEBUG: Processing column", i, ":", col_names[i], "\n")
-    }
     col_name <- col_names[i]
     column_data <- data[[col_name]]
 
-    if (verbose) {
-      cat("DEBUG: About to call .generate_samples for", col_name, "\n")
-    }
     # Generate samples using helper function
     samples <- .generate_samples(column_data, sample_size)
-    if (verbose) {
-      cat("DEBUG: .generate_samples successful for", col_name, "\n")
-    }
     sample_data[[i]] <- samples
 
-    if (verbose) {
-      cat("DEBUG: About to check continuity for", col_name, "\n")
-    }
     # Check if continuous and store flag
     is_cont <- samples$type == "continuous"
     continuity_flags[[i]] <- is_cont
-    if (verbose) {
-      cat(
-        "DEBUG: Continuity check done for",
-        col_name,
-        "is_cont =",
-        is_cont,
-        "\n"
-      )
-    }
 
-    if (verbose) {
-      cat("DEBUG: About to convert samples to string for", col_name, "\n")
-    }
     # Convert samples to string for prompt
     if (is_cont) {
       if (is.na(samples$min) && is.na(samples$max)) {
@@ -446,21 +419,9 @@ gendict <- function(
         sample_str <- paste0(sample_str, ", ...")
       }
     }
-    if (verbose) {
-      cat(
-        "DEBUG: Sample string conversion done for",
-        col_name,
-        "sample_str =",
-        sample_str,
-        "\n"
-      )
-    }
 
     # Store the formatted string for later use
     sample_strings[[i]] <- sample_str
-    if (verbose) {
-      cat("DEBUG: Stored sample string for", col_name, "\n")
-    }
 
     # Construct a comprehensive prompt for better descriptions
     prompt_context <- ""
@@ -513,15 +474,27 @@ DESCRIPTION:"
 
   tryCatch(
     {
-      cli::cli_alert_info(
-        "Using {method} method to process {length(column_prompts)} prompts..."
-      )
+      if (verbose) {
+        cli::cli_alert_info(
+          "Using {method} method to process {length(column_prompts)} prompts..."
+        )
+      }
 
       # Use the appropriate helper function based on method
       llm_responses <- switch(
         method,
-        sequential = .gendict_sequential_chat(chat, column_prompts, col_names),
-        parallel = .gendict_parallel_chat(chat, column_prompts, col_names),
+        sequential = .gendict_sequential_chat(
+          chat,
+          column_prompts,
+          col_names,
+          verbose = verbose
+        ),
+        parallel = .gendict_parallel_chat(
+          chat,
+          column_prompts,
+          col_names,
+          verbose = verbose
+        ),
         cli::cli_abort("Unknown method: {.val {method}}")
       )
 
@@ -537,7 +510,9 @@ DESCRIPTION:"
         description = descriptions_with_examples
       )
 
-      cli::cli_alert_success("Dictionary generated successfully!")
+      if (verbose) {
+        cli::cli_alert_success("Dictionary generated successfully!")
+      }
       return(final_dict)
     },
     error = function(e) {
@@ -549,7 +524,9 @@ DESCRIPTION:"
         description = paste("Variable:", names(data))
       )
 
-      cli::cli_alert_info("Returning basic dictionary structure")
+      if (verbose) {
+        cli::cli_alert_info("Returning basic dictionary structure")
+      }
       return(fallback_dict)
     }
   )

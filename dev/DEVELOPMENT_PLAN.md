@@ -212,7 +212,7 @@ Tick boxes as items land.
 
 ## Phase 6 — Refactors (non-blocking; big readability wins)
 
-- [ ] **6.1 Strip ~25 `cat("DEBUG: ...")` scaffolding lines** in
+- [x] **6.1 Strip ~25 `cat("DEBUG: ...")` scaffolding lines** in
   `gendict()` (R/gendict.R:298–460). Quickest win in this phase, no
   behavior change. *(5 min)*
 
