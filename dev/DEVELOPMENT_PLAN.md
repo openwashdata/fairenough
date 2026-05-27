@@ -216,6 +216,17 @@ Tick boxes as items land.
   `gendict()` (R/gendict.R:298–460). Quickest win in this phase, no
   behavior change. *(5 min)*
 
+- [x] **6.1.1 Make `prompt_*` respect caller-passed `interactive` flag.**
+  Discovered while running the e2e test for 6.1: the four prompt helpers
+  in `R/promptit.R` only checked R's built-in `interactive()`, so
+  `collect_metadata(interactive = FALSE)` still hung on `readline()` in
+  an interactive R session (e.g. under `devtools::test()`). Added an
+  `interactive = base::interactive()` parameter to `prompt_input`,
+  `prompt_menu`, `prompt_multi_select`, and `prompt_confirm`; threaded
+  it through the 7 unguarded `prompt_*` call sites in
+  `R/collect_metadata.R`. Same shape as 2.2 — silent prompts in
+  non-interactive contexts. *(20 min)*
+
 - [ ] **6.2 De-duplicate `build_roxygen` + `devtools::install`.**
   `wrappers.R::build()` calls `build_roxygen()` (R/wrappers.R:333) and
   then `build_package()` which calls it again (R/build_package.R:23).

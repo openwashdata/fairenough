@@ -13,6 +13,9 @@
 #' @param required Whether the field is required
 #' @param validator Function that returns TRUE for valid input
 #' @param validator_message Message to show when validation fails
+#' @param interactive Whether to prompt the user. Defaults to the current
+#'   R session's `interactive()` state; pass `FALSE` to force the
+#'   non-interactive branch (use defaults / abort on required fields).
 #' @return User input or default value
 #' @keywords internal
 prompt_input <- function(
@@ -21,7 +24,8 @@ prompt_input <- function(
   default = NULL,
   required = FALSE,
   validator = NULL,
-  validator_message = "Invalid input"
+  validator_message = "Invalid input",
+  interactive = base::interactive()
 ) {
   # If value already exists and is not empty, return it
   if (!is.null(value) && value != "") {
@@ -29,7 +33,7 @@ prompt_input <- function(
   }
 
   # Non-interactive mode handling
-  if (!interactive()) {
+  if (!interactive) {
     if (!is.null(default)) {
       cli::cli_alert_info("Non-interactive mode: using default '{default}'")
       return(default)
@@ -92,6 +96,9 @@ prompt_input <- function(
 #' @param allow_none Add "None of the above" option
 #' @param allow_other Add "Other (specify)" option
 #' @param graphics Whether to use graphical menu if available
+#' @param interactive Whether to prompt the user. Defaults to the current
+#'   R session's `interactive()` state; pass `FALSE` to force the
+#'   non-interactive branch.
 #' @return Selected value or NULL
 #' @keywords internal
 prompt_menu <- function(
@@ -101,7 +108,8 @@ prompt_menu <- function(
   default = NULL,
   allow_none = FALSE,
   allow_other = FALSE,
-  graphics = getOption("menu.graphics", FALSE)
+  graphics = getOption("menu.graphics", FALSE),
+  interactive = base::interactive()
 ) {
   # If value already exists, return it
   if (!is.null(value)) {
@@ -113,7 +121,7 @@ prompt_menu <- function(
   return_values <- if (is.null(names(choices))) choices else unname(choices)
 
   # Non-interactive mode handling
-  if (!interactive()) {
+  if (!interactive) {
     if (!is.null(default)) {
       if (is.numeric(default)) {
         cli::cli_alert_info(
@@ -163,7 +171,11 @@ prompt_menu <- function(
 
   if (allow_other && choice_index == n_original + 1) {
     # "Other" was selected
-    return(prompt_input("Enter custom value", required = TRUE))
+    return(prompt_input(
+      "Enter custom value",
+      required = TRUE,
+      interactive = interactive
+    ))
   }
 
   if (allow_none && choice_index == length(menu_choices)) {
@@ -183,6 +195,9 @@ prompt_menu <- function(
 #' @param default Default selections (vector of values)
 #' @param min_choices Minimum number of choices required
 #' @param max_choices Maximum number of choices allowed
+#' @param interactive Whether to prompt the user. Defaults to the current
+#'   R session's `interactive()` state; pass `FALSE` to force the
+#'   non-interactive branch.
 #' @return Character vector of selected values
 #' @keywords internal
 prompt_multi_select <- function(
@@ -191,7 +206,8 @@ prompt_multi_select <- function(
   values = NULL,
   default = NULL,
   min_choices = 0,
-  max_choices = NULL
+  max_choices = NULL,
+  interactive = base::interactive()
 ) {
   # If values already exist and are not empty, return them
   if (!is.null(values) && length(values) > 0) {
@@ -203,7 +219,7 @@ prompt_multi_select <- function(
   return_values <- if (is.null(names(choices))) choices else unname(choices)
 
   # Non-interactive mode
-  if (!interactive()) {
+  if (!interactive) {
     if (!is.null(default)) {
       cli::cli_alert_info("Non-interactive mode: using defaults")
       return(default)
@@ -299,16 +315,24 @@ prompt_multi_select <- function(
 #' @param message Question to ask
 #' @param value Current value - if not NULL, returns it without prompting
 #' @param default Default choice (TRUE for yes, FALSE for no)
+#' @param interactive Whether to prompt the user. Defaults to the current
+#'   R session's `interactive()` state; pass `FALSE` to force the
+#'   non-interactive branch (returns `default`).
 #' @return Logical TRUE or FALSE
 #' @keywords internal
-prompt_confirm <- function(message, value = NULL, default = TRUE) {
+prompt_confirm <- function(
+  message,
+  value = NULL,
+  default = TRUE,
+  interactive = base::interactive()
+) {
   # If value already exists, return it
   if (!is.null(value)) {
     return(value)
   }
 
   # Non-interactive mode
-  if (!interactive()) {
+  if (!interactive) {
     cli::cli_alert_info(
       "Non-interactive mode: using default '{if(default) 'Yes' else 'No'}'"
     )
@@ -325,7 +349,8 @@ prompt_confirm <- function(message, value = NULL, default = TRUE) {
     choices = choices,
     title = message,
     graphics = FALSE,
-    default = default
+    default = default,
+    interactive = interactive
   )
 
   # If user cancelled, use default

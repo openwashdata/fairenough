@@ -109,25 +109,29 @@ collect_metadata <- function(
     value = pkg_name,
     required = TRUE,
     validator = validate_package_name,
-    validator_message = "Package name must start with a letter, contain only letters, numbers, and dots"
+    validator_message = "Package name must start with a letter, contain only letters, numbers, and dots",
+    interactive = interactive
   )
 
   title <- prompt_input(
     "Title",
     value = title,
-    required = TRUE
+    required = TRUE,
+    interactive = interactive
   )
 
   description <- prompt_input(
     "Description (one paragraph)",
     value = description,
-    required = TRUE
+    required = TRUE,
+    interactive = interactive
   )
 
   version <- prompt_input(
     "Version",
     value = version,
-    default = "0.0.1"
+    default = "0.0.1",
+    interactive = interactive
   )
 
   language <- prompt_menu(
@@ -141,12 +145,14 @@ collect_metadata <- function(
     title = "Select language",
     value = language,
     default = "en-GB",
-    allow_other = TRUE
+    allow_other = TRUE,
+    interactive = interactive
   )
 
   github_user <- prompt_input(
     "GitHub user/organization",
-    value = github_user
+    value = github_user,
+    interactive = interactive
   )
 
   # Authors - Complex handling
@@ -244,7 +250,8 @@ collect_metadata <- function(
     title = "Select a license",
     value = license,
     default = "CC-BY",
-    allow_other = TRUE
+    allow_other = TRUE,
+    interactive = interactive
   )
 
   # If user provided a custom license, try to match it
