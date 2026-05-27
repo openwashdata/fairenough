@@ -4,7 +4,12 @@
 \alias{prompt_confirm}
 \title{Yes/No confirmation}
 \usage{
-prompt_confirm(message, value = NULL, default = TRUE)
+prompt_confirm(
+  message,
+  value = NULL,
+  default = TRUE,
+  interactive = base::interactive()
+)
 }
 \arguments{
 \item{message}{Question to ask}
@@ -12,6 +17,10 @@ prompt_confirm(message, value = NULL, default = TRUE)
 \item{value}{Current value - if not NULL, returns it without prompting}
 
 \item{default}{Default choice (TRUE for yes, FALSE for no)}
+
+\item{interactive}{Whether to prompt the user. Defaults to the current
+R session's \code{interactive()} state; pass \code{FALSE} to force the
+non-interactive branch (returns \code{default}).}
 }
 \value{
 Logical TRUE or FALSE

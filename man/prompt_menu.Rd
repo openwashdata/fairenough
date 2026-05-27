@@ -11,7 +11,8 @@ prompt_menu(
   default = NULL,
   allow_none = FALSE,
   allow_other = FALSE,
-  graphics = getOption("menu.graphics", FALSE)
+  graphics = getOption("menu.graphics", FALSE),
+  interactive = base::interactive()
 )
 }
 \arguments{
@@ -28,6 +29,10 @@ prompt_menu(
 \item{allow_other}{Add "Other (specify)" option}
 
 \item{graphics}{Whether to use graphical menu if available}
+
+\item{interactive}{Whether to prompt the user. Defaults to the current
+R session's \code{interactive()} state; pass \code{FALSE} to force the
+non-interactive branch.}
 }
 \value{
 Selected value or NULL

@@ -1,321 +1,5 @@
-#' @importFrom utils person
-NULL
-
-# Supported file extensions for data processing
-SUPPORTED_EXTENSIONS <- c("csv", "xlsx", "xls")
-SUPPORTED_EXTENSIONS_DOT <- c(".csv", ".xlsx", ".xls")
-
-# Package-private cache for path state shared across fairenough calls within
-# a session. CRAN forbids mutating global options() for persistent state, so
-# we keep it in the package namespace instead.
-.fairenough_state <- new.env(parent = emptyenv())
-
-#' Get base path with consistent handling across all functions
-#'
-#' Provides a consistent way to handle `base_path` across all fairenough
-#' functions. If `base_path` is provided, it is normalized, cached in a
-#' package-private environment, and returned. If `base_path` is `NULL`, the
-#' cached value is returned when set, otherwise the function falls back to
-#' [here::here()] or the current directory.
-#'
-#' @param base_path Optional base path to set
-#' @return Normalized base path
-#' @keywords internal
-get_base_path <- function(base_path = NULL) {
-  if (!is.null(base_path)) {
-    normalized_path <- normalizePath(base_path, mustWork = TRUE)
-    .fairenough_state$base_path <- normalized_path
-    return(normalized_path)
-  }
-
-  stored_path <- .fairenough_state$base_path
-  if (!is.null(stored_path)) {
-    return(stored_path)
-  }
-
-  default_path <- tryCatch(
-    here::here(),
-    error = function(e) {
-      message("No project root found, using current directory")
-      "."
-    }
-  )
-
-  normalized_path <- normalizePath(default_path, mustWork = TRUE)
-  .fairenough_state$base_path <- normalized_path
-  return(normalized_path)
-}
-
-#' Get raw directory path with consistent handling across all functions
-#'
-#' Provides a consistent way to handle `raw_dir` across all fairenough
-#' functions. If `raw_dir` is provided, it is cached in a package-private
-#' environment and returned. If `raw_dir` is `NULL`, the cached value is
-#' returned when set, otherwise `"data_raw"` is used as the default.
-#'
-#' @param raw_dir Optional base path to set
-#' @return Normalized base path
-#' @keywords internal
-get_raw_dir <- function(raw_dir = NULL) {
-  if (!is.null(raw_dir)) {
-    .fairenough_state$raw_dir <- raw_dir
-    return(raw_dir)
-  }
-
-  stored_path <- .fairenough_state$raw_dir
-  if (!is.null(stored_path)) {
-    return(stored_path)
-  }
-
-  default_path <- "data_raw"
-  .fairenough_state$raw_dir <- default_path
-  return(default_path)
-}
-
-#' Read data from various sources
-#'
-#' This function reads data from a data frame, CSV file, or Excel file.
-#' It handles all validation and provides consistent error messages.
-#'
-#' @param data Either a data frame or a path to a CSV/Excel file
-#' @param show_messages Whether to show informational messages (default TRUE)
-#' @return A data frame
-#' @export
-read_data <- function(data, show_messages = TRUE) {
-  # If already a data frame, validate and return
-  if (is.data.frame(data)) {
-    return(validate_data_frame(data))
-  }
-
-  # Must be a file path - validate it
-  data_path <- validate_file_path(data)
-
-  # Determine file type and read accordingly
-  file_ext <- tolower(tools::file_ext(data_path))
-
-  if (file_ext == "csv") {
-    if (show_messages) {
-      cli::cli_alert_info("Reading CSV file: {data_path}")
-    }
-    data <- readr::read_csv(data_path, show_col_types = FALSE)
-  } else if (file_ext %in% c("xlsx", "xls")) {
-    # Ensure readxl is available
-    if (!requireNamespace("readxl", quietly = TRUE)) {
-      cli::cli_abort(c(
-        "Package {.pkg readxl} is required to read Excel files",
-        "i" = "Install it with: install.packages('readxl')"
-      ))
-    }
-    if (show_messages) {
-      cli::cli_alert_info("Reading Excel file: {data_path}")
-    }
-    data <- readxl::read_excel(data_path)
-  }
-
-  # Convert tibble to regular data frame to avoid issues
-  data <- as.data.frame(data, stringsAsFactors = FALSE)
-
-  # Validate and return the loaded data
-  return(validate_data_frame(data))
-}
-
-#' Get supported file extensions
-#' @return Character vector of supported file extensions (without dots)
-#' @keywords internal
-get_supported_extensions <- function() {
-  return(SUPPORTED_EXTENSIONS)
-}
-
-#' Check if file type is supported
-#' @param file_path Path to file
-#' @return Logical indicating if file type is supported
-#' @keywords internal
-is_supported_file_type <- function(file_path) {
-  if (!is.character(file_path) || length(file_path) != 1) {
-    return(FALSE)
-  }
-  file_ext <- tolower(tools::file_ext(file_path))
-  return(file_ext %in% SUPPORTED_EXTENSIONS)
-}
-
-#' Filter files by supported extensions
-#' @param file_paths Character vector of file paths
-#' @return Character vector of files with supported extensions
-#' @keywords internal
-filter_supported_files <- function(file_paths) {
-  if (length(file_paths) == 0) {
-    return(character(0))
-  }
-
-  supported_files <- character(0)
-  for (ext in SUPPORTED_EXTENSIONS_DOT) {
-    pattern <- paste0("\\", ext, "$")
-    matching_files <- file_paths[grepl(pattern, file_paths, ignore.case = TRUE)]
-    supported_files <- c(supported_files, matching_files)
-  }
-
-  return(supported_files)
-}
-
-#' Validate file path
-#' @param file_path Path to file
-#' @return The validated file path (throws error if invalid)
-#' @keywords internal
-validate_file_path <- function(file_path) {
-  if (!is.character(file_path) || length(file_path) != 1) {
-    cli::cli_abort("File path must be a single character string")
-  }
-
-  if (!file.exists(file_path)) {
-    cli::cli_abort("File not found: {file_path}")
-  }
-
-  if (!is_supported_file_type(file_path)) {
-    file_ext <- tools::file_ext(file_path)
-    cli::cli_abort(
-      "Unsupported file type: {file_ext}. Supported types: {paste(SUPPORTED_EXTENSIONS, collapse=', ')}"
-    )
-  }
-
-  return(file_path)
-}
-
-#' Validate data frame
-#' @param data Data frame to validate
-#' @param min_rows Minimum number of rows required (default 1)
-#' @return The validated data frame (throws error if invalid)
-#' @keywords internal
-validate_data_frame <- function(data, min_rows = 1) {
-  if (!is.data.frame(data)) {
-    cli::cli_abort("Input must be a data frame")
-  }
-
-  if (nrow(data) < min_rows) {
-    cli::cli_abort("Data frame must have at least {min_rows} row{?s}")
-  }
-
-  return(data)
-}
-
-#' Ensure directory exists with messaging
-#' @param dir_path Path to directory
-#' @param description Optional description for messages
-#' @param recursive Whether to create parent directories (default TRUE)
-#' @param verbose Whether to show messages (default TRUE)
-#' @return The directory path
-#' @keywords internal
-ensure_directory <- function(
-  dir_path,
-  description = NULL,
-  recursive = TRUE,
-  verbose = TRUE
-) {
-  if (is.null(description)) {
-    description <- "Directory"
-  }
-
-  if (fs::dir_exists(dir_path)) {
-    if (verbose) {
-      cli::cli_alert_info("{description} '{dir_path}' already exists")
-    }
-  } else {
-    fs::dir_create(dir_path, recurse = recursive)
-    if (verbose) cli::cli_alert_success("Created {description}: {dir_path}")
-  }
-
-  return(dir_path)
-}
-
-#' Use a template file with data substitution
-#'
-#' Similar to usethis::use_template but respects base_path.
-#' Reads a template from the package, substitutes data, and writes to target location.
-#'
-#' @param template Name of template file in inst/templates
-#' @param save_as Path to save file relative to base_path
-#' @param data List of data for substitution
-#' @param base_path Base path for the project
-#' @param package Package containing the template
-#' @param open Whether to open the file after creation
-#' @param verbose Whether to show messages
-#' @return Path to created file
-#' @keywords internal
-use_template <- function(
-  template,
-  save_as = template,
-  data = list(),
-  base_path = NULL,
-  package = "fairenough",
-  open = FALSE,
-  verbose = TRUE
-) {
-  base_path <- get_base_path(base_path)
-
-  # Get template from package
-  template_path <- system.file("templates", template, package = package)
-  if (template_path == "") {
-    cli::cli_abort(
-      "Template {.file {template}} not found in package {.pkg {package}}"
-    )
-  }
-
-  # Read template
-  template_content <- paste(readLines(template_path), collapse = "\n")
-
-  # Use whisker for template rendering (same as usethis)
-  if (!requireNamespace("whisker", quietly = TRUE)) {
-    cli::cli_abort(
-      "Package {.pkg whisker} is required. Install it with: install.packages('whisker')"
-    )
-  }
-
-  # Render template with whisker
-  rendered_content <- whisker::whisker.render(template_content, data)
-
-  # Create output path
-  output_path <- file.path(base_path, save_as)
-
-  # Ensure directory exists
-  output_dir <- dirname(output_path)
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-
-  # Check if file exists and prompt
-  if (file.exists(output_path)) {
-    if (interactive()) {
-      cli::cli_inform("File {.path {save_as}} already exists.")
-      if (!prompt_confirm("Overwrite it?", default = FALSE)) {
-        return(invisible(NULL))
-      }
-    }
-  }
-
-  # Write file
-  writeLines(rendered_content, output_path)
-
-  if (verbose) {
-    if (file.exists(output_path)) {
-      cli::cli_alert_success("Writing {.path {save_as}}")
-    } else {
-      cli::cli_alert_success("Creating {.path {save_as}}")
-    }
-  }
-
-  # Open file if requested
-  if (open && interactive()) {
-    if (
-      requireNamespace("rstudioapi", quietly = TRUE) &&
-        rstudioapi::isAvailable()
-    ) {
-      rstudioapi::navigateToFile(output_path)
-    } else {
-      utils::file.edit(output_path)
-    }
-  }
-
-  return(invisible(output_path))
-}
+# Pipeline validation: check_* helpers, checklist formatting, and the
+# exported validate_*_completed functions used to gate each pipeline stage.
 
 #' Validation system for fairenough pipeline steps
 #'
@@ -342,7 +26,7 @@ check_dirs_exist <- function(base_path) {
 check_gitignore_configured <- function(base_path) {
   gitignore_path <- file.path(base_path, ".gitignore")
   if (!file.exists(gitignore_path)) return(FALSE)
-  
+
   gitignore_content <- readLines(gitignore_path)
   required_entries <- c("data_raw/", ".Rhistory", ".RData")
   all(sapply(required_entries, function(entry) any(grepl(entry, gitignore_content, fixed = TRUE))))
@@ -352,7 +36,7 @@ check_gitignore_configured <- function(base_path) {
 check_raw_data_files <- function(base_path) {
   raw_dir <- file.path(base_path, get_raw_dir())
   if (!dir.exists(raw_dir)) return(FALSE)
-  
+
   all_files <- list.files(raw_dir, full.names = TRUE)
   data_files <- filter_supported_files(all_files)
   length(data_files) > 0
@@ -361,7 +45,7 @@ check_raw_data_files <- function(base_path) {
 check_rda_files <- function(base_path) {
   data_dir <- file.path(base_path, "data")
   if (!dir.exists(data_dir)) return(FALSE)
-  
+
   rda_files <- list.files(data_dir, pattern = "\\.rda$")
   length(rda_files) > 0
 }
@@ -369,7 +53,7 @@ check_rda_files <- function(base_path) {
 check_csv_files <- function(base_path) {
   extdata_dir <- file.path(base_path, "inst", "extdata")
   if (!dir.exists(extdata_dir)) return(FALSE)
-  
+
   csv_files <- list.files(extdata_dir, pattern = "\\.csv$")
   length(csv_files) > 0
 }
@@ -378,22 +62,22 @@ check_file_consistency <- function(base_path) {
   raw_dir <- file.path(base_path, get_raw_dir())
   data_dir <- file.path(base_path, "data")
   extdata_dir <- file.path(base_path, "inst", "extdata")
-  
+
   if (!all(dir.exists(c(raw_dir, data_dir, extdata_dir)))) return(FALSE)
-  
+
   raw_files <- filter_supported_files(list.files(raw_dir, full.names = TRUE))
   if (length(raw_files) == 0) return(TRUE) # No raw files yet
-  
+
   rda_files <- list.files(data_dir, pattern = "\\.rda$")
   # Exclude dictionary.csv from consistency check
   csv_files <- list.files(extdata_dir, pattern = "\\.csv$")
   csv_files <- csv_files[csv_files != "dictionary.csv"]
-  
+
   raw_names <- tools::file_path_sans_ext(basename(raw_files))
   rda_names <- tools::file_path_sans_ext(rda_files)
   csv_names <- tools::file_path_sans_ext(csv_files)
-  
-  length(raw_names) == length(rda_names) && 
+
+  length(raw_names) == length(rda_names) &&
   length(raw_names) == length(csv_names) &&
   all(sort(raw_names) == sort(rda_names)) &&
   all(sort(raw_names) == sort(csv_names))
@@ -403,7 +87,7 @@ check_file_consistency <- function(base_path) {
 check_package_name <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (!file.exists(desc_path)) return(FALSE)
-  
+
   tryCatch({
     d <- desc::desc(file = desc_path)
     pkg_name <- d$get("Package")[[1]]
@@ -414,7 +98,7 @@ check_package_name <- function(base_path) {
 check_package_title <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (!file.exists(desc_path)) return(FALSE)
-  
+
   tryCatch({
     d <- desc::desc(file = desc_path)
     title <- d$get("Title")[[1]]
@@ -425,7 +109,7 @@ check_package_title <- function(base_path) {
 check_package_description <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (!file.exists(desc_path)) return(FALSE)
-  
+
   tryCatch({
     d <- desc::desc(file = desc_path)
     description <- d$get("Description")[[1]]
@@ -436,19 +120,19 @@ check_package_description <- function(base_path) {
 check_package_authors <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (!file.exists(desc_path)) return(FALSE)
-  
+
   tryCatch({
     d <- desc::desc(file = desc_path)
     authors <- d$get_authors()
-    
+
     if (length(authors) == 0) return(FALSE)
-    
+
     has_maintainer <- any(sapply(authors, function(author) "cre" %in% author$role))
     meaningful_authors <- any(sapply(authors, function(author) {
       !is.null(author$given) && !is.null(author$family) &&
       !grepl("First|Last", paste(author$given, author$family), ignore.case = TRUE)
     }))
-    
+
     has_maintainer && meaningful_authors
   }, error = function(e) FALSE)
 }
@@ -456,7 +140,7 @@ check_package_authors <- function(base_path) {
 check_package_license <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (!file.exists(desc_path)) return(FALSE)
-  
+
   tryCatch({
     d <- desc::desc(file = desc_path)
     license <- d$get("License")[[1]]
@@ -467,14 +151,14 @@ check_package_license <- function(base_path) {
 check_package_urls <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
   if (!file.exists(desc_path)) return(FALSE)
-  
+
   tryCatch({
     d <- desc::desc(file = desc_path)
     urls <- d$get_urls()
-    
+
     github_user <- tryCatch(d$get("github_user")[[1]], error = function(e) NULL)
     if (is.null(github_user) || github_user == "") return(TRUE) # URLs optional if no github_user
-    
+
     length(urls) > 0
   }, error = function(e) FALSE)
 }
@@ -487,13 +171,13 @@ check_dictionary_file <- function(base_path) {
 check_variables_documented <- function(base_path) {
   dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
   if (!file.exists(dict_path)) return(FALSE)
-  
+
   data_dir <- file.path(base_path, "data")
   if (!dir.exists(data_dir)) return(TRUE) # No data files yet
-  
+
   rda_files <- list.files(data_dir, pattern = "\\.rda$", full.names = TRUE)
   if (length(rda_files) == 0) return(TRUE) # No data files yet
-  
+
   all_vars <- character(0)
   for (rda_file in rda_files) {
     temp_env <- new.env()
@@ -504,7 +188,7 @@ check_variables_documented <- function(base_path) {
       all_vars <- c(all_vars, names(data_obj))
     }, error = function(e) NULL)
   }
-  
+
   dict <- utils::read.csv(dict_path)
   dict_vars <- dict$variable_name
   length(setdiff(all_vars, dict_vars)) == 0
@@ -513,17 +197,17 @@ check_variables_documented <- function(base_path) {
 check_descriptions_filled <- function(base_path) {
   dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
   if (!file.exists(dict_path)) return(FALSE)
-  
+
   dict <- utils::read.csv(dict_path)
   if (nrow(dict) == 0) return(TRUE)
-  
+
   !any(is.na(dict$description) | dict$description == "" | trimws(dict$description) == "")
 }
 
 check_dictionary_structure <- function(base_path) {
   dict_path <- file.path(base_path, "inst", "extdata", "dictionary.csv")
   if (!file.exists(dict_path)) return(FALSE)
-  
+
   dict <- utils::read.csv(dict_path)
   required_cols <- c("directory", "file_name", "variable_name", "variable_type", "description")
   all(required_cols %in% names(dict))
@@ -549,7 +233,7 @@ check_readme_file <- function(base_path) {
 check_documentation <- function(base_path) {
   man_dir <- file.path(base_path, "man")
   if (!dir.exists(man_dir)) return(FALSE)
-  
+
   rd_files <- list.files(man_dir, pattern = "\\.Rd$")
   length(rd_files) > 0
 }
@@ -557,16 +241,16 @@ check_documentation <- function(base_path) {
 check_website <- function(base_path) {
   docs_dir <- file.path(base_path, "docs")
   if (!dir.exists(docs_dir)) return(FALSE)
-  
+
   index_file <- file.path(docs_dir, "index.html")
   file.exists(index_file)
 }
 
 check_package_installable <- function(base_path) {
   desc_path <- file.path(base_path, "DESCRIPTION")
-  namespace_path <- file.path(base_path, "NAMESPACE") 
+  namespace_path <- file.path(base_path, "NAMESPACE")
   r_dir <- file.path(base_path, "R")
-  
+
   file.exists(desc_path) && file.exists(namespace_path) && dir.exists(r_dir)
 }
 
@@ -577,11 +261,11 @@ format_checklist_results <- function(checklist) {
   results <- list()
   passed <- 0
   total <- length(checklist)
-  
+
   for (i in seq_along(checklist)) {
     item <- checklist[[i]]
     error_msg <- NULL
-    
+
     check_passed <- tryCatch(
       item$check,
       error = function(e) {
@@ -589,7 +273,7 @@ format_checklist_results <- function(checklist) {
         FALSE
       }
     )
-    
+
     results[[i]] <- list(
       name = item$name,
       description = item$description,
@@ -598,10 +282,10 @@ format_checklist_results <- function(checklist) {
       details = if (!check_passed && !is.null(item$details)) item$details else NULL,
       error = if (!is.null(error_msg)) error_msg else NULL
     )
-    
+
     if (check_passed) passed <- passed + 1
   }
-  
+
   list(
     all_passed = passed == total,
     all_required_passed = all(sapply(results, function(x) !x$required || x$passed)),
@@ -618,26 +302,26 @@ format_checklist_results <- function(checklist) {
 #' @param verbose Whether to show detailed output
 show_checklist <- function(validation, title, verbose = TRUE) {
   if (!verbose) return(invisible(NULL))
-  
+
   # Show summary
   status <- if (validation$all_required_passed) "\u2705" else "\u274C"
   cli::cli_h3("{status} {title}: {validation$passed_checks}/{validation$total_checks} checks passed")
-  
+
   # Show individual items
   for (item in validation$items) {
     icon <- if (item$passed) "\u2705" else "\u274C"
-    
+
     cli::cli_text("{icon} {item$name}: {item$description}")
-    
+
     if (!item$passed && !is.null(item$details)) {
       cli::cli_alert_info("  \u2192 {item$details}")
     }
-    
+
     if (!item$passed && !is.null(item$error)) {
       cli::cli_alert_warning("  \u2192 Error: {item$error}")
     }
   }
-  
+
   invisible(validation)
 }
 
@@ -654,7 +338,7 @@ checklist_summary <- function(validation) {
 #' @export
 validate_setup_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
-  
+
   checklist <- list(
     list(
       name = "R package structure",
@@ -671,7 +355,7 @@ validate_setup_completed <- function(base_path = NULL) {
       details = "Run setup() to create RStudio project file"
     ),
     list(
-      name = "Data directories", 
+      name = "Data directories",
       description = "Required directories exist (data/, data_raw/, inst/extdata/)",
       check = check_dirs_exist(base_path),
       required = TRUE,
@@ -685,7 +369,7 @@ validate_setup_completed <- function(base_path = NULL) {
       details = "Run setup() to configure .gitignore properly"
     )
   )
-  
+
   format_checklist_results(checklist)
 }
 
@@ -695,7 +379,7 @@ validate_setup_completed <- function(base_path = NULL) {
 #' @export
 validate_processing_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
-  
+
   checklist <- list(
     list(
       name = "Raw data files",
@@ -726,7 +410,7 @@ validate_processing_completed <- function(base_path = NULL) {
       details = "Run process() to ensure consistent file processing"
     )
   )
-  
+
   format_checklist_results(checklist)
 }
 
@@ -736,7 +420,7 @@ validate_processing_completed <- function(base_path = NULL) {
 #' @export
 validate_metadata_collected <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
-  
+
   checklist <- list(
     list(
       name = "DESCRIPTION file",
@@ -754,7 +438,7 @@ validate_metadata_collected <- function(base_path = NULL) {
     ),
     list(
       name = "Package title",
-      description = "Title field in DESCRIPTION is meaningful", 
+      description = "Title field in DESCRIPTION is meaningful",
       check = check_package_title(base_path),
       required = TRUE,
       details = "Run collect() to set meaningful package title"
@@ -767,7 +451,7 @@ validate_metadata_collected <- function(base_path = NULL) {
       details = "Run collect() to set meaningful package description"
     ),
     list(
-      name = "Authors", 
+      name = "Authors",
       description = "Authors@R field with maintainer (cre role)",
       check = check_package_authors(base_path),
       required = TRUE,
@@ -788,7 +472,7 @@ validate_metadata_collected <- function(base_path = NULL) {
       details = "URLs will be set automatically if github_user is provided"
     )
   )
-  
+
   format_checklist_results(checklist)
 }
 
@@ -798,7 +482,7 @@ validate_metadata_collected <- function(base_path = NULL) {
 #' @export
 validate_dictionary_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
-  
+
   checklist <- list(
     list(
       name = "Dictionary file",
@@ -829,7 +513,7 @@ validate_dictionary_completed <- function(base_path = NULL) {
       details = "Run generate() to create properly structured dictionary"
     )
   )
-  
+
   format_checklist_results(checklist)
 }
 
@@ -839,7 +523,7 @@ validate_dictionary_completed <- function(base_path = NULL) {
 #' @export
 validate_build_completed <- function(base_path = NULL) {
   base_path <- get_base_path(base_path)
-  
+
   checklist <- list(
     list(
       name = "LICENSE file",
@@ -884,6 +568,6 @@ validate_build_completed <- function(base_path = NULL) {
       details = "Run build() to ensure package is properly structured"
     )
   )
-  
+
   format_checklist_results(checklist)
 }

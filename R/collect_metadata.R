@@ -1,3 +1,6 @@
+#' @importFrom utils person
+NULL
+
 #' Collect comprehensive metadata interactively
 #'
 #' @description

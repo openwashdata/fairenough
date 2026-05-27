@@ -233,7 +233,7 @@ Tick boxes as items land.
   Same with install: R/build_package.R:76 + R/build_package.R:534. Pick
   a single owner per stage. *(30 min)*
 
-- [ ] **6.3 Split `utils.R` (872 lines)** along its natural boundaries:
+- [x] **6.3 Split `utils.R` (872 lines)** along its natural boundaries:
   `R/config.R` (path/option helpers), `R/io.R` (read_data, file-format
   predicates), `R/validation.R` (the ~550-line check_*/format_checklist/
   validate_*_completed framework). Pure file moves, no logic changes.

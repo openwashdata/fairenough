@@ -10,7 +10,8 @@ prompt_multi_select(
   values = NULL,
   default = NULL,
   min_choices = 0,
-  max_choices = NULL
+  max_choices = NULL,
+  interactive = base::interactive()
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ prompt_multi_select(
 \item{min_choices}{Minimum number of choices required}
 
 \item{max_choices}{Maximum number of choices allowed}
+
+\item{interactive}{Whether to prompt the user. Defaults to the current
+R session's \code{interactive()} state; pass \code{FALSE} to force the
+non-interactive branch.}
 }
 \value{
 Character vector of selected values
