@@ -227,7 +227,7 @@ Tick boxes as items land.
   `R/collect_metadata.R`. Same shape as 2.2 — silent prompts in
   non-interactive contexts. *(20 min)*
 
-- [ ] **6.2 De-duplicate `build_roxygen` + `devtools::install`.**
+- [x] **6.2 De-duplicate `build_roxygen` + `devtools::install`.**
   `wrappers.R::build()` calls `build_roxygen()` (R/wrappers.R:333) and
   then `build_package()` which calls it again (R/build_package.R:23).
   Same with install: R/build_package.R:76 + R/build_package.R:534. Pick

@@ -360,19 +360,9 @@ build <- function(
 
   results <- list()
 
-  # 1. Build roxygen documentation
+  # 1. Build citation
   if (verbose) {
-    cli::cli_h2("Step 1: Building roxygen documentation")
-  }
-  results$roxygen <- build_roxygen(
-    type = "dataset",
-    base_path = base_path,
-    verbose = verbose
-  )
-
-  # 2. Build citation
-  if (verbose) {
-    cli::cli_h2("Step 2: Building citation")
+    cli::cli_h2("Step 1: Building citation")
   }
   results$citation <- build_citation(
     base_path = base_path,
@@ -381,9 +371,9 @@ build <- function(
     overwrite = overwrite
   )
 
-  # 3. Build package
+  # 2. Build package (generates roxygen for datasets, runs document + install)
   if (verbose) {
-    cli::cli_h2("Step 3: Building package")
+    cli::cli_h2("Step 2: Building package")
   }
   results$package <- build_package(
     base_path = base_path,
@@ -391,9 +381,9 @@ build <- function(
     overwrite = overwrite
   )
 
-  # 4. Build README
+  # 3. Build README
   if (verbose) {
-    cli::cli_h2("Step 4: Building README")
+    cli::cli_h2("Step 3: Building README")
   }
   results$readme <- build_readme(
     base_path = base_path,
@@ -402,15 +392,15 @@ build <- function(
     quarto = quarto
   )
 
-  # 5. Build site
+  # 4. Build site (build_package already installed; skip the duplicate install)
   if (verbose) {
-    cli::cli_h2("Step 5: Building website")
+    cli::cli_h2("Step 4: Building website")
   }
   results$site <- build_site(
     base_path = base_path,
     verbose = verbose,
     preview = preview,
-    install = TRUE
+    install = FALSE
   )
 
   # Show final validation
