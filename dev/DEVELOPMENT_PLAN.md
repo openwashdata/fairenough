@@ -258,7 +258,7 @@ Tick boxes as items land.
   192 lines). Split out the `Config/*` JSON-encoded fields writer into
   `.save_config_fields`. *(1 hr)*
 
-- [ ] **6.8 Resolve orphaned `.validate_package()`** (R/build_package.R:103).
+- [x] **6.8 Resolve orphaned `.validate_package()`** (R/build_package.R:103).
   Surfaced during 3.2: `.validate_package()` accepts and uses
   `good_practice` (calls `goodpractice::gp()`) but has no callers
   anywhere in the package. Decide: (a) wire it up — add `good_practice`
@@ -281,8 +281,11 @@ Tick boxes as items land.
   warnings. Notes only with explicit justification. *(unbounded —
   depends what surfaces)*
 
-- [ ] **7.4 Run `goodpractice::gp()` on `fairenough` itself.** It is in
-  Imports — eat the dog food. Address what it surfaces. *(1 hr)*
+- [ ] **7.4 Run `goodpractice::gp()` on `fairenough` itself.** Standard
+  pre-CRAN hygiene check. 6.8 removed `goodpractice` from `Imports`
+  (it was carried only by the dead `.validate_package`), so this is now
+  a developer-only check — install `goodpractice` locally and run
+  `goodpractice::gp(".")`. Address what it surfaces. *(1 hr)*
 
 - [ ] **7.5 Update `README.Rmd` badges.** Replace the placeholder block
   with real R-CMD-check / lifecycle / CRAN-status badges. *(15 min)*
