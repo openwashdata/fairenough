@@ -248,7 +248,7 @@ Tick boxes as items land.
   (R/build_package.R:348–377 vs 378–410). Extract
   `.render_readme(template, format)`. *(30 min)*
 
-- [ ] **6.6 Decompose `collect_metadata()`** (R/collect_metadata.R:36,
+- [x] **6.6 Decompose `collect_metadata()`** (R/collect_metadata.R:36,
   449 lines). Extract `.collect_package_info`, `.collect_authors`,
   `.collect_license`, `.collect_publication`, `.collect_coverage`,
   `.collect_related`. Top-level becomes ~50 lines of orchestration.
