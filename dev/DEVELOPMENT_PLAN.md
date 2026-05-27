@@ -244,7 +244,7 @@ Tick boxes as items land.
   `collect_metadata.R:259` and `:757`. Make `LICENSE_CONFIG` the single
   source. *(30 min)*
 
-- [ ] **6.5 De-duplicate `build_readme()` qmd/Rmd branches**
+- [x] **6.5 De-duplicate `build_readme()` qmd/Rmd branches**
   (R/build_package.R:348–377 vs 378–410). Extract
   `.render_readme(template, format)`. *(30 min)*
 

@@ -357,6 +357,70 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   invisible(to_add)
 }
 
+# Copy the README.qmd or README.Rmd template into base_path and render it to
+# README.md. Both formats share the same flow (copy template, check renderer
+# namespace, tryCatch render, emit success/error messages) but call different
+# renderer packages; this helper holds the common structure.
+.render_readme <- function(
+  base_path,
+  format = c("rmd", "qmd"),
+  verbose = TRUE,
+  overwrite = TRUE
+) {
+  format <- match.arg(format)
+
+  if (format == "qmd") {
+    template_name <- "README.qmd"
+    renderer_pkg <- "quarto"
+    render_fn <- function(input, quiet) {
+      quarto::quarto_render(
+        input,
+        output_format = "gfm",
+        quiet = quiet
+      )
+    }
+  } else {
+    template_name <- "README.Rmd"
+    renderer_pkg <- "rmarkdown"
+    render_fn <- function(input, quiet) {
+      rmarkdown::render(
+        input,
+        output_format = "github_document",
+        output_file = file.path(dirname(input), "README.md"),
+        quiet = quiet
+      )
+    }
+  }
+
+  readme_path <- file.path(base_path, template_name)
+  template_path <- system.file(
+    "templates",
+    template_name,
+    package = "fairenough"
+  )
+  fs::file_copy(template_path, readme_path, overwrite = overwrite)
+
+  if (!requireNamespace(renderer_pkg, quietly = TRUE)) {
+    cli::cli_alert_warning("Package {.pkg {renderer_pkg}} not installed")
+    cli::cli_alert_info(
+      "Install it with: install.packages('{renderer_pkg}')"
+    )
+    return(invisible(FALSE))
+  }
+
+  tryCatch(
+    {
+      render_fn(readme_path, quiet = !verbose)
+      if (verbose) cli::cli_alert_success("Generated README.md")
+      invisible(TRUE)
+    },
+    error = function(e) {
+      cli::cli_alert_warning("Could not render README: {e$message}")
+      invisible(FALSE)
+    }
+  )
+}
+
 #' Build README from inst/templates/README.qmd
 #'
 #' Build README.md from the README.qmd template, incorporating package metadata.
@@ -379,69 +443,13 @@ build_readme <- function(
 
   .add_readme_render_suggests(base_path, verbose = verbose)
 
-  if (quarto && quarto_installed) {
-    # Create README.qmd from template if it doesn't exist
-    readme_qmd <- file.path(base_path, "README.qmd")
-    template_path <- system.file(
-      "templates",
-      "README.qmd",
-      package = "fairenough"
-    )
-    fs::file_copy(template_path, readme_qmd, overwrite = overwrite)
-
-    # Check if quarto is available
-    if (requireNamespace("quarto", quietly = TRUE)) {
-      tryCatch(
-        {
-          # Render README with quarto
-          quarto::quarto_render(
-            readme_qmd,
-            output_format = "gfm",
-            quiet = !verbose
-          )
-          if (verbose) cli::cli_alert_success("Generated README.md")
-        },
-        error = function(e) {
-          cli::cli_alert_warning("Could not render README: {e$message}")
-        }
-      )
-    } else {
-      cli::cli_alert_warning("Package {.pkg quarto} not installed")
-      cli::cli_alert_info("Install it with: install.packages('quarto')")
-    }
-  } else {
-    # Create README.Rmd from template if it doesn't exist
-    readme_rmd <- file.path(base_path, "README.Rmd")
-    template_path <- system.file(
-      "templates",
-      "README.Rmd",
-      package = "fairenough"
-    )
-    fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
-
-    # Check if rmarkdown is available
-    if (requireNamespace("rmarkdown", quietly = TRUE)) {
-      tryCatch(
-        {
-          # Render README with proper working directory
-          readme_md <- file.path(base_path, "README.md")
-          rmarkdown::render(
-            readme_rmd,
-            output_format = "github_document",
-            output_file = readme_md,
-            quiet = !verbose
-          )
-          if (verbose) cli::cli_alert_success("Generated README.md")
-        },
-        error = function(e) {
-          cli::cli_alert_warning("Could not render README: {e$message}")
-        }
-      )
-    } else {
-      cli::cli_alert_warning("Package {.pkg rmarkdown} not installed")
-      cli::cli_alert_info("Install it with: install.packages('rmarkdown')")
-    }
-  }
+  format <- if (quarto && quarto_installed) "qmd" else "rmd"
+  .render_readme(
+    base_path = base_path,
+    format = format,
+    verbose = verbose,
+    overwrite = overwrite
+  )
 
   return(invisible(file.path(base_path, "README.md")))
 }
