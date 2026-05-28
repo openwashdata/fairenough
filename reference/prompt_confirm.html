@@ -44,7 +44,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prompt_confirm</span><span class="op">(</span><span class="va">message</span>, value <span class="op">=</span> <span class="cn">NULL</span>, default <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prompt_confirm</span><span class="op">(</span></span>
+<span>  <span class="va">message</span>,</span>
+<span>  value <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  default <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  interactive <span class="op">=</span> <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -61,6 +66,12 @@
 
 <dt id="arg-default">default<a class="anchor" aria-label="anchor" href="#arg-default"></a></dt>
 <dd><p>Default choice (TRUE for yes, FALSE for no)</p></dd>
+
+
+<dt id="arg-interactive">interactive<a class="anchor" aria-label="anchor" href="#arg-interactive"></a></dt>
+<dd><p>Whether to prompt the user. Defaults to the current
+R session's <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code> state; pass <code>FALSE</code> to force the
+non-interactive branch (returns <code>default</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

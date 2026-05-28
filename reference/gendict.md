@@ -12,7 +12,7 @@ gendict(
   sample_size = 5,
   method = "sequential",
   test_llm_connection = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 ```
@@ -45,7 +45,7 @@ gendict(
 
 - verbose:
 
-  Whether to show detailed messages (default: FALSE)
+  Whether to show detailed messages (default: TRUE)
 
 - ...:
 

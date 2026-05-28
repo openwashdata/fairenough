@@ -12,7 +12,8 @@ prompt_menu(
   default = NULL,
   allow_none = FALSE,
   allow_other = FALSE,
-  graphics = getOption("menu.graphics", FALSE)
+  graphics = getOption("menu.graphics", FALSE),
+  interactive = base::interactive()
 )
 ```
 
@@ -46,6 +47,12 @@ prompt_menu(
 - graphics:
 
   Whether to use graphical menu if available
+
+- interactive:
+
+  Whether to prompt the user. Defaults to the current R session's
+  [`interactive()`](https://rdrr.io/r/base/interactive.html) state; pass
+  `FALSE` to force the non-interactive branch.
 
 ## Value
 

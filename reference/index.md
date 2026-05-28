@@ -36,12 +36,8 @@
   : Export data as RDA file
 - [`.move_data_files()`](https://openwashdata.github.io/fairenough/reference/dot-move_data_files.md)
   : Move data files to raw data directory
-- [`.run_checks()`](https://openwashdata.github.io/fairenough/reference/dot-run_checks.md)
-  : Run package checks
 - [`.setup_gitignore()`](https://openwashdata.github.io/fairenough/reference/dot-setup_gitignore.md)
   : Setup gitignore for data directory and R files
-- [`.validate_package()`](https://openwashdata.github.io/fairenough/reference/dot-validate_package.md)
-  : Validate package with modern tools
 - [`fairenough()`](https://openwashdata.github.io/fairenough/reference/fairenough.md)
   : Main fairenough wrapper
 - [`format_checklist_results()`](https://openwashdata.github.io/fairenough/reference/format_checklist_results.md)

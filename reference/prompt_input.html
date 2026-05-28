@@ -59,7 +59,8 @@ Text input with validation</p>
 <span>  default <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  required <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  validator <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  validator_message <span class="op">=</span> <span class="st">"Invalid input"</span></span>
+<span>  validator_message <span class="op">=</span> <span class="st">"Invalid input"</span>,</span>
+<span>  interactive <span class="op">=</span> <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -89,6 +90,12 @@ Text input with validation</p>
 
 <dt id="arg-validator-message">validator_message<a class="anchor" aria-label="anchor" href="#arg-validator-message"></a></dt>
 <dd><p>Message to show when validation fails</p></dd>
+
+
+<dt id="arg-interactive">interactive<a class="anchor" aria-label="anchor" href="#arg-interactive"></a></dt>
+<dd><p>Whether to prompt the user. Defaults to the current
+R session's <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code> state; pass <code>FALSE</code> to force the
+non-interactive branch (use defaults / abort on required fields).</p></dd>
 
 </dl></div>
     <div class="section level2">

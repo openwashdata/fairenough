@@ -11,7 +11,8 @@ prompt_multi_select(
   values = NULL,
   default = NULL,
   min_choices = 0,
-  max_choices = NULL
+  max_choices = NULL,
+  interactive = base::interactive()
 )
 ```
 
@@ -40,6 +41,12 @@ prompt_multi_select(
 - max_choices:
 
   Maximum number of choices allowed
+
+- interactive:
+
+  Whether to prompt the user. Defaults to the current R session's
+  [`interactive()`](https://rdrr.io/r/base/interactive.html) state; pass
+  `FALSE` to force the non-interactive branch.
 
 ## Value
 

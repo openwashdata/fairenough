@@ -14,7 +14,8 @@ prompt_input(
   default = NULL,
   required = FALSE,
   validator = NULL,
-  validator_message = "Invalid input"
+  validator_message = "Invalid input",
+  interactive = base::interactive()
 )
 ```
 
@@ -43,6 +44,13 @@ prompt_input(
 - validator_message:
 
   Message to show when validation fails
+
+- interactive:
+
+  Whether to prompt the user. Defaults to the current R session's
+  [`interactive()`](https://rdrr.io/r/base/interactive.html) state; pass
+  `FALSE` to force the non-interactive branch (use defaults / abort on
+  required fields).
 
 ## Value
 

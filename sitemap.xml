@@ -24,9 +24,7 @@
 <url><loc>https://openwashdata.github.io/fairenough/reference/dot-export_csv.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/dot-export_rda.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/dot-move_data_files.html</loc></url>
-<url><loc>https://openwashdata.github.io/fairenough/reference/dot-run_checks.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/dot-setup_gitignore.html</loc></url>
-<url><loc>https://openwashdata.github.io/fairenough/reference/dot-validate_package.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/ensure_directory.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/fairenough.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/filter_supported_files.html</loc></url>
@@ -38,6 +36,7 @@
 <url><loc>https://openwashdata.github.io/fairenough/reference/get_base_path.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/get_key.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/get_license_config.html</loc></url>
+<url><loc>https://openwashdata.github.io/fairenough/reference/get_license_url.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/get_metadata.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/get_raw_dir.html</loc></url>
 <url><loc>https://openwashdata.github.io/fairenough/reference/get_supported_extensions.html</loc></url>

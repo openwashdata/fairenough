@@ -50,7 +50,8 @@
 <span>  values <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  default <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_choices <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  max_choices <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  max_choices <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  interactive <span class="op">=</span> <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,6 +81,12 @@
 
 <dt id="arg-max-choices">max_choices<a class="anchor" aria-label="anchor" href="#arg-max-choices"></a></dt>
 <dd><p>Maximum number of choices allowed</p></dd>
+
+
+<dt id="arg-interactive">interactive<a class="anchor" aria-label="anchor" href="#arg-interactive"></a></dt>
+<dd><p>Whether to prompt the user. Defaults to the current
+R session's <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code> state; pass <code>FALSE</code> to force the
+non-interactive branch.</p></dd>
 
 </dl></div>
     <div class="section level2">
