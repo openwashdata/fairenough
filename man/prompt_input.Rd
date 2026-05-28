@@ -10,7 +10,8 @@ prompt_input(
   default = NULL,
   required = FALSE,
   validator = NULL,
-  validator_message = "Invalid input"
+  validator_message = "Invalid input",
+  interactive = base::interactive()
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ prompt_input(
 \item{validator}{Function that returns TRUE for valid input}
 
 \item{validator_message}{Message to show when validation fails}
+
+\item{interactive}{Whether to prompt the user. Defaults to the current
+R session's \code{interactive()} state; pass \code{FALSE} to force the
+non-interactive branch (use defaults / abort on required fields).}
 }
 \value{
 User input or default value

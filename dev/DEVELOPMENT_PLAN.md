@@ -212,42 +212,53 @@ Tick boxes as items land.
 
 ## Phase 6 — Refactors (non-blocking; big readability wins)
 
-- [ ] **6.1 Strip ~25 `cat("DEBUG: ...")` scaffolding lines** in
+- [x] **6.1 Strip ~25 `cat("DEBUG: ...")` scaffolding lines** in
   `gendict()` (R/gendict.R:298–460). Quickest win in this phase, no
   behavior change. *(5 min)*
 
-- [ ] **6.2 De-duplicate `build_roxygen` + `devtools::install`.**
+- [x] **6.1.1 Make `prompt_*` respect caller-passed `interactive` flag.**
+  Discovered while running the e2e test for 6.1: the four prompt helpers
+  in `R/promptit.R` only checked R's built-in `interactive()`, so
+  `collect_metadata(interactive = FALSE)` still hung on `readline()` in
+  an interactive R session (e.g. under `devtools::test()`). Added an
+  `interactive = base::interactive()` parameter to `prompt_input`,
+  `prompt_menu`, `prompt_multi_select`, and `prompt_confirm`; threaded
+  it through the 7 unguarded `prompt_*` call sites in
+  `R/collect_metadata.R`. Same shape as 2.2 — silent prompts in
+  non-interactive contexts. *(20 min)*
+
+- [x] **6.2 De-duplicate `build_roxygen` + `devtools::install`.**
   `wrappers.R::build()` calls `build_roxygen()` (R/wrappers.R:333) and
   then `build_package()` which calls it again (R/build_package.R:23).
   Same with install: R/build_package.R:76 + R/build_package.R:534. Pick
   a single owner per stage. *(30 min)*
 
-- [ ] **6.3 Split `utils.R` (872 lines)** along its natural boundaries:
+- [x] **6.3 Split `utils.R` (872 lines)** along its natural boundaries:
   `R/config.R` (path/option helpers), `R/io.R` (read_data, file-format
   predicates), `R/validation.R` (the ~550-line check_*/format_checklist/
   validate_*_completed framework). Pure file moves, no logic changes.
   *(1.5 hr)*
 
-- [ ] **6.4 De-duplicate license-URL tables.** Three sources today:
+- [x] **6.4 De-duplicate license-URL tables.** Three sources today:
   `LICENSE_CONFIG` in `build_license.R`, inline tables at
   `collect_metadata.R:259` and `:757`. Make `LICENSE_CONFIG` the single
   source. *(30 min)*
 
-- [ ] **6.5 De-duplicate `build_readme()` qmd/Rmd branches**
+- [x] **6.5 De-duplicate `build_readme()` qmd/Rmd branches**
   (R/build_package.R:348–377 vs 378–410). Extract
   `.render_readme(template, format)`. *(30 min)*
 
-- [ ] **6.6 Decompose `collect_metadata()`** (R/collect_metadata.R:36,
+- [x] **6.6 Decompose `collect_metadata()`** (R/collect_metadata.R:36,
   449 lines). Extract `.collect_package_info`, `.collect_authors`,
   `.collect_license`, `.collect_publication`, `.collect_coverage`,
   `.collect_related`. Top-level becomes ~50 lines of orchestration.
   *(3 hr)*
 
-- [ ] **6.7 Decompose `save_metadata()`** (R/collect_metadata.R:498,
+- [x] **6.7 Decompose `save_metadata()`** (R/collect_metadata.R:498,
   192 lines). Split out the `Config/*` JSON-encoded fields writer into
   `.save_config_fields`. *(1 hr)*
 
-- [ ] **6.8 Resolve orphaned `.validate_package()`** (R/build_package.R:103).
+- [x] **6.8 Resolve orphaned `.validate_package()`** (R/build_package.R:103).
   Surfaced during 3.2: `.validate_package()` accepts and uses
   `good_practice` (calls `goodpractice::gp()`) but has no callers
   anywhere in the package. Decide: (a) wire it up — add `good_practice`
@@ -270,8 +281,11 @@ Tick boxes as items land.
   warnings. Notes only with explicit justification. *(unbounded —
   depends what surfaces)*
 
-- [ ] **7.4 Run `goodpractice::gp()` on `fairenough` itself.** It is in
-  Imports — eat the dog food. Address what it surfaces. *(1 hr)*
+- [ ] **7.4 Run `goodpractice::gp()` on `fairenough` itself.** Standard
+  pre-CRAN hygiene check. 6.8 removed `goodpractice` from `Imports`
+  (it was carried only by the dead `.validate_package`), so this is now
+  a developer-only check — install `goodpractice` locally and run
+  `goodpractice::gp(".")`. Address what it surfaces. *(1 hr)*
 
 - [ ] **7.5 Update `README.Rmd` badges.** Replace the placeholder block
   with real R-CMD-check / lifecycle / CRAN-status badges. *(15 min)*

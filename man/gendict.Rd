@@ -11,7 +11,7 @@ gendict(
   sample_size = 5,
   method = "sequential",
   test_llm_connection = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 }
@@ -28,7 +28,7 @@ gendict(
 
 \item{test_llm_connection}{Whether to test LLM connection first}
 
-\item{verbose}{Whether to show detailed messages (default: FALSE)}
+\item{verbose}{Whether to show detailed messages (default: TRUE)}
 
 \item{...}{Additional arguments. Currently unused; reserved for future
 extensions.}

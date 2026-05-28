@@ -1,3 +1,359 @@
+#' @importFrom utils person
+NULL
+
+# Six helpers below split the original ~280-line prompting block in
+# collect_metadata() into one section per metadata category. Each helper
+# accepts its already-known values plus the `interactive` flag, prompts for
+# anything still missing, and returns the resolved values.
+
+.collect_package_info <- function(
+  pkg_name,
+  title,
+  description,
+  version,
+  language,
+  github_user,
+  interactive
+) {
+  cli::cli_h3("Package Information")
+
+  pkg_name <- prompt_input(
+    "Package name",
+    value = pkg_name,
+    required = TRUE,
+    validator = validate_package_name,
+    validator_message = "Package name must start with a letter, contain only letters, numbers, and dots",
+    interactive = interactive
+  )
+
+  title <- prompt_input(
+    "Title",
+    value = title,
+    required = TRUE,
+    interactive = interactive
+  )
+
+  description <- prompt_input(
+    "Description (one paragraph)",
+    value = description,
+    required = TRUE,
+    interactive = interactive
+  )
+
+  version <- prompt_input(
+    "Version",
+    value = version,
+    default = "0.0.1",
+    interactive = interactive
+  )
+
+  language <- prompt_menu(
+    choices = c(
+      "English (GB)" = "en-GB",
+      "English (US)" = "en-US",
+      "German" = "de",
+      "French" = "fr",
+      "Spanish" = "es"
+    ),
+    title = "Select language",
+    value = language,
+    default = "en-GB",
+    allow_other = TRUE,
+    interactive = interactive
+  )
+
+  github_user <- prompt_input(
+    "GitHub user/organization",
+    value = github_user,
+    interactive = interactive
+  )
+
+  list(
+    name = pkg_name,
+    title = title,
+    description = description,
+    version = version,
+    language = language,
+    github_user = github_user
+  )
+}
+
+.collect_authors <- function(authors, interactive) {
+  cli::cli_h3("Authors")
+
+  if (is.null(authors) || length(authors) == 0) {
+    authors <- list()
+    if (interactive) {
+      add_more <- TRUE
+      author_num <- 1
+
+      while (add_more) {
+        cli::cli_alert_info(paste("Author", author_num))
+
+        given <- prompt_input("  Given name", required = TRUE)
+        family <- prompt_input("  Family name", required = TRUE)
+        email <- prompt_input(
+          "  Email",
+          required = TRUE,
+          validator = validate_email,
+          validator_message = "Please enter a valid email address"
+        )
+        orcid <- prompt_input(
+          "  ORCID (0000-0000-0000-0000)",
+          validator = validate_orcid,
+          validator_message = "ORCID must be in format 0000-0000-0000-000X"
+        )
+        affiliation <- prompt_input("  Affiliation", default = "ETH Zurich")
+
+        # First author gets "aut" and "cre" by default, others get only "aut"
+        default_roles <- if (author_num == 1) c("aut", "cre") else c("aut")
+
+        roles <- prompt_multi_select(
+          choices = c(
+            "Author (wrote the package)" = "aut",
+            "Creator/Maintainer (maintains the package)" = "cre",
+            "Contributor (made contributions)" = "ctb",
+            "Funder (funded the work)" = "fnd",
+            "Thesis advisor (supervised the work)" = "ths"
+          ),
+          title = "Select author roles",
+          default = default_roles,
+          min_choices = 1
+        )
+
+        authors[[author_num]] <- list(
+          given = given,
+          family = family,
+          email = email,
+          orcid = if (!is.null(orcid) && orcid != "") orcid else NULL,
+          affiliation = affiliation,
+          roles = roles
+        )
+
+        author_num <- author_num + 1
+        add_more <- prompt_confirm("\nAdd another author?", default = FALSE)
+      }
+    }
+  }
+
+  # Ensure at least one author has the "cre" (creator/maintainer) role
+  if (!is.null(authors) && length(authors) > 0) {
+    has_maintainer <- any(sapply(authors, function(author) {
+      "cre" %in% author$roles
+    }))
+
+    if (!has_maintainer) {
+      authors[[1]]$roles <- unique(c(authors[[1]]$roles, "cre"))
+      if (interactive) {
+        cli::cli_alert_info(
+          "Added 'creator/maintainer' role to first author (required for R packages)"
+        )
+      }
+    }
+  }
+
+  authors
+}
+
+.collect_license <- function(license, interactive) {
+  cli::cli_h3("License")
+
+  license_choices <- get_available_licenses("both")
+
+  # Match existing license value if provided
+  if (!is.null(license)) {
+    matched_license <- match_license(license)
+    if (!is.null(matched_license)) {
+      license <- matched_license
+    }
+  }
+
+  license <- prompt_menu(
+    choices = license_choices,
+    title = "Select a license",
+    value = license,
+    default = "CC-BY",
+    allow_other = TRUE,
+    interactive = interactive
+  )
+
+  # If user provided a custom license, try to match it
+  if (!is.null(license) && !(license %in% names(license_choices))) {
+    matched_license <- match_license(license)
+    if (!is.null(matched_license)) {
+      license <- matched_license
+    }
+  }
+
+  list(
+    id = license,
+    url = get_license_url(license)
+  )
+}
+
+.collect_publication <- function(
+  keywords,
+  funder,
+  grant_id,
+  communities,
+  extended,
+  interactive
+) {
+  if (!extended) {
+    return(list(
+      keywords = keywords,
+      funder = funder,
+      grant_id = grant_id,
+      communities = communities
+    ))
+  }
+
+  cli::cli_h3("Publication Information")
+
+  if (is.null(keywords) && interactive) {
+    keywords_input <- prompt_input("Keywords (comma-separated)")
+    if (!is.null(keywords_input) && keywords_input != "") {
+      keywords <- trimws(strsplit(keywords_input, ",")[[1]])
+    }
+  }
+
+  funder <- prompt_input(
+    "Funding organization",
+    value = funder,
+    default = if (interactive) "ETH Domain ORD Programme" else NULL
+  )
+
+  grant_id <- prompt_input("Grant ID", value = grant_id)
+
+  if (is.null(communities) && interactive) {
+    use_communities <- prompt_confirm(
+      "Add to Zenodo communities?",
+      default = TRUE
+    )
+    if (use_communities) {
+      communities <- prompt_multi_select(
+        choices = c(
+          "Global Health Engineering" = "global-health-engineering",
+          "Environmental Science" = "environmental-science",
+          "Data Science" = "data-science",
+          "Open Science" = "open-science"
+        ),
+        title = "Select Zenodo communities"
+      )
+    }
+  }
+
+  list(
+    keywords = keywords,
+    funder = funder,
+    grant_id = grant_id,
+    communities = communities
+  )
+}
+
+.collect_coverage <- function(
+  temporal_start,
+  temporal_end,
+  spatial_description,
+  spatial_coordinates,
+  extended,
+  interactive
+) {
+  if (!extended) {
+    return(list(
+      temporal_start = temporal_start,
+      temporal_end = temporal_end,
+      spatial_description = spatial_description,
+      spatial_coordinates = spatial_coordinates
+    ))
+  }
+
+  cli::cli_h3("Data Coverage")
+
+  if (interactive && (is.null(temporal_start) || is.null(temporal_end))) {
+    has_temporal <- prompt_confirm(
+      "Does the data have temporal coverage?",
+      default = TRUE
+    )
+    if (has_temporal) {
+      temporal_start <- prompt_input(
+        "Start date (YYYY or YYYY-MM-DD)",
+        value = temporal_start,
+        validator = validate_date,
+        validator_message = "Date must be YYYY or YYYY-MM-DD format"
+      )
+      temporal_end <- prompt_input(
+        "End date (YYYY or YYYY-MM-DD)",
+        value = temporal_end,
+        validator = validate_date,
+        validator_message = "Date must be YYYY or YYYY-MM-DD format"
+      )
+    }
+  }
+
+  if (interactive && is.null(spatial_description)) {
+    has_spatial <- prompt_confirm(
+      "Does the data have geographic coverage?",
+      default = FALSE
+    )
+    if (has_spatial) {
+      spatial_description <- prompt_input("Geographic description")
+
+      has_coords <- prompt_confirm("Add coordinates?", default = FALSE)
+      if (has_coords && is.null(spatial_coordinates)) {
+        lat <- as.numeric(prompt_input("Latitude", required = TRUE))
+        lon <- as.numeric(prompt_input("Longitude", required = TRUE))
+        spatial_coordinates <- list(lat = lat, lon = lon)
+      }
+    }
+  }
+
+  list(
+    temporal_start = temporal_start,
+    temporal_end = temporal_end,
+    spatial_description = spatial_description,
+    spatial_coordinates = spatial_coordinates
+  )
+}
+
+.collect_related <- function(related_identifiers, extended, interactive) {
+  if (!extended) {
+    return(related_identifiers)
+  }
+
+  cli::cli_h3("Related Publications")
+
+  if (is.null(related_identifiers) && interactive) {
+    has_related <- prompt_confirm(
+      "Are there related publications?",
+      default = FALSE
+    )
+    if (has_related) {
+      related_identifiers <- list()
+      add_more <- TRUE
+      rel_num <- 1
+
+      while (add_more) {
+        doi <- prompt_input(paste("  DOI", rel_num))
+        if (!is.null(doi) && doi != "") {
+          related_identifiers[[rel_num]] <- list(
+            scheme = "doi",
+            identifier = doi,
+            relation = "isDocumentedBy",
+            resource_type = "publication-article"
+          )
+          rel_num <- rel_num + 1
+          add_more <- prompt_confirm("  Add another?", default = FALSE)
+        } else {
+          add_more <- FALSE
+        }
+      }
+    }
+  }
+
+  related_identifiers
+}
+
 #' Collect comprehensive metadata interactively
 #'
 #' @description
@@ -101,329 +457,68 @@ collect_metadata <- function(
     }
   }
 
-  # Package Information - Required fields
-  cli::cli_h3("Package Information")
-
-  pkg_name <- prompt_input(
-    "Package name",
-    value = pkg_name,
-    required = TRUE,
-    validator = validate_package_name,
-    validator_message = "Package name must start with a letter, contain only letters, numbers, and dots"
+  package_info <- .collect_package_info(
+    pkg_name = pkg_name,
+    title = title,
+    description = description,
+    version = version,
+    language = language,
+    github_user = github_user,
+    interactive = interactive
   )
 
-  title <- prompt_input(
-    "Title",
-    value = title,
-    required = TRUE
+  authors <- .collect_authors(authors = authors, interactive = interactive)
+
+  license_info <- .collect_license(
+    license = license,
+    interactive = interactive
   )
 
-  description <- prompt_input(
-    "Description (one paragraph)",
-    value = description,
-    required = TRUE
+  pub <- .collect_publication(
+    keywords = keywords,
+    funder = funder,
+    grant_id = grant_id,
+    communities = communities,
+    extended = extended,
+    interactive = interactive
   )
 
-  version <- prompt_input(
-    "Version",
-    value = version,
-    default = "0.0.1"
+  cov <- .collect_coverage(
+    temporal_start = temporal_start,
+    temporal_end = temporal_end,
+    spatial_description = spatial_description,
+    spatial_coordinates = spatial_coordinates,
+    extended = extended,
+    interactive = interactive
   )
 
-  language <- prompt_menu(
-    choices = c(
-      "English (GB)" = "en-GB",
-      "English (US)" = "en-US",
-      "German" = "de",
-      "French" = "fr",
-      "Spanish" = "es"
-    ),
-    title = "Select language",
-    value = language,
-    default = "en-GB",
-    allow_other = TRUE
+  related_identifiers <- .collect_related(
+    related_identifiers = related_identifiers,
+    extended = extended,
+    interactive = interactive
   )
-
-  github_user <- prompt_input(
-    "GitHub user/organization",
-    value = github_user
-  )
-
-  # Authors - Complex handling
-  cli::cli_h3("Authors")
-
-  if (is.null(authors) || length(authors) == 0) {
-    authors <- list()
-    if (interactive) {
-      add_more <- TRUE
-      author_num <- 1
-
-      while (add_more) {
-        cli::cli_alert_info(paste("Author", author_num))
-
-        given <- prompt_input("  Given name", required = TRUE)
-        family <- prompt_input("  Family name", required = TRUE)
-        email <- prompt_input(
-          "  Email",
-          required = TRUE,
-          validator = validate_email,
-          validator_message = "Please enter a valid email address"
-        )
-        orcid <- prompt_input(
-          "  ORCID (0000-0000-0000-0000)",
-          validator = validate_orcid,
-          validator_message = "ORCID must be in format 0000-0000-0000-000X"
-        )
-        affiliation <- prompt_input("  Affiliation", default = "ETH Zurich")
-
-        # Use multi-select for roles
-        # First author gets "aut" and "cre" by default, others get only "aut"
-        default_roles <- if (author_num == 1) c("aut", "cre") else c("aut")
-        
-        roles <- prompt_multi_select(
-          choices = c(
-            "Author (wrote the package)" = "aut",
-            "Creator/Maintainer (maintains the package)" = "cre",
-            "Contributor (made contributions)" = "ctb",
-            "Funder (funded the work)" = "fnd",
-            "Thesis advisor (supervised the work)" = "ths"
-          ),
-          title = "Select author roles",
-          default = default_roles,
-          min_choices = 1
-        )
-
-        authors[[author_num]] <- list(
-          given = given,
-          family = family,
-          email = email,
-          orcid = if (!is.null(orcid) && orcid != "") orcid else NULL,
-          affiliation = affiliation,
-          roles = roles
-        )
-
-        author_num <- author_num + 1
-        add_more <- prompt_confirm("\nAdd another author?", default = FALSE)
-      }
-    }
-  }
-
-  # Ensure at least one author has the "cre" (creator/maintainer) role
-  if (!is.null(authors) && length(authors) > 0) {
-    has_maintainer <- any(sapply(authors, function(author) {
-      "cre" %in% author$roles
-    }))
-    
-    if (!has_maintainer) {
-      # Automatically assign "cre" role to the first author
-      if (length(authors) > 0) {
-        authors[[1]]$roles <- unique(c(authors[[1]]$roles, "cre"))
-        if (interactive) {
-          cli::cli_alert_info("Added 'creator/maintainer' role to first author (required for R packages)")
-        }
-      }
-    }
-  }
-
-  # License
-  cli::cli_h3("License")
-
-  # Generate license options from LICENSE_CONFIG
-  license_choices <- get_available_licenses("both")
-
-  # Match existing license value if provided
-  if (!is.null(license)) {
-    matched_license <- match_license(license)
-    if (!is.null(matched_license)) {
-      license <- matched_license
-    }
-  }
-
-  license <- prompt_menu(
-    choices = license_choices,
-    title = "Select a license",
-    value = license,
-    default = "CC-BY",
-    allow_other = TRUE
-  )
-
-  # If user provided a custom license, try to match it
-  if (!is.null(license) && !(license %in% names(license_choices))) {
-    matched_license <- match_license(license)
-    if (!is.null(matched_license)) {
-      license <- matched_license
-    }
-  }
-
-  # Get license URL based on canonical name
-  license_urls <- list(
-    "CC-BY" = "https://creativecommons.org/licenses/by/4.0/",
-    "CC0" = "https://creativecommons.org/publicdomain/zero/1.0/",
-    "MIT" = "https://opensource.org/licenses/MIT",
-    "GPL-2" = "https://www.gnu.org/licenses/gpl-2.0.html",
-    "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
-    "LGPL-2.1" = "https://www.gnu.org/licenses/lgpl-2.1.html",
-    "LGPL-3" = "https://www.gnu.org/licenses/lgpl-3.0.html",
-    "AGPL-3" = "https://www.gnu.org/licenses/agpl-3.0.html",
-    "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0",
-    "Proprietary" = NULL
-  )
-
-  license_url <- if (!is.null(license) && license %in% names(license_urls)) {
-    license_urls[[license]]
-  } else {
-    NULL
-  }
-
-  # Publication Information - Optional fields (only if extended)
-  if (extended) {
-    cli::cli_h3("Publication Information")
-
-    # Keywords
-    if (is.null(keywords) && interactive) {
-      keywords_input <- prompt_input("Keywords (comma-separated)")
-      if (!is.null(keywords_input) && keywords_input != "") {
-        keywords <- trimws(strsplit(keywords_input, ",")[[1]])
-      }
-    }
-
-    funder <- prompt_input(
-      "Funding organization",
-      value = funder,
-      default = if (interactive) "ETH Domain ORD Programme" else NULL
-    )
-
-    grant_id <- prompt_input("Grant ID", value = grant_id)
-
-    # Communities
-    if (is.null(communities) && interactive) {
-      use_communities <- prompt_confirm(
-        "Add to Zenodo communities?",
-        default = TRUE
-      )
-      if (use_communities) {
-        communities <- prompt_multi_select(
-          choices = c(
-            "Global Health Engineering" = "global-health-engineering",
-            "Environmental Science" = "environmental-science",
-            "Data Science" = "data-science",
-            "Open Science" = "open-science"
-          ),
-          title = "Select Zenodo communities"
-        )
-      }
-    }
-  }
-
-  # Coverage - Optional (only if extended)
-  if (extended) {
-    cli::cli_h3("Data Coverage")
-
-    # Temporal coverage
-    if (interactive && (is.null(temporal_start) || is.null(temporal_end))) {
-      has_temporal <- prompt_confirm(
-        "Does the data have temporal coverage?",
-        default = TRUE
-      )
-      if (has_temporal) {
-        temporal_start <- prompt_input(
-          "Start date (YYYY or YYYY-MM-DD)",
-          value = temporal_start,
-          validator = validate_date,
-          validator_message = "Date must be YYYY or YYYY-MM-DD format"
-        )
-        temporal_end <- prompt_input(
-          "End date (YYYY or YYYY-MM-DD)",
-          value = temporal_end,
-          validator = validate_date,
-          validator_message = "Date must be YYYY or YYYY-MM-DD format"
-        )
-      }
-    }
-
-    # Spatial coverage
-    if (interactive && is.null(spatial_description)) {
-      has_spatial <- prompt_confirm(
-        "Does the data have geographic coverage?",
-        default = FALSE
-      )
-      if (has_spatial) {
-        spatial_description <- prompt_input("Geographic description")
-
-        has_coords <- prompt_confirm("Add coordinates?", default = FALSE)
-        if (has_coords && is.null(spatial_coordinates)) {
-          lat <- as.numeric(prompt_input("Latitude", required = TRUE))
-          lon <- as.numeric(prompt_input("Longitude", required = TRUE))
-          spatial_coordinates <- list(lat = lat, lon = lon)
-        }
-      }
-    }
-  }
-
-  # Related identifiers (only if extended)
-  if (extended) {
-    cli::cli_h3("Related Publications")
-
-    if (is.null(related_identifiers) && interactive) {
-      has_related <- prompt_confirm(
-        "Are there related publications?",
-        default = FALSE
-      )
-      if (has_related) {
-        related_identifiers <- list()
-        add_more <- TRUE
-        rel_num <- 1
-
-        while (add_more) {
-          doi <- prompt_input(paste("  DOI", rel_num))
-          if (!is.null(doi) && doi != "") {
-            related_identifiers[[rel_num]] <- list(
-              scheme = "doi",
-              identifier = doi,
-              relation = "isDocumentedBy",
-              resource_type = "publication-article"
-            )
-            rel_num <- rel_num + 1
-            add_more <- prompt_confirm("  Add another?", default = FALSE)
-          } else {
-            add_more <- FALSE
-          }
-        }
-      }
-    }
-  }
 
   # Construct metadata list
   metadata <- list(
-    package = list(
-      name = pkg_name,
-      title = title,
-      description = description,
-      version = version,
-      language = language,
-      github_user = github_user
-    ),
+    package = package_info,
     authors = authors,
-    license = list(
-      id = license,
-      url = license_url
-    ),
+    license = license_info,
     publication = list(
-      keywords = keywords,
-      funder = if (!is.null(funder) && funder != "") funder else NULL,
-      grant_id = if (!is.null(grant_id) && grant_id != "") grant_id else NULL,
-      communities = communities
+      keywords = pub$keywords,
+      funder = if (!is.null(pub$funder) && pub$funder != "") pub$funder else NULL,
+      grant_id = if (!is.null(pub$grant_id) && pub$grant_id != "") pub$grant_id else NULL,
+      communities = pub$communities
     ),
     coverage = list(
-      temporal = if (!is.null(temporal_start) || !is.null(temporal_end)) {
-        list(start = temporal_start, end = temporal_end)
+      temporal = if (!is.null(cov$temporal_start) || !is.null(cov$temporal_end)) {
+        list(start = cov$temporal_start, end = cov$temporal_end)
       } else {
         NULL
       },
-      spatial = if (!is.null(spatial_description)) {
+      spatial = if (!is.null(cov$spatial_description)) {
         list(
-          description = spatial_description,
-          coordinates = spatial_coordinates
+          description = cov$spatial_description,
+          coordinates = cov$spatial_coordinates
         )
       } else {
         NULL
@@ -480,6 +575,81 @@ collect_metadata <- function(
   }
 
   return(metadata)
+}
+
+# Write the Config/* custom fields onto a desc object via the caller's
+# set_if_new closure. Covers publication strings, coverage and related
+# identifiers (JSON-encoded), and any non-standard top-level metadata key
+# (encoded as JSON for lists, comma-joined for multi-element vectors,
+# coerced to string otherwise).
+.save_config_fields <- function(metadata, set_if_new) {
+  if (!is.null(metadata$publication)) {
+    if (!is.null(metadata$publication$keywords)) {
+      set_if_new(
+        "Config/Keywords",
+        paste(metadata$publication$keywords, collapse = ", ")
+      )
+    }
+    set_if_new("Config/Funder", metadata$publication$funder)
+    set_if_new("Config/GrantID", metadata$publication$grant_id)
+    if (!is.null(metadata$publication$communities)) {
+      set_if_new(
+        "Config/Communities",
+        paste(metadata$publication$communities, collapse = ", ")
+      )
+    }
+  }
+
+  if (!is.null(metadata$coverage)) {
+    if (!is.null(metadata$coverage$temporal)) {
+      set_if_new(
+        "Config/TemporalCoverage",
+        jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE)
+      )
+    }
+    if (!is.null(metadata$coverage$spatial)) {
+      set_if_new(
+        "Config/SpatialCoverage",
+        jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE)
+      )
+    }
+  }
+
+  if (!is.null(metadata$related) && length(metadata$related) > 0) {
+    set_if_new(
+      "Config/RelatedIdentifiers",
+      jsonlite::toJSON(metadata$related, auto_unbox = TRUE)
+    )
+  }
+
+  standard_fields <- c(
+    "package",
+    "authors",
+    "license",
+    "publication",
+    "coverage",
+    "related"
+  )
+  other_fields <- setdiff(names(metadata), standard_fields)
+
+  for (field in other_fields) {
+    if (!is.null(metadata[[field]])) {
+      config_field <- paste0("Config/", tools::toTitleCase(field))
+
+      if (is.list(metadata[[field]]) && !is.data.frame(metadata[[field]])) {
+        set_if_new(
+          config_field,
+          jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE)
+        )
+      } else if (
+        is.vector(metadata[[field]]) && length(metadata[[field]]) > 1
+      ) {
+        set_if_new(config_field, paste(metadata[[field]], collapse = ", "))
+      } else {
+        set_if_new(config_field, as.character(metadata[[field]]))
+      }
+    }
+  }
 }
 
 #' Save metadata to DESCRIPTION file
@@ -602,81 +772,9 @@ save_metadata <- function(
   # Set license
   set_if_new("License", metadata$license$id)
 
-  # Set custom fields with Config/ prefix
-  if (!is.null(metadata$publication)) {
-    if (!is.null(metadata$publication$keywords)) {
-      set_if_new(
-        "Config/Keywords",
-        paste(metadata$publication$keywords, collapse = ", ")
-      )
-    }
-    set_if_new("Config/Funder", metadata$publication$funder)
-    set_if_new("Config/GrantID", metadata$publication$grant_id)
-    if (!is.null(metadata$publication$communities)) {
-      set_if_new(
-        "Config/Communities",
-        paste(metadata$publication$communities, collapse = ", ")
-      )
-    }
-  }
-
-  # Coverage (store as JSON for complex structure)
-  if (!is.null(metadata$coverage)) {
-    if (!is.null(metadata$coverage$temporal)) {
-      set_if_new(
-        "Config/TemporalCoverage",
-        jsonlite::toJSON(metadata$coverage$temporal, auto_unbox = TRUE)
-      )
-    }
-    if (!is.null(metadata$coverage$spatial)) {
-      set_if_new(
-        "Config/SpatialCoverage",
-        jsonlite::toJSON(metadata$coverage$spatial, auto_unbox = TRUE)
-      )
-    }
-  }
-
-  # Related identifiers (store as JSON)
-  if (!is.null(metadata$related) && length(metadata$related) > 0) {
-    set_if_new(
-      "Config/RelatedIdentifiers",
-      jsonlite::toJSON(metadata$related, auto_unbox = TRUE)
-    )
-  }
-
-  # Handle any other custom fields generically
-  standard_fields <- c(
-    "package",
-    "authors",
-    "license",
-    "publication",
-    "coverage",
-    "related"
-  )
-  other_fields <- setdiff(names(metadata), standard_fields)
-
-  for (field in other_fields) {
-    if (!is.null(metadata[[field]])) {
-      # Convert field name to Config/ format
-      config_field <- paste0("Config/", tools::toTitleCase(field))
-
-      # Store as JSON if it's a complex structure, otherwise as string
-      if (is.list(metadata[[field]]) && !is.data.frame(metadata[[field]])) {
-        set_if_new(
-          config_field,
-          jsonlite::toJSON(metadata[[field]], auto_unbox = TRUE)
-        )
-      } else if (
-        is.vector(metadata[[field]]) && length(metadata[[field]]) > 1
-      ) {
-        # Multiple values - join with commas
-        set_if_new(config_field, paste(metadata[[field]], collapse = ", "))
-      } else {
-        # Single value
-        set_if_new(config_field, as.character(metadata[[field]]))
-      }
-    }
-  }
+  # Custom Config/* fields (publication, coverage JSON, related JSON, and any
+  # non-standard top-level metadata keys)
+  .save_config_fields(metadata, set_if_new)
 
   # Write back to file
   d$write(file = desc_path)
@@ -752,18 +850,9 @@ get_metadata <- function(base_path = NULL) {
   if (!is.null(license_id)) {
     metadata$license <- list(id = license_id)
 
-    # Add standard license URLs
-    license_urls <- list(
-      "CC-BY-4.0" = "https://creativecommons.org/licenses/by/4.0/",
-      "CC BY 4.0" = "https://creativecommons.org/licenses/by/4.0/",
-      "CC0-1.0" = "https://creativecommons.org/publicdomain/zero/1.0/",
-      "MIT" = "https://opensource.org/licenses/MIT",
-      "GPL-3" = "https://www.gnu.org/licenses/gpl-3.0.html",
-      "Apache-2.0" = "https://www.apache.org/licenses/LICENSE-2.0"
-    )
-
-    if (license_id %in% names(license_urls)) {
-      metadata$license$url <- license_urls[[license_id]]
+    license_url <- get_license_url(license_id)
+    if (!is.null(license_url)) {
+      metadata$license$url <- license_url
     }
   }
 

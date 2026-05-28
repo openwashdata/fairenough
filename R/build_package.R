@@ -90,120 +90,6 @@ build_package <- function(
   invisible(TRUE)
 }
 
-#' Validate package with modern tools
-#'
-#' Runs comprehensive package validation including R CMD check,
-#' spell checking, and best practices analysis.
-#'
-#' @param base_path Base path for the project
-#' @param verbose Whether to show detailed messages
-#' @param spell_check Whether to run spell check (default: TRUE)
-#' @param good_practice Whether to run good practice checks (default: FALSE, as it's slow)
-#' @return List with validation results
-.validate_package <- function(
-  base_path = NULL,
-  verbose = TRUE,
-  spell_check = TRUE,
-  good_practice = FALSE
-) {
-  base_path <- get_base_path(base_path)
-
-  if (verbose) {
-    cli::cli_h2("Step 3: Validating Package")
-  }
-
-  results <- list()
-
-  # 1. Run standard R CMD check
-  if (verbose) {
-    cli::cli_alert_info("Running R CMD check")
-  }
-  results$check <- .run_checks(base_path = base_path, verbose = verbose)
-
-  # 2. Spell check (if requested)
-  if (spell_check) {
-    if (verbose) {
-      cli::cli_alert_info("Running spell check")
-    }
-    tryCatch(
-      {
-        # Setup spell check if not already configured
-        wordlist_file <- file.path(base_path, "inst", "WORDLIST")
-        if (!file.exists(wordlist_file)) {
-          usethis::use_spell_check()
-        }
-
-        # Run spell check
-        if (requireNamespace("spelling", quietly = TRUE)) {
-          spell_errors <- spelling::spell_check_package(base_path)
-          if (nrow(spell_errors) > 0) {
-            if (verbose) {
-              cli::cli_alert_warning(
-                "Found {nrow(spell_errors)} potential spelling issue{?s}"
-              )
-              cli::cli_alert_info(
-                "Run spelling::spell_check_package() for details"
-              )
-            }
-            results$spelling <- spell_errors
-          } else {
-            if (verbose) {
-              cli::cli_alert_success("No spelling issues found")
-            }
-            results$spelling <- NULL
-          }
-        }
-      },
-      error = function(e) {
-        cli::cli_alert_warning("Spell check failed: {e$message}")
-        results$spelling <- NA
-      }
-    )
-  }
-
-  # 3. Good practices check (if requested - can be slow)
-  if (good_practice) {
-    if (verbose) {
-      cli::cli_alert_info(
-        "Running good practices check (this may take a while)"
-      )
-    }
-
-    if (requireNamespace("goodpractice", quietly = TRUE)) {
-      tryCatch(
-        {
-          gp_result <- goodpractice::gp(base_path, quiet = !verbose)
-          results$good_practice <- gp_result
-
-          if (verbose) {
-            # Show summary of issues
-            if (length(goodpractice::failed_checks(gp_result)) > 0) {
-              cli::cli_alert_warning("Some good practice checks failed")
-              cli::cli_alert_info("Run goodpractice::gp() for details")
-            } else {
-              cli::cli_alert_success("All good practice checks passed")
-            }
-          }
-        },
-        error = function(e) {
-          cli::cli_alert_warning("Good practice check failed: {e$message}")
-          results$good_practice <- NA
-        }
-      )
-    } else {
-      cli::cli_alert_warning("Package {.pkg goodpractice} not installed")
-      cli::cli_alert_info("Install it with: install.packages('goodpractice')")
-      results$good_practice <- NA
-    }
-  }
-
-  if (verbose) {
-    cli::cli_alert_success("Package validation complete!")
-  }
-
-  invisible(results)
-}
-
 #' Generate roxygen documentation for datasets
 #'
 #' Creates R documentation files for each dataset using the data dictionary.
@@ -357,6 +243,70 @@ build_roxygen <- function(type = "dataset", base_path = NULL, verbose = TRUE) {
   invisible(to_add)
 }
 
+# Copy the README.qmd or README.Rmd template into base_path and render it to
+# README.md. Both formats share the same flow (copy template, check renderer
+# namespace, tryCatch render, emit success/error messages) but call different
+# renderer packages; this helper holds the common structure.
+.render_readme <- function(
+  base_path,
+  format = c("rmd", "qmd"),
+  verbose = TRUE,
+  overwrite = TRUE
+) {
+  format <- match.arg(format)
+
+  if (format == "qmd") {
+    template_name <- "README.qmd"
+    renderer_pkg <- "quarto"
+    render_fn <- function(input, quiet) {
+      quarto::quarto_render(
+        input,
+        output_format = "gfm",
+        quiet = quiet
+      )
+    }
+  } else {
+    template_name <- "README.Rmd"
+    renderer_pkg <- "rmarkdown"
+    render_fn <- function(input, quiet) {
+      rmarkdown::render(
+        input,
+        output_format = "github_document",
+        output_file = file.path(dirname(input), "README.md"),
+        quiet = quiet
+      )
+    }
+  }
+
+  readme_path <- file.path(base_path, template_name)
+  template_path <- system.file(
+    "templates",
+    template_name,
+    package = "fairenough"
+  )
+  fs::file_copy(template_path, readme_path, overwrite = overwrite)
+
+  if (!requireNamespace(renderer_pkg, quietly = TRUE)) {
+    cli::cli_alert_warning("Package {.pkg {renderer_pkg}} not installed")
+    cli::cli_alert_info(
+      "Install it with: install.packages('{renderer_pkg}')"
+    )
+    return(invisible(FALSE))
+  }
+
+  tryCatch(
+    {
+      render_fn(readme_path, quiet = !verbose)
+      if (verbose) cli::cli_alert_success("Generated README.md")
+      invisible(TRUE)
+    },
+    error = function(e) {
+      cli::cli_alert_warning("Could not render README: {e$message}")
+      invisible(FALSE)
+    }
+  )
+}
+
 #' Build README from inst/templates/README.qmd
 #'
 #' Build README.md from the README.qmd template, incorporating package metadata.
@@ -379,69 +329,13 @@ build_readme <- function(
 
   .add_readme_render_suggests(base_path, verbose = verbose)
 
-  if (quarto && quarto_installed) {
-    # Create README.qmd from template if it doesn't exist
-    readme_qmd <- file.path(base_path, "README.qmd")
-    template_path <- system.file(
-      "templates",
-      "README.qmd",
-      package = "fairenough"
-    )
-    fs::file_copy(template_path, readme_qmd, overwrite = overwrite)
-
-    # Check if quarto is available
-    if (requireNamespace("quarto", quietly = TRUE)) {
-      tryCatch(
-        {
-          # Render README with quarto
-          quarto::quarto_render(
-            readme_qmd,
-            output_format = "gfm",
-            quiet = !verbose
-          )
-          if (verbose) cli::cli_alert_success("Generated README.md")
-        },
-        error = function(e) {
-          cli::cli_alert_warning("Could not render README: {e$message}")
-        }
-      )
-    } else {
-      cli::cli_alert_warning("Package {.pkg quarto} not installed")
-      cli::cli_alert_info("Install it with: install.packages('quarto')")
-    }
-  } else {
-    # Create README.Rmd from template if it doesn't exist
-    readme_rmd <- file.path(base_path, "README.Rmd")
-    template_path <- system.file(
-      "templates",
-      "README.Rmd",
-      package = "fairenough"
-    )
-    fs::file_copy(template_path, readme_rmd, overwrite = overwrite)
-
-    # Check if rmarkdown is available
-    if (requireNamespace("rmarkdown", quietly = TRUE)) {
-      tryCatch(
-        {
-          # Render README with proper working directory
-          readme_md <- file.path(base_path, "README.md")
-          rmarkdown::render(
-            readme_rmd,
-            output_format = "github_document",
-            output_file = readme_md,
-            quiet = !verbose
-          )
-          if (verbose) cli::cli_alert_success("Generated README.md")
-        },
-        error = function(e) {
-          cli::cli_alert_warning("Could not render README: {e$message}")
-        }
-      )
-    } else {
-      cli::cli_alert_warning("Package {.pkg rmarkdown} not installed")
-      cli::cli_alert_info("Install it with: install.packages('rmarkdown')")
-    }
-  }
+  format <- if (quarto && quarto_installed) "qmd" else "rmd"
+  .render_readme(
+    base_path = base_path,
+    format = format,
+    verbose = verbose,
+    overwrite = overwrite
+  )
 
   return(invisible(file.path(base_path, "README.md")))
 }
@@ -580,64 +474,6 @@ build_site <- function(
 
   return(invisible(TRUE))
 }
-
-#' Run package checks
-#'
-#' Runs R CMD check on the package.
-#'
-#' @param base_path Base path for the project
-#' @param verbose Whether to show messages
-#' @return Logical indicating if checks passed
-.run_checks <- function(base_path = NULL, verbose = TRUE) {
-  base_path <- get_base_path(base_path)
-
-  if (!requireNamespace("devtools", quietly = TRUE)) {
-    cli::cli_alert_warning("Package {.pkg devtools} not installed")
-    cli::cli_alert_info("Install it with: install.packages('devtools')")
-    return(invisible(NA))
-  }
-
-  if (verbose) {
-    cli::cli_alert_info("Running R CMD check...")
-  }
-
-  check_result <- tryCatch(
-    {
-      devtools::check(
-        base_path,
-        quiet = !verbose,
-        args = "--no-manual"
-      )
-    },
-    error = function(e) {
-      cli::cli_alert_warning("Check failed: {e$message}")
-      return(NULL)
-    }
-  )
-
-  if (!is.null(check_result)) {
-    errors <- length(check_result$errors)
-    warnings <- length(check_result$warnings)
-    notes <- length(check_result$notes)
-
-    if (errors == 0 && warnings == 0) {
-      if (verbose) {
-        cli::cli_alert_success("Package checks passed!")
-      }
-      return(invisible(TRUE))
-    } else {
-      if (verbose) {
-        cli::cli_alert_warning(
-          "Check complete: {errors} error{?s}, {warnings} warning{?s}, {notes} note{?s}"
-        )
-      }
-      return(invisible(FALSE))
-    }
-  }
-
-  return(invisible(NA))
-}
-
 
 #' Build CITATION file using cffr
 #'
