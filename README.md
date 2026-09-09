@@ -5,6 +5,30 @@
 
 <!-- [![CRAN status](badge-placeholder)](link) [![Codecov](badge-placeholder)](link) -->
 
+## Archived, 2026-09-09
+
+This package is no longer developed, and the repository is archived. Use
+[washr](https://github.com/openwashdata/washr) instead. washr is on CRAN,
+and it is the data publishing tool for openwashdata.
+
+fairenough and washr were two ways of building the same kind of package,
+and keeping both in step cost more than it returned. The two things
+fairenough did that washr did not are being rebuilt in washr: the
+readiness checks that tell you which step you skipped
+([washr#82](https://github.com/openwashdata/washr/issues/82)), and drafted
+variable descriptions, without an AI key being needed for the ordinary
+path ([washr#83](https://github.com/openwashdata/washr/issues/83)).
+
+To publish a dataset today, start with the guide, [Data Publishing with
+washr](https://global-health-engineering.github.io/ghedatapublishing/).
+
+The code and the [documentation
+site](https://openwashdata.github.io/fairenough/) stay online and
+readable. The reasoning is recorded in [issue
+#34](https://github.com/openwashdata/fairenough/issues/34).
+
+------------------------------------------------------------------------
+
 Convert tidy data into R packages with documentation websites and
 intelligent AI descriptions. **fairenough** prepares your data for
 publication in one click.
